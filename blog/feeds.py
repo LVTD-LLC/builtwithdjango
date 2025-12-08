@@ -17,21 +17,3 @@ class BlogFeed(Feed):
 
     def item_description(self, item):
         return truncatewords(item.content, 50)
-
-
-class ArticleFeed(Feed):
-    title = "Built with Django - Articles"
-    link = "https://builtwithdjango.com/blog/articles/"
-    description = "All published articles about Django."
-
-    def items(self):
-        return Post.objects.filter(status=Post.PUBLISHED).order_by("-created")
-
-    def item_title(self, item):
-        return item.title
-
-    def item_description(self, item):
-        return truncatewords(item.content, 50)
-
-    def item_pubdate(self, item):
-        return item.created

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .feeds import ArticleFeed, BlogFeed
+from .feeds import BlogFeed
 from .views import ArticleListView, CommentCreateView, PostDetailView, PostListView
 
 urlpatterns = [
@@ -13,5 +13,4 @@ urlpatterns = [
         name="create_guide_comment",
     ),
     path("feed/rss", BlogFeed(), name="blog_feed"),
-    path("articles/feed/rss", ArticleFeed(), name="articles_feed"),
 ]
