@@ -17,6 +17,9 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 ## [0.4.6] - 2025-12-08
 ### Added
 - API endpoint to publish posts.
+- Page to show all articles
+- Proper DRF Auth
+- RSS
 
 
 ## [0.4.5] - 2025-02-13
