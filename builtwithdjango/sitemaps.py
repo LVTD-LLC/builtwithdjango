@@ -46,12 +46,13 @@ class StaticViewSitemap(sitemaps.Sitemap):
 
 sitemaps = {
     "static": StaticViewSitemap,
+    "blog": GenericSitemap({"queryset": Post.objects.all(), "date_field": "created"}, priority=0.9, protocol="https"),
     "projects": GenericSitemap(
         {
             "queryset": Project.objects.filter(published=True),
             "date_field": "date_added",
         },
-        priority=0.8,
+        priority=0.85,
         protocol="https",
     ),
     "jobs": GenericSitemap(
@@ -65,5 +66,4 @@ sitemaps = {
     "podcast": GenericSitemap(
         {"queryset": Episode.objects.all(), "date_field": "created_datetime"}, priority=0.8, protocol="https"
     ),
-    "blog": GenericSitemap({"queryset": Post.objects.all(), "date_field": "created"}, priority=0.85, protocol="https"),
 }

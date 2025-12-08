@@ -86,6 +86,7 @@ INSTALLED_APPS = [
     "django_component",
     "django_filters",
     "rest_framework",
+    "rest_framework.authtoken",
     "anymail",
     "allauth",
     "allauth.account",
@@ -261,6 +262,10 @@ ACCOUNT_LOGOUT_REDIRECT_URL = "home"
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.AllowAny"],
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
 }
 
 ANYMAIL = {

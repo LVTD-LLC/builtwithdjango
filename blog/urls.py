@@ -1,10 +1,11 @@
 from django.urls import path
 
-from .feeds import BlogFeed
-from .views import CommentCreateView, PostDetailView, PostListView
+from .feeds import ArticleFeed, BlogFeed
+from .views import ArticleListView, CommentCreateView, PostDetailView, PostListView
 
 urlpatterns = [
     path("", PostListView.as_view(), name="blog"),
+    path("articles/", ArticleListView.as_view(), name="articles"),
     path("<slug:slug>", PostDetailView.as_view(), name="post"),
     path(
         "<slug:slug>/create-comment",
@@ -12,4 +13,5 @@ urlpatterns = [
         name="create_guide_comment",
     ),
     path("feed/rss", BlogFeed(), name="blog_feed"),
+    path("articles/feed/rss", ArticleFeed(), name="articles_feed"),
 ]
