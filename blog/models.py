@@ -42,10 +42,12 @@ class Post(TimeStampedModel):
     TUTORIAL = "TUTORIAL"
     INTERVIEW = "INTERVIEW"
     UPDATE = "UPDATE"
+    ARTICLE = "ARTICLE"
     DIFFICULTY_LEVEL = [
         (TUTORIAL, "TUTORIAL"),
         (INTERVIEW, "INTERVIEW"),
         (UPDATE, "UPDATE"),
+        (ARTICLE, "ARTICLE"),
     ]
 
     type = models.CharField(

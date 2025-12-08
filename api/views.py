@@ -2,12 +2,13 @@ from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, viewsets
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 
+from blog.models import Post
 from projects.models import Like, Project
 
-from .serializers import LikeSerializer, LikeSerializerNoId
+from .serializers import LikeSerializer, LikeSerializerNoId, PostSerializer
 
 
 class CreateLikeProjectAPIView(generics.ListCreateAPIView):
@@ -46,3 +47,14 @@ def search_projects(request):
     ]
 
     return Response(results)
+
+
+class CreatePostAPIView(generics.CreateAPIView):
+    """
+    Create a new blog post.
+    Only superusers can create posts.
+    """
+
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [IsAdminUser]

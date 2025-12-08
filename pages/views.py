@@ -36,7 +36,7 @@ class HomeView(TemplateView):
         context["projects"] = Project.objects.filter(published=True, active=True).order_by("-sponsored", "-date_added")[
             :4
         ]
-        context["guides"] = Post.objects.all()[:4]
+        context["guides"] = Post.objects.filter(type="TUTORIAL")[:4]
         context["podcast_episodes"] = Episode.objects.all()[:3]
         context["jobs"] = Job.objects.filter(approved=True).order_by("-created_datetime")[:6]
 

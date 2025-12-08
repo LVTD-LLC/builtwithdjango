@@ -21,6 +21,18 @@ class PostListView(ListView):
         return context
 
 
+class ArticleListView(ListView):
+    model = Post
+    template_name = "blog/all_articles.html"
+    queryset = Post.objects.filter(status="PB").order_by("-created")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["newsletter_form"] = NewsletterSignupForm
+
+        return context
+
+
 class PostDetailView(DetailView):
     model = Post
     template_name = "blog/post_detail.html"

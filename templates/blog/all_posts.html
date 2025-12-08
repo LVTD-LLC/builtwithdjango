@@ -20,24 +20,26 @@
 {% block content %}
 
     <div class="px-6 py-20 bg-white sm:py-24 lg:px-8">
-      <div class="max-w-2xl mx-auto text-center">
+      <div class="mx-auto max-w-2xl text-center">
         <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">Django Guides</h1>
-        <p class="mt-6 text-lg leading-8 prose text-gray-600">Learn Django, Build Anything: Tutorials for Aspiring Web Developers.</p>
+        <p class="mt-6 text-lg leading-8 text-gray-600 prose">Learn Django, Build Anything: Tutorials for Aspiring Web Developers.</p>
       </div>
     </div>
 
-    <div class="relative max-w-6xl mx-auto">
+    <div class="relative mx-auto max-w-6xl">
         <div class="divide-y divide-gray-200">
             <div class="grid grid-cols-1 gap-6 mb-10 md:grid-cols-2">
                 {% for guide in object_list %}
-                <div class="flex bg-white border border-gray-100 rounded-md shadow group">
-                    <div class="flex items-center flex-shrink-0 p-4 bg-gray-100 lg:p-4">
+                <div class="flex bg-white rounded-md border border-gray-100 shadow group">
+                    {% if guide.icon %}
+                    <div class="flex flex-shrink-0 items-center p-4 bg-gray-100 lg:p-4">
                       <!-- Heroicon name: outline/globe-alt -->
-                      <img class="flex-shrink-0 w-8 h-8 mx-auto lg:h-16 lg:w-16"
+                      <img class="flex-shrink-0 mx-auto w-8 h-8 lg:h-16 lg:w-16"
                           src="https://res.cloudinary.com/built-with-django/{{ guide.icon }}"
                           alt="" />
                     </div>
-                    <div class="flex flex-col justify-between flex-1 p-6 bg-white">
+                    {% endif %}
+                    <div class="flex flex-col flex-1 justify-between p-6 bg-white">
                       <div class="flex-1">
                         <a href="{% url 'post' guide.slug %}" class="block">
                           <p class="text-xl font-semibold text-gray-900">{{ guide.title }}</p>
