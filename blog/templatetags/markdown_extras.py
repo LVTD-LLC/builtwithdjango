@@ -21,6 +21,7 @@ def markdown(value):
             "markdown.extensions.fenced_code",
             "markdown.extensions.toc",
             "markdown.extensions.admonition",
+            "markdown.extensions.tables",
         ],
         extension_configs=extension_configs,
     )
