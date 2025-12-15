@@ -145,6 +145,11 @@
     <div class="relative lg:grid lg:grid-cols-3 lg:gap-x-8">
       <div class="order-last lg:col-span-1">
         <h2 class="text-3xl font-extrabold tracking-tight text-right text-gray-900 sm:text-4xl">Latest Django Projects</h2>
+        <div class="mt-5 flex justify-end">
+          <a href="{% url 'submit_project' %}" class="inline-flex justify-center items-center px-6 py-3 text-base font-medium text-white bg-green-600 rounded-md border border-transparent hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            Add Project
+          </a>
+        </div>
       </div>
       <div class="mt-10 space-y-10 sm:space-y-0 sm:grid sm:grid-cols-2 sm:gap-x-8 sm:gap-y-10 lg:mt-0 lg:col-span-2">
         {% for project in projects %}
