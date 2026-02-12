@@ -45,39 +45,13 @@ def notify_of_new_project(instance):
 
 
 def notify_owner_of_new_comment(instance):
-    try:
-        project_instance = Project.objects.get(title=instance.project.title)
-        project_owner_email = project_instance.logged_in_maker.email
-    except AttributeError:
-        project_owner_email = "Built with Django <rasul@builtwithdjango.com>"
-
-    message = f"""
-      {instance.author} left a comment on your project ({instance.project.url} - {instance.project}).
-      Comment: {instance.comment}
-    """
-
-    send_mail(
-        "New Comment on your Project",
-        message,
-        "Built with Django <rasul@builtwithdjango.com>",
-        [project_owner_email],
-        fail_silently=False,
-    )
+    # Comments are temporarily disabled to mitigate abuse.
+    return
 
 
 def notify_admins_of_comment(instance):
-    message = f"""
-      {instance.author} left a comment on project {instance.project.title} - {instance.project.url}.
-      Comment: {instance.comment}
-    """
-
-    send_mail(
-        f"New Comment on project {instance.project.title}",
-        message,
-        "Built with Django <rasul@builtwithdjango.com>",
-        ["Built with Django <rasul@builtwithdjango.com>"],
-        fail_silently=False,
-    )
+    # Comments are temporarily disabled to mitigate abuse.
+    return
 
 
 def check_all_projects():

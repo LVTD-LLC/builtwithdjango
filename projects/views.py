@@ -9,16 +9,10 @@ from django_q.tasks import async_task
 from newsletter.forms import NewsletterSignupForm
 
 from .filters import ProjectFilter
-from .forms import AddComment, AddProject, ProjectUpdateViewForm
+from .forms import AddProject, ProjectUpdateViewForm
 from .hooks import screenshot_saved
-from .models import Comment, Project
-from .tasks import (
-    fetch_page_content,
-    notify_admins_of_comment,
-    notify_of_new_project,
-    notify_owner_of_new_comment,
-    save_screenshot,
-)
+from .models import Project
+from .tasks import fetch_page_content, notify_of_new_project, save_screenshot
 
 
 class ProjectListView(FilterView):
@@ -44,8 +38,6 @@ class ProjectListView(FilterView):
                         "-sponsored", f"-like__count"
                     )
                 )
-            elif ordering == "comments":
-                queryset = queryset.annotate(Count(ordering)).order_by("-sponsored", f"-{ordering}__count")
             else:
                 queryset = queryset.order_by("-sponsored", "-updated_date")
 
@@ -74,7 +66,6 @@ class ProjectDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["newsletter_form"] = NewsletterSignupForm
-        context["comment_form"] = AddComment
 
         return context
 
@@ -113,21 +104,3 @@ class ProjectUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse("project", kwargs={"slug": self.object.slug})
-
-
-class CommentCreateView(CreateView):
-    model = Comment
-    form_class = AddComment
-    template_name = "projects/submit-comment.html"
-
-    def get_success_url(self):
-        return reverse("project", kwargs={"slug": self.object.project.slug})
-
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        form.instance.project = Project.objects.get(slug=self.kwargs["slug"])
-        self.object = form.save()
-        async_task(notify_owner_of_new_comment, self.object)
-        async_task(notify_admins_of_comment, self.object)
-
-        return super(CommentCreateView, self).form_valid(form)

@@ -2,10 +2,6 @@
 {% load widget_tweaks %}
 
 <div class="flex flex-row space-x-2">
-  <div class="flex items-center p-2 text-lg border border-gray-300 border-solid rounded-lg">
-      <span class="text-base">{{ site.comments.all.count }}</span>
-      <i class="las la-comments"></i>
-  </div>
   <div data-controller="like"
       class="flex items-center p-2 text-lg border border-gray-300 border-solid rounded-lg hover:border-gray-600 hover:bg-gray-100">
       <input type="hidden" data-like-target="projectId" value={{ site.id }} />

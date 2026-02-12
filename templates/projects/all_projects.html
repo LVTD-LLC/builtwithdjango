@@ -77,7 +77,6 @@
                             <select id="order_by" name="order_by" class="block py-2 pr-10 pl-3 mt-1 w-full text-base rounded-md border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                                 <option value="updated_date" {% if order_by == 'updated_date' %}selected{% endif %}>Date</option>
                                 <option value="like" {% if order_by == 'like' %}selected{% endif %}>Likes</option>
-                                <option value="comments" {% if order_by == 'comments' %}selected{% endif %}>Comments</option>
                             </select>
                             {% endwith %}
                           </div>
