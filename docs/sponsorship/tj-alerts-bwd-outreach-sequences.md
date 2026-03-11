@@ -16,6 +16,7 @@ Use these placeholders in each message:
 - `{{sender_name}}`
 - `{{sender_role}}`
 - `{{calendar_link}}` (optional)
+- `{{next_quarter_or_month}}` (optional, for "not now" replies)
 
 Personalization rules:
 
@@ -43,7 +44,7 @@ If helpful, we can feature your role through Built with Django sponsorship place
 
 If you want, I can send the current sponsorship options + pricing in one short reply.
 
-No pressure—if this isn’t relevant, reply **"no thanks"** and I won’t follow up.
+No pressure—if this isn’t relevant, reply **"unsubscribe"** and I won’t follow up.
 
 Best,
 `{{sender_name}}`
@@ -66,7 +67,7 @@ Quick follow-up in case this got buried.
 
 Since `{{company_name}}` is actively hiring for **{{job_title}}**, I can share a concise sponsorship breakdown for Built with Django (placements, timing, and cost) so you can decide in a few minutes.
 
-If you’d rather not get outreach like this, reply **"opt out"** and I’ll remove you from future sponsorship emails.
+If you’d rather not get outreach like this, reply **"unsubscribe"** and I’ll remove you from future sponsorship emails.
 
 Thanks,
 `{{sender_name}}`
@@ -116,6 +117,12 @@ Deliverability hygiene:
 - Plain-text style formatting, no heavy HTML.
 - Keep links minimal (prefer 1 relevant link).
 - Avoid spam trigger phrasing ("guaranteed", "best deal", "limited time").
+
+Compliance baseline:
+
+- Include sender identity and valid business mailing address in live campaign templates (CAN-SPAM).
+- Honor unsubscribe requests within 10 business days maximum; suppress immediately in practice.
+- For EU/UK contacts, only send where legitimate-interest outreach is documented and include clear objection/opt-out language (GDPR/UK GDPR).
 
 ---
 
