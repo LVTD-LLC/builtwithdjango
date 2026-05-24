@@ -1,0 +1,83 @@
+# Aceternity UI Components
+
+Source basis: official Aceternity UI component pages (`ui.aceternity.com/components`) and the official sitemap inventory.
+
+Use this file when you need dramatic hero systems, Framer Motion-heavy interaction patterns, art-directed backgrounds, or premium showcase modules.
+
+Site-level signals observed from the official pages:
+- React and Next.js focus
+- Tailwind CSS throughout
+- Framer Motion is a common dependency
+
+## Curated component index
+
+- [3D Card Effect](https://ui.aceternity.com/components/3d-card-effect) - layout/cards/navigation; Good source for modular showcase sections, hover systems, and media-led panels. Do not drop Aceternity defaults into every style untouched.
+- [3D Globe](https://ui.aceternity.com/components/3d-globe) - visual surface / motion module; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [3D Marquee](https://ui.aceternity.com/components/3d-marquee) - visual surface / motion module; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [3D PIN](https://ui.aceternity.com/components/3d-pin) - layout/cards/navigation; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Animated Modal](https://ui.aceternity.com/components/animated-modal) - interaction and utility; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Animated Testimonials](https://ui.aceternity.com/components/animated-testimonials) - visual surface / motion module; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Animated Tooltip](https://ui.aceternity.com/components/animated-tooltip) - interaction and utility; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Apple Cards Carousel](https://ui.aceternity.com/components/apple-cards-carousel) - layout/cards/navigation; Good source for modular showcase sections, hover systems, and media-led panels. Do not drop Aceternity defaults into every style untouched.
+- [Ascii ART](https://ui.aceternity.com/components/ascii-art) - visual surface / motion module; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Aurora Background](https://ui.aceternity.com/components/aurora-background) - hero/background atmosphere; Use as a starting point for hero atmosphere, but reduce purple-blue default vibes and tailor the palette to the active style.
+- [Background Beams With Collision](https://ui.aceternity.com/components/background-beams-with-collision) - hero/background atmosphere; Use as a starting point for hero atmosphere, but reduce purple-blue default vibes and tailor the palette to the active style.
+- [Background Beams](https://ui.aceternity.com/components/background-beams) - hero/background atmosphere; Use as a starting point for hero atmosphere, but reduce purple-blue default vibes and tailor the palette to the active style.
+- [Background Boxes](https://ui.aceternity.com/components/background-boxes) - hero/background atmosphere; Use as a starting point for hero atmosphere, but reduce purple-blue default vibes and tailor the palette to the active style.
+- [Background Gradient Animation](https://ui.aceternity.com/components/background-gradient-animation) - hero/background atmosphere; Use as a starting point for hero atmosphere, but reduce purple-blue default vibes and tailor the palette to the active style.
+- [Background Gradient](https://ui.aceternity.com/components/background-gradient) - hero/background atmosphere; Use as a starting point for hero atmosphere, but reduce purple-blue default vibes and tailor the palette to the active style.
+- [Background Lines](https://ui.aceternity.com/components/background-lines) - hero/background atmosphere; Use as a starting point for hero atmosphere, but reduce purple-blue default vibes and tailor the palette to the active style.
+- [Background Ripple Effect](https://ui.aceternity.com/components/background-ripple-effect) - hero/background atmosphere; Use as a starting point for hero atmosphere, but reduce purple-blue default vibes and tailor the palette to the active style.
+- [Bento Grid](https://ui.aceternity.com/components/bento-grid) - hero/background atmosphere; Good source for modular showcase sections, hover systems, and media-led panels. Do not drop Aceternity defaults into every style untouched.
+- [Canvas Reveal Effect](https://ui.aceternity.com/components/canvas-reveal-effect) - visual surface / motion module; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Canvas Text](https://ui.aceternity.com/components/canvas-text) - text and headline systems; Useful for headlines, command bars, hero labels, and status text. Keep readability and tone under control.
+- [Card Hover Effect](https://ui.aceternity.com/components/card-hover-effect) - layout/cards/navigation; Good source for modular showcase sections, hover systems, and media-led panels. Do not drop Aceternity defaults into every style untouched.
+- [Card Spotlight](https://ui.aceternity.com/components/card-spotlight) - hero/background atmosphere; Use as a starting point for hero atmosphere, but reduce purple-blue default vibes and tailor the palette to the active style.
+- [Card Stack](https://ui.aceternity.com/components/card-stack) - layout/cards/navigation; Good source for modular showcase sections, hover systems, and media-led panels. Do not drop Aceternity defaults into every style untouched.
+- [Cards Free](https://ui.aceternity.com/components/cards-free) - layout/cards/navigation; Good source for modular showcase sections, hover systems, and media-led panels. Do not drop Aceternity defaults into every style untouched.
+- [Carousel](https://ui.aceternity.com/components/carousel) - layout/cards/navigation; Good source for modular showcase sections, hover systems, and media-led panels. Do not drop Aceternity defaults into every style untouched.
+- [Code Block](https://ui.aceternity.com/components/code-block) - text and headline systems; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Colourful Text](https://ui.aceternity.com/components/colourful-text) - text and headline systems; Useful for headlines, command bars, hero labels, and status text. Keep readability and tone under control.
+- [Comet Card](https://ui.aceternity.com/components/comet-card) - layout/cards/navigation; Good source for modular showcase sections, hover systems, and media-led panels. Do not drop Aceternity defaults into every style untouched.
+- [Compare](https://ui.aceternity.com/components/compare) - interaction and utility; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Container Cover](https://ui.aceternity.com/components/container-cover) - visual surface / motion module; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Container Scroll Animation](https://ui.aceternity.com/components/container-scroll-animation) - layout/cards/navigation; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Container Text Flip](https://ui.aceternity.com/components/container-text-flip) - text and headline systems; Useful for headlines, command bars, hero labels, and status text. Keep readability and tone under control.
+- [Direction Aware Hover](https://ui.aceternity.com/components/direction-aware-hover) - visual surface / motion module; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Dither Shader](https://ui.aceternity.com/components/dither-shader) - hero/background atmosphere; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Dotted Glow Background](https://ui.aceternity.com/components/dotted-glow-background) - hero/background atmosphere; Use as a starting point for hero atmosphere, but reduce purple-blue default vibes and tailor the palette to the active style.
+- [Draggable Card](https://ui.aceternity.com/components/draggable-card) - layout/cards/navigation; Good source for modular showcase sections, hover systems, and media-led panels. Do not drop Aceternity defaults into every style untouched.
+- [Encrypted Text](https://ui.aceternity.com/components/encrypted-text) - text and headline systems; Useful for headlines, command bars, hero labels, and status text. Keep readability and tone under control.
+- [Evervault Card](https://ui.aceternity.com/components/evervault-card) - layout/cards/navigation; Good source for modular showcase sections, hover systems, and media-led panels. Do not drop Aceternity defaults into every style untouched.
+- [Expandable Card](https://ui.aceternity.com/components/expandable-card) - layout/cards/navigation; Good source for modular showcase sections, hover systems, and media-led panels. Do not drop Aceternity defaults into every style untouched.
+- [Feature Sections Free](https://ui.aceternity.com/components/feature-sections-free) - visual surface / motion module; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [File Upload](https://ui.aceternity.com/components/file-upload) - interaction and utility; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Flip Words](https://ui.aceternity.com/components/flip-words) - text and headline systems; Useful for headlines, command bars, hero labels, and status text. Keep readability and tone under control.
+- [Floating Dock](https://ui.aceternity.com/components/floating-dock) - layout/cards/navigation; Useful for more expressive navigation patterns; simplify for cleaner styles and intensify only when the UI can carry it.
+- [Floating Navbar](https://ui.aceternity.com/components/floating-navbar) - layout/cards/navigation; Useful for more expressive navigation patterns; simplify for cleaner styles and intensify only when the UI can carry it.
+- [Focus Cards](https://ui.aceternity.com/components/focus-cards) - layout/cards/navigation; Good source for modular showcase sections, hover systems, and media-led panels. Do not drop Aceternity defaults into every style untouched.
+- [Following Pointer](https://ui.aceternity.com/components/following-pointer) - visual surface / motion module; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Github Globe](https://ui.aceternity.com/components/github-globe) - visual surface / motion module; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Glare Card](https://ui.aceternity.com/components/glare-card) - layout/cards/navigation; Good source for modular showcase sections, hover systems, and media-led panels. Do not drop Aceternity defaults into every style untouched.
+- [Glowing Effect](https://ui.aceternity.com/components/glowing-effect) - visual surface / motion module; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Glowing Stars Effect](https://ui.aceternity.com/components/glowing-stars-effect) - hero/background atmosphere; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Gooey Input](https://ui.aceternity.com/components/gooey-input) - interaction and utility; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Google Gemini Effect](https://ui.aceternity.com/components/google-gemini-effect) - visual surface / motion module; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Grid AND DOT Backgrounds](https://ui.aceternity.com/components/grid-and-dot-backgrounds) - hero/background atmosphere; Use as a starting point for hero atmosphere, but reduce purple-blue default vibes and tailor the palette to the active style.
+- [Hero Highlight](https://ui.aceternity.com/components/hero-highlight) - hero/background atmosphere; Use as a starting point for hero atmosphere, but reduce purple-blue default vibes and tailor the palette to the active style.
+- [Hero Parallax](https://ui.aceternity.com/components/hero-parallax) - hero/background atmosphere; Use as a starting point for hero atmosphere, but reduce purple-blue default vibes and tailor the palette to the active style.
+- [Hero Sections Free](https://ui.aceternity.com/components/hero-sections-free) - hero/background atmosphere; Use as a starting point for hero atmosphere, but reduce purple-blue default vibes and tailor the palette to the active style.
+- [Hover Border Gradient](https://ui.aceternity.com/components/hover-border-gradient) - hero/background atmosphere; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Images Badge](https://ui.aceternity.com/components/images-badge) - visual surface / motion module; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Images Slider](https://ui.aceternity.com/components/images-slider) - visual surface / motion module; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Infinite Moving Cards](https://ui.aceternity.com/components/infinite-moving-cards) - layout/cards/navigation; Good source for modular showcase sections, hover systems, and media-led panels. Do not drop Aceternity defaults into every style untouched.
+- [Keyboard](https://ui.aceternity.com/components/keyboard) - visual surface / motion module; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Lamp Effect](https://ui.aceternity.com/components/lamp-effect) - hero/background atmosphere; Use as a starting point for hero atmosphere, but reduce purple-blue default vibes and tailor the palette to the active style.
+- [Layout Grid](https://ui.aceternity.com/components/layout-grid) - hero/background atmosphere; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Layout Text Flip](https://ui.aceternity.com/components/layout-text-flip) - layout/cards/navigation; Useful for headlines, command bars, hero labels, and status text. Keep readability and tone under control.
+- [Lens](https://ui.aceternity.com/components/lens) - visual surface / motion module; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Link Preview](https://ui.aceternity.com/components/link-preview) - visual surface / motion module; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Loader](https://ui.aceternity.com/components/loader) - visual surface / motion module; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Macbook Scroll](https://ui.aceternity.com/components/macbook-scroll) - layout/cards/navigation; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Meteors](https://ui.aceternity.com/components/meteors) - hero/background atmosphere; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
+- [Moving Border](https://ui.aceternity.com/components/moving-border) - visual surface / motion module; Good as a motion or visual surface reference. Rebuild the idea around the current skill instead of pasting the stock aesthetic.
