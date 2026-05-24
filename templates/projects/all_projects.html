@@ -3,209 +3,139 @@
 {% load widget_tweaks %}
 
 {% block meta %}
-    <title>Built with Django</title>
-    <meta name="description" content="Collection of cool projects people built with Django" />
+    <title>Django Projects | Built with Django</title>
+    <meta name="description" content="Discover real projects and apps built with Django." />
     <link rel="canonical" href="https://{{ request.get_host }}/projects/" />
-    <meta property="og:title" content="Built with Django" />
+    <meta property="og:title" content="Django Projects | Built with Django" />
     <meta property="og:url" content="https://{{ request.get_host }}/projects/" />
-    <meta property="og:description" content="Collection of cool projects people built with Django" />
+    <meta property="og:description" content="Discover real projects and apps built with Django." />
     <meta property="og:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:creator" content="@rasulkireev" />
-    <meta name="twitter:site" content="@rasulkireev" />
-    <meta name="twitter:title" content="Built with Django" />
-    <meta name="twitter:description" content="Collection of cool projects people built with Django" />
+    <meta name="twitter:site" content="@builtwithdjango" />
+    <meta name="twitter:title" content="Django Projects | Built with Django" />
+    <meta name="twitter:description" content="Discover real projects and apps built with Django." />
     <meta name="twitter:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
 {% endblock meta %}
 
 {% block content %}
-
-    <div class="px-6 py-20 bg-white sm:py-24 lg:px-8">
-      <div class="mx-auto max-w-2xl text-center">
-        <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">Django Projects</h1>
-        <p class="mt-6 text-lg leading-8 text-gray-600 prose">Inspire and be inspired: discover amazing projects built with Django.</p>
-      </div>
-    </div>
-
+<section class="bw-page-hero">
+  <div class="bw-container grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
     <div>
-        <div class="flex justify-between items-center pb-4 sm:mb-0">
-            <div class="flex justify-start items-center space-x-2">
-
-              <div data-controller="dropdown" class="inline-block relative text-left">
-                  <div>
-                      <button type="button"
-                              data-action="dropdown#toggle click@window->dropdown#hide"
-                              class="inline-flex justify-center px-4 py-3 w-full text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500"
-                              id="menu-button"
-                              aria-expanded="true"
-                              aria-haspopup="true">
-                          Filter
-                          <!-- Heroicon name: solid/chevron-down -->
-                          <svg class="-mr-1 ml-2 w-5 h-5"
-                               xmlns="http://www.w3.org/2000/svg"
-                               viewBox="0 0 20 20"
-                               fill="currentColor"
-                               aria-hidden="true">
-                              <path fill-rule="evenodd"
-                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                    clip-rule="evenodd"/>
-                          </svg>
-                      </button>
-                  </div>
-                  <div data-dropdown-target="menu"
-                       data-transition-enter-active="transition ease-out duration-100"
-                       data-transition-enter-from="transform opacity-0 scale-95"
-                       data-transition-enter-to="transform opacity-100 scale-100"
-                       data-transition-leave-active="transition ease-in duration-75"
-                       data-transition-leave-from="transform opacity-100 scale-100"
-                       data-transition-leave-to="transform opacity-0 scale-95"
-                       class="hidden absolute left-0 mt-2 w-96 bg-white rounded-md ring-1 ring-black ring-opacity-5 shadow-lg origin-top-left md:w-56 focus:outline-none"
-                       role="menu"
-                       aria-orientation="vertical"
-                       aria-labelledby="menu-button"
-                       tabindex="-1">
-                      <form class="p-2" action="" method="get">
-                          <div class="mb-2">
-                              <label class="block text-sm font-medium text-gray-700">
-                                  Is Open Source
-                              </label>
-                              {% render_field filter.form.is_open_source class="block py-2 pr-10 pl-3 mt-1 w-full text-base rounded-md border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" %}
-                          </div>
-                          <div class="mb-2">
-                            {% with order_by=request.GET.order_by|default:'updated_date' %}
-                            <label for="order_by" class="block text-sm font-medium text-gray-700">Sort by</label>
-                            <select id="order_by" name="order_by" class="block py-2 pr-10 pl-3 mt-1 w-full text-base rounded-md border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                <option value="updated_date" {% if order_by == 'updated_date' %}selected{% endif %}>Date</option>
-                                <option value="like" {% if order_by == 'like' %}selected{% endif %}>Likes</option>
-                            </select>
-                            {% endwith %}
-                          </div>
-                          <button type="submit"
-                                  data-action="dropdown#toggle"
-                                  class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-gray-700 bg-white rounded border border-gray-300 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                              Filter
-                          </button>
-                      </form>
-                  </div>
-              </div>
-
-              <div data-controller="search"
-                  data-search-url-value="/api/v1/search/projects/"
-                  class="relative">
-                <input type="text"
-                        data-search-target="input"
-                        data-action="input->search#onInput"
-                        placeholder="Search projects (Press '/' to focus)"
-                        class="block p-3 w-64 text-gray-900 bg-white rounded-md border border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                >
-                <div data-search-target="results"
-                      class="hidden overflow-hidden absolute left-0 z-10 mt-2 w-96 bg-white rounded-md shadow-lg">
-                </div>
-            </div>
-
-            </div>
-            <div>
-                <a type="button"
-                   href="{% url 'submit_project' %}"
-                   class="inline-flex items-center px-4 py-2 text-base font-medium text-green-700 bg-green-200 rounded-md border border-transparent border-solid hover:bg-green-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                    Submit a Project
-                </a>
-            </div>
-        </div>
-        <div class="grid grid-cols-1 gap-6 mb-10 lg:grid-cols-3 md:grid-cols-2">
-            {% for site in page_obj %}
-                <div
-                  class="
-                    flex flex-col justify-start bg-white rounded border-solid
-                    {% if site.sponsored %}
-                    border-4 border-yellow-500 shadow-2xl
-                    {% else %}
-                    shadow border-1
-                    {% endif %}
-                  "
-                >
-                    <div class="border-b border-gray-300 border-solid">
-                        <a href="{% url 'project' site.slug %}">
-                            <img
-                              class="
-                                object-cover object-left-top w-full h-auto border-0
-                                {% if not site.sponsored %}
-                                rounded-t
-                                {% endif %}
-                              "
-                              src="{% get_media_prefix %}{{ site.homepage_screenshot }}"
-                              alt="{{ site.title }} | Screenshot"
-                            />
-                        </a>
-                    </div>
-                    <div class="flex-auto p-4 h-full border-b border-gray-300 border-solid">
-                        <h2 class="mb-2 text-lg font-semibold text-gray-900">
-                            <a href="{% url 'project' site.slug %}">{{ site.title }}</a>
-                        </h2>
-                        <p class="text-sm leading-normal text-grey-700">
-                            {{ site.short_description }}
-                        </p>
-                    </div>
-                    <div class="flex justify-between items-center px-4 py-2">
-                        <div>
-                            <a class="inline-block p-2 text-xl bg-gray-200 rounded-lg border border-gray-200 hover:bg-gray-300"
-                               href='{{ site.url }}?ref={{ request.get_host }}&utm_source={{ request.get_host }}{{ request.path }}&utm_campaign=list-of-projects-{% now "F-Y" %}-{% if site.sponsored %}sponsored{% else %}unsponsored{% endif %}'
-                               target="_blank">
-                                <i class="las la-link"></i>
-                            </a>
-                            {% if site.github_url %}
-                                <a class="inline-block p-2 text-xl bg-gray-200 rounded-lg border border-gray-200 hover:bg-gray-300"
-                                   href="{{ site.github_url }}?ref={{ request.get_host }}"
-                                   target="_blank">
-                                    <i class="lab la-github"></i>
-                                </a>
-                            {% endif %}
-                            {% if site.twitter_url %}
-                                <a class="inline-block p-2 text-xl bg-gray-200 rounded-lg border border-gray-200 hover:bg-gray-300"
-                                   href="{{ site.twitter_url }}?ref={{ request.get_host }}"
-                                   target="_blank">
-                                    <i class="lab la-twitter"></i>
-                                </a>
-                            {% endif %}
-                        </div>
-
-                        {% include "components/project-likes.html" with site=site %}
-
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
-
-        {% if is_paginated %}
-        <div class="flex justify-center items-center mt-8 space-x-4">
-            {% if page_obj.has_previous %}
-                <a href="?{% if request.GET.order_by %}order_by={{ request.GET.order_by }}&{% endif %}{% if request.GET.is_open_source %}is_open_source={{ request.GET.is_open_source }}&{% endif %}page={{ page_obj.previous_page_number }}"
-                   class="px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 hover:bg-gray-50">
-                    Previous
-                </a>
-            {% endif %}
-
-            <span class="text-sm text-gray-700">
-                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-            </span>
-
-            {% if page_obj.has_next %}
-                <a href="?{% if request.GET.order_by %}order_by={{ request.GET.order_by }}&{% endif %}{% if request.GET.is_open_source %}is_open_source={{ request.GET.is_open_source }}&{% endif %}page={{ page_obj.next_page_number }}"
-                   class="px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-md border border-gray-300 hover:bg-gray-50">
-                    Next
-                </a>
-            {% endif %}
-        </div>
-        {% endif %}
+      <p class="bw-kicker">Project directory</p>
+      <h1 class="bw-heading-lg mt-3">Django projects worth studying</h1>
+      <p class="bw-lede mt-5">
+        Browse real products, side projects, open source apps, and businesses built with Django. Use them for inspiration, research, and proof that Django can ship.
+      </p>
     </div>
+    <a href="{% url 'submit_project' %}" class="bw-button bw-button-accent">Submit a project</a>
+  </div>
+</section>
+
+<section class="pb-16">
+  <div class="bw-container">
+    <div class="bw-toolbar bw-surface mb-6">
+      <div class="flex flex-col gap-3 md:flex-row md:items-center">
+        <div data-controller="dropdown" class="relative">
+          <button type="button"
+                  data-action="dropdown#toggle click@window->dropdown#hide"
+                  class="bw-button bw-button-secondary w-full md:w-auto"
+                  id="menu-button"
+                  aria-expanded="true"
+                  aria-haspopup="true">
+            <i class="las la-filter" aria-hidden="true"></i>
+            Filter
+          </button>
+          <div data-dropdown-target="menu"
+               data-transition-enter-active="transition ease-out duration-100"
+               data-transition-enter-from="transform opacity-0 scale-95"
+               data-transition-enter-to="transform opacity-100 scale-100"
+               data-transition-leave-active="transition ease-in duration-75"
+               data-transition-leave-from="transform opacity-100 scale-100"
+               data-transition-leave-to="transform opacity-0 scale-95"
+               class="bw-menu-panel hidden absolute left-0 z-20 mt-2 w-[min(22rem,calc(100vw-2rem))] p-4"
+               role="menu"
+               aria-orientation="vertical"
+               aria-labelledby="menu-button">
+            <form class="grid gap-4" action="" method="get">
+              <div>
+                <label class="block text-sm font-black text-[var(--bw-ink)]">Open source</label>
+                {% render_field filter.form.is_open_source class="mt-1 block w-full rounded-md border-[var(--bw-border)] bg-[var(--bw-surface)] text-sm focus:border-[var(--bw-primary)] focus:ring-[var(--bw-primary)]" %}
+              </div>
+              <div>
+                {% with order_by=request.GET.order_by|default:'updated_date' %}
+                  <label for="order_by" class="block text-sm font-black text-[var(--bw-ink)]">Sort by</label>
+                  <select id="order_by" name="order_by" class="mt-1 block w-full rounded-md border-[var(--bw-border)] bg-[var(--bw-surface)] text-sm focus:border-[var(--bw-primary)] focus:ring-[var(--bw-primary)]">
+                    <option value="updated_date" {% if order_by == 'updated_date' %}selected{% endif %}>Recently updated</option>
+                    <option value="like" {% if order_by == 'like' %}selected{% endif %}>Most liked</option>
+                  </select>
+                {% endwith %}
+              </div>
+              <button type="submit" data-action="dropdown#toggle" class="bw-button bw-button-primary">Apply filters</button>
+            </form>
+          </div>
+        </div>
+
+        <div data-controller="search"
+             data-search-url-value="/api/v1/search/projects/"
+             class="relative">
+          <label for="project-search" class="sr-only">Search projects</label>
+          <input id="project-search"
+                 type="text"
+                 data-search-target="input"
+                 data-action="input->search#onInput"
+                 placeholder="Search projects. Press / to focus."
+                 class="bw-search-input" />
+          <div data-search-target="results" class="bw-menu-panel hidden absolute left-0 z-20 mt-2 w-[min(28rem,calc(100vw-2rem))] overflow-hidden"></div>
+        </div>
+      </div>
+      <p class="text-sm bw-muted">Featured listings appear first. Search is fast when you already know the project or category.</p>
+    </div>
+
+    {% if page_obj %}
+      <div class="bw-project-grid">
+        {% for site in page_obj %}
+          {% include "components/project-card.html" with site=site %}
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="bw-surface p-8 text-center">
+        <h2 class="text-2xl font-black">No projects match those filters</h2>
+        <p class="mx-auto mt-3 max-w-md bw-muted">Try a broader search or submit a Django project that should be here.</p>
+        <a href="{% url 'submit_project' %}" class="bw-button bw-button-accent mt-6">Submit a project</a>
+      </div>
+    {% endif %}
+
+    {% if is_paginated %}
+      <nav class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row" aria-label="Project pagination">
+        {% if page_obj.has_previous %}
+          <a href="?{% if request.GET.order_by %}order_by={{ request.GET.order_by }}&{% endif %}{% if request.GET.is_open_source %}is_open_source={{ request.GET.is_open_source }}&{% endif %}page={{ page_obj.previous_page_number }}"
+             class="bw-button bw-button-secondary">
+            Previous
+          </a>
+        {% endif %}
+        <span class="rounded-md border border-[var(--bw-border)] bg-[var(--bw-surface)] px-4 py-3 text-sm font-bold bw-muted">
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+        {% if page_obj.has_next %}
+          <a href="?{% if request.GET.order_by %}order_by={{ request.GET.order_by }}&{% endif %}{% if request.GET.is_open_source %}is_open_source={{ request.GET.is_open_source }}&{% endif %}page={{ page_obj.next_page_number }}"
+             class="bw-button bw-button-secondary">
+            Next
+          </a>
+        {% endif %}
+      </nav>
+    {% endif %}
+  </div>
+</section>
 {% endblock content %}
+
 {% block schema %}
     <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Projects Built with Django",
-    "description": "Collection of cool projects people built with Django",
+    "description": "Discover real projects and apps built with Django.",
     "thumbnailUrl": "https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
     "url": "https://{{ request.get_host }}",
     "author": {

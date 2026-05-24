@@ -3,68 +3,67 @@
 {% load markdown_extras %}
 
 {% block meta %}
-    <title>Django Developers</title>
-    <meta name="description" content="Hire the best Django Developers this world has to offer!"/>
+    <title>Django Developers | Built with Django</title>
+    <meta name="description" content="Discover Django developers available for work."/>
     <link rel="canonical" href="https://{{ request.get_host }}/developers/" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:creator" content="@rasulkireev" />
     <meta name="twitter:site" content="@builtwithdjango" />
-    <meta name="twitter:title" content="Django Developers" />
-    <meta name="twitter:description" content="Hire the best Django Developers this world has to offer!"/>
+    <meta name="twitter:title" content="Django Developers | Built with Django" />
+    <meta name="twitter:description" content="Discover Django developers available for work."/>
     <meta name="twitter:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
-    <meta property="og:title" content="Django Jobs" />
+    <meta property="og:title" content="Django Developers | Built with Django" />
     <meta property="og:url" content="https://{{ request.get_host }}/developers/" />
-    <meta property="og:description" content="Hire the best Django Developers this world has to offer!"/>
+    <meta property="og:description" content="Discover Django developers available for work."/>
     <meta property="og:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
 {% endblock meta %}
 
 {% block content %}
-<div class="px-6 py-20 bg-white lg:px-8">
-  <div class="max-w-2xl mx-auto text-center">
-    <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">Django Developers</h1>
-    <p class="mt-6 text-lg leading-8 prose text-gray-600">Hire the best Django Developers this world has to offer.</p>
-    <p class="text-lg leading-8 prose text-gray-600">This page is influnced by <a href="https://masilotti.com">Joe Masilotti's</a> <a href="https://railsdevs.com">RailsDevs.</a></p>
+<section class="bw-page-hero">
+  <div class="bw-container grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
+    <div>
+      <p class="bw-kicker">Developer directory</p>
+      <h1 class="bw-heading-lg mt-3">Hire Django people</h1>
+      <p class="bw-lede mt-5">
+        A community directory for developers who know Django and teams looking for practical web builders.
+      </p>
+    </div>
+    <a href="{% url 'update-profile' %}" class="bw-button bw-button-accent">Create your profile</a>
   </div>
-  <div class="flex flex-wrap items-center justify-between mt-8 sm:flex-nowrap">
-      <div class="mx-auto">
-        <a type="button"
-            href="{% url 'update-profile' %}"
-            class="flex items-center justify-center w-full px-5 py-3 mt-3 text-base font-medium text-white bg-green-500 border border-transparent rounded-md shadow hover:bg-green-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-green-700 focus:ring-white sm:mt-0 sm:ml-3 sm:w-auto sm:flex-shrink-0">
-            Create Your Profile
-        </a>
-      </div>
-  </div>
-</div>
+</section>
 
-<div class="overflow-hidden bg-white border border-gray-300 rounded-md">
-  <ul role="list" class="divide-y divide-gray-300">
-    {% for developer in object_list %}
-    <li>
-      <a class="flex px-6 py-4 space-x-4 bg-white hover:bg-gray-50 sm:space-x-8" href="{% url 'developer' developer.id %}">
-        <div class="flex items-center justify-center shrink-0">{% include "components/profile-image.html" with user=developer.user size=40 %}</div>
-        <div class="self-start flex-1 min-w-0 space-y-3">
-          <div class="flex items-baseline">
-            <h2 class="text-xl font-medium text-gray-900 sm:text-xl line-clamp-2 break-word" title="{{ developer.title }}">{{ developer.title }}</h2>
-            <div class="flex-row-reverse items-center hidden ml-auto text-gray-400 sm:inline-flex shrink-0">
-                <div class="flex items-center space-x-2">
-                  {% include "components/developer-status.html" with developer=developer %}
-                </div>
-            </div>
-          </div>
-          <div class="flex flex-col items-start space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
-            {% comment %} Any special tags {% endcomment %}
-          </div>
-          <div class="flex items-center justify-between">
-            <div class="space-y-4 text-lg text-gray-700 sm:text-base">
-              <p class="break-words line-clamp-3">{{ developer.description | truncatechars:400 }}</p>
-            </div>
-          </div>
-        </div>
-      </a>
-    </li>
-    {% endfor %}
-  </ul>
-</div>
+<section class="pb-16">
+  <div class="bw-container">
+    <div class="overflow-hidden rounded-lg border border-[var(--bw-border)] bg-[var(--bw-surface)] shadow-sm">
+      <ul role="list" class="divide-y divide-[var(--bw-border)]">
+        {% for developer in object_list %}
+          <li>
+            <a class="grid gap-4 p-4 transition hover:bg-[var(--bw-primary-soft)] sm:grid-cols-[4rem_1fr_auto] sm:items-start sm:p-5" href="{% url 'developer' developer.id %}">
+              <span class="flex h-14 w-14 items-center justify-center overflow-hidden rounded-md border border-[var(--bw-border)] bg-[var(--bw-surface-raised)]">
+                {% include "components/profile-image.html" with user=developer.user size=40 %}
+              </span>
+              <span class="min-w-0">
+                <span class="flex flex-wrap items-center gap-3">
+                  <span class="text-xl font-black leading-tight text-[var(--bw-ink)]">{{ developer.title }}</span>
+                  <span class="hidden sm:inline-flex">{% include "components/developer-status.html" with developer=developer %}</span>
+                </span>
+                <span class="mt-2 block text-sm leading-6 bw-muted">{{ developer.description | truncatechars:300 }}</span>
+              </span>
+              <span class="hidden text-sm font-black text-[var(--bw-primary-dark)] sm:inline-flex">
+                View profile
+                <i class="las la-arrow-right ml-1" aria-hidden="true"></i>
+              </span>
+            </a>
+          </li>
+        {% empty %}
+          <li class="p-8 text-center">
+            <p class="text-lg font-bold bw-muted">No developer profiles are live yet.</p>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</section>
 {% endblock content %}
 
 {% block schema %}
@@ -74,8 +73,8 @@
     "@type": "WebSite",
     "name": "Django Developers",
     "about": "Reverse Job Board",
-    "description": "Hire the best Django Developers this world has to offer!",
-    "abstract": "Hire the best Django Developers this world has to offer!",
+    "description": "Discover Django developers available for work.",
+    "abstract": "Discover Django developers available for work.",
     "thumbnailUrl": "https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
     "url": "https://{{ request.get_host }}/developers/",
     "author": {

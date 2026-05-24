@@ -58,10 +58,16 @@ class JobDetailView(DetailView):
         description = job.title
 
         # Ensure the company_logo URL is absolute
-        if job.company_logo:
-            image_url = self.request.build_absolute_uri(job.company_logo.url)
-        else:
-            # Fallback to a default image if no company logo is available
+        company_logo_url = ""
+
+        try:
+            if job.company_logo:
+                company_logo_url = job.company_logo.url
+                image_url = self.request.build_absolute_uri(company_logo_url)
+            else:
+                # Fallback to a default image if no company logo is available
+                image_url = self.request.build_absolute_uri(static("vendors/images/logo.png"))
+        except ValueError:
             image_url = self.request.build_absolute_uri(static("vendors/images/logo.png"))
 
         og_image_url = (
@@ -75,6 +81,7 @@ class JobDetailView(DetailView):
             f"key=dQrmHqDSY5"
         )
         context["og_image"] = og_image_url
+        context["company_logo_url"] = company_logo_url
 
         return context
 

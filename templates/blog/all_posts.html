@@ -2,56 +2,44 @@
 {% load static %}
 {% load markdown_extras %}
 {% load cloudinary %}
+
 {% block meta %}
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:creator" content="@rasulkireev" />
     <meta name="twitter:site" content="@builtwithdjango" />
-    <title>Built with Django | Blog</title>
-    <meta name="description" content="Articles about Django"/>
+    <title>Django Guides | Built with Django</title>
+    <meta name="description" content="Practical Django guides for people building real products."/>
     <link rel="canonical" href="https://{{ request.get_host }}/blog/" />
-    <meta property="og:title" content="Built with Django | Blog" />
+    <meta property="og:title" content="Django Guides | Built with Django" />
     <meta property="og:url" content="https://{{ request.get_host }}/blog/" />
-    <meta property="og:description" content="Articles about Django"/>
-    <meta name="twitter:title" content="Built with Django | Blog" />
-    <meta name="twitter:description" content="Articles about Django"/>
+    <meta property="og:description" content="Practical Django guides for people building real products."/>
+    <meta name="twitter:title" content="Django Guides | Built with Django" />
+    <meta name="twitter:description" content="Practical Django guides for people building real products."/>
     <meta name="twitter:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
 {% endblock meta %}
 
 {% block content %}
+<section class="bw-page-hero">
+  <div class="bw-container">
+    <p class="bw-kicker">Django guides</p>
+    <h1 class="bw-heading-lg mt-3">Learn Django by building</h1>
+    <p class="bw-lede mt-5">Tutorials and notes for developers who want practical patterns, not abstract framework tours.</p>
+  </div>
+</section>
 
-    <div class="px-6 py-20 bg-white sm:py-24 lg:px-8">
-      <div class="mx-auto max-w-2xl text-center">
-        <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">Django Guides</h1>
-        <p class="mt-6 text-lg leading-8 text-gray-600 prose">Learn Django, Build Anything: Tutorials for Aspiring Web Developers.</p>
-      </div>
-    </div>
-
-    <div class="relative mx-auto max-w-6xl">
-        <div class="divide-y divide-gray-200">
-            <div class="grid grid-cols-1 gap-6 mb-10 md:grid-cols-2">
-                {% for guide in object_list %}
-                <div class="flex bg-white rounded-md border border-gray-100 shadow group">
-                    {% if guide.icon %}
-                    <div class="flex flex-shrink-0 items-center p-4 bg-gray-100 lg:p-4">
-                      <!-- Heroicon name: outline/globe-alt -->
-                      <img class="flex-shrink-0 mx-auto w-8 h-8 lg:h-16 lg:w-16"
-                          src="https://res.cloudinary.com/built-with-django/{{ guide.icon }}"
-                          alt="" />
-                    </div>
-                    {% endif %}
-                    <div class="flex flex-col flex-1 justify-between p-6 bg-white">
-                      <div class="flex-1">
-                        <a href="{% url 'post' guide.slug %}" class="block">
-                          <p class="text-xl font-semibold text-gray-900">{{ guide.title }}</p>
-                          <p class="mt-2 text-sm text-gray-500">{{ guide.description | truncatechars:300 | markdown | safe }}</p>
-                        </a>
-                      </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+<section class="pb-16">
+  <div class="bw-container">
+    <div class="grid gap-4 md:grid-cols-2">
+      {% for guide in object_list %}
+        {% include "components/post-card.html" with item=guide %}
+      {% empty %}
+        <div class="bw-surface p-8 text-center md:col-span-2">
+          <p class="text-lg font-bold bw-muted">No guides yet. Check back soon.</p>
         </div>
+      {% endfor %}
     </div>
+  </div>
+</section>
 {% endblock content %}
 
 {% block schema %}
@@ -61,8 +49,8 @@
     "@type": "WebSite",
     "name": "Built with Django | Blog",
     "about": "Blog",
-    "description": "Articles about Django",
-    "abstract": "Articles about Django",
+    "description": "Practical Django guides for people building real products.",
+    "abstract": "Practical Django guides for people building real products.",
     "thumbnailUrl": "https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
     "url": "https://{{ request.get_host }}/blog/",
     "author": {

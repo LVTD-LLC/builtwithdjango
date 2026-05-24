@@ -19,31 +19,48 @@
     <meta property="og:image" content="https://osig.app/g?style=base&site=facebook&font=markerfelt&title={{ object.title }}&subtitle={{ object.description }}&eyebrow=Article" />
 {% endblock meta %}
 
-{% block style %}
-<style>
-
-</style>
-{% endblock style %}
-
 {% block content %}
-    <p class="mt-4 text-blue-700">
-        ←
-        <a href="{% url 'blog' %}">back to all posts</a>
-    </p>
-
-    {# djlint:off #}
-    <div data-controller="exit-intent" data-action="mouseout@document->exit-intent#openModal">
-    {# djlint:on #}
-
-        <div class="p-10 mx-auto mt-10 max-w-4xl bg-white rounded-lg border border-gray-200 border-solid shadow">
-            <div class="prose md:prose-lg">
-                <h1>{{ object.title }}</h1>
-                <div class="blog-post">
-                    {{ object.content | markdown | safe }}
-                </div>
-            </div>
-          </div>
+<section class="bw-page-hero pb-8">
+  <div class="bw-container">
+    <a href="{% url 'blog' %}" class="inline-flex items-center gap-2 text-sm font-black text-[var(--bw-primary-dark)]">
+      <i class="las la-arrow-left" aria-hidden="true"></i>
+      All guides
+    </a>
+    <div class="mt-8 max-w-4xl">
+      <p class="bw-kicker">Django guide</p>
+      <h1 class="bw-heading-lg mt-3">{{ object.title }}</h1>
+      {% if object.description %}
+        <p class="bw-lede mt-5">{{ object.description }}</p>
+      {% endif %}
     </div>
+  </div>
+</section>
+
+{# djlint:off #}
+<div data-controller="exit-intent" data-action="mouseout@document->exit-intent#openModal">
+{# djlint:on #}
+  <section class="pb-16">
+    <div class="bw-container grid gap-8 lg:grid-cols-[minmax(0,48rem)_18rem] lg:items-start">
+      <article class="bw-surface p-5 sm:p-8">
+        <div class="bw-prose prose max-w-none md:prose-lg">
+          <div class="blog-post">
+            {{ object.content | markdown | safe }}
+          </div>
+        </div>
+      </article>
+      <aside class="hidden lg:block lg:sticky lg:top-24">
+        <div class="bw-surface p-5">
+          <h2 class="text-xl font-black">Keep learning Django</h2>
+          <p class="mt-2 text-sm leading-6 bw-muted">Browse more guides or study real projects from the community.</p>
+          <div class="mt-5 grid gap-2">
+            <a href="{% url 'blog' %}" class="bw-button bw-button-secondary">More guides</a>
+            <a href="{% url 'projects' %}" class="bw-button bw-button-primary">Project directory</a>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+</div>
 {% endblock content %}
 
 {% block schema %}

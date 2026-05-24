@@ -1,131 +1,121 @@
-<div id="ad-container-mobile" class="fixed bottom-0 left-0 z-50 w-full bg-white border shadow-lg transition-all duration-500 ease-in-out lg:hidden">
-  <div class="flex justify-between items-center p-2 mx-auto max-w-6xl">
-    <div class="flex items-center">
-      <div class="mx-4">
-        <a target="_blank" href='https://tuxseo.com/?ref=builtwithdjango.com&utm_source={{ request.get_host }}{{ request.path }}&utm_campaign=mobile-bottom-ad-{% now "F-Y" %}'>
-          <img
-            src="https://tuxseo.com/static/vendors/images/logo.png"
-            alt="TuxSEO"
-            class="object-contain mr-2 w-8 h-8"
-          />
-        </a>
-      </div>
-      <div>
-        <p class="text-sm font-bold text-blue-500">
-          <a target="_blank" href='https://tuxseo.com/?ref=builtwithdjango.com&utm_source={{ request.get_host }}{{ request.path }}&utm_campaign=mobile-bottom-ad-{% now "F-Y" %}'>
-            TuxSEO
-          </a>
-          <span class="text-sm text-gray-700">- Ad</span>
-        </p>
-        <p class="text-xs text-gray-600">AI-Powered Blog Content Generation.</p>
-      </div>
-    </div>
-    <button class="ml-2 text-gray-500 close-ad hover:text-gray-700">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-      </svg>
+<aside id="ad-container-mobile" class="fixed inset-x-0 bottom-0 z-50 hidden border-t border-[var(--bw-border)] bg-[var(--bw-surface)] shadow-lg lg:hidden">
+  <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
+    <a target="_blank"
+       rel="noopener"
+       href='https://tuxseo.com/?ref=builtwithdjango.com&utm_source={{ request.get_host }}{{ request.path }}&utm_campaign=mobile-bottom-ad-{% now "F-Y" %}'
+       class="flex min-w-0 items-center gap-3">
+      <img src="https://tuxseo.com/static/vendors/images/logo.png" alt="TuxSEO" class="h-10 w-10 rounded-md object-contain" />
+      <span class="min-w-0">
+        <span class="block text-sm font-black text-[var(--bw-ink)]">TuxSEO <span class="font-bold bw-muted">Ad</span></span>
+        <span class="block truncate text-xs bw-muted">AI-powered blog content generation.</span>
+      </span>
+    </a>
+    <button class="bw-icon-button close-ad shrink-0" type="button" aria-label="Close ad">
+      <i class="las la-times" aria-hidden="true"></i>
     </button>
   </div>
-</div>
+</aside>
 
-<div id="ad-container-desktop" class="hidden fixed right-4 bottom-4 z-50 w-64 bg-white rounded-lg border shadow-lg transition-all duration-500 ease-in-out lg:block">
-  <div class="flex flex-row items-center">
-    <div class="mx-2">
-      <a target="_blank" href='https://tuxseo.com/?ref=builtwithdjango.com&utm_source={{ request.get_host }}{{ request.path }}&utm_campaign=desktop-bottom-right-corner-ad-{% now "F-Y" %}'>
-        <img
-          src="https://tuxseo.com/static/vendors/images/logo.png"
-          alt="TuxSEO"
-          class="object-contain w-36 h-36"
-        />
-      </a>
-    </div>
-    <div class="mr-4">
-      <p class="mb-1 text-lg font-bold text-blue-500"><a target="_blank" href='https://tuxseo.com/?ref=builtwithdjango.com&utm_source={{ request.get_host }}{{ request.path }}&utm_campaign=desktop-bottom-right-corner-ad-{% now "F-Y" %}'>TuxSEO</a></p>
-      <p class="text-sm text-gray-600">AI-Powered Blog Content Generation.</p>
+<aside id="ad-container-desktop" class="fixed bottom-4 right-4 z-50 hidden w-72 rounded-lg border border-[var(--bw-border)] bg-[var(--bw-surface)] p-4 shadow-lg lg:block">
+  <p class="text-xs font-black uppercase tracking-wider bw-muted">Ad</p>
+  <div class="mt-2 flex gap-3">
+    <a target="_blank"
+       rel="noopener"
+       href='https://tuxseo.com/?ref=builtwithdjango.com&utm_source={{ request.get_host }}{{ request.path }}&utm_campaign=desktop-bottom-right-corner-ad-{% now "F-Y" %}'
+       class="shrink-0">
+      <img src="https://tuxseo.com/static/vendors/images/logo.png" alt="TuxSEO" class="h-14 w-14 rounded-md object-contain" />
+    </a>
+    <div class="min-w-0">
+      <a target="_blank"
+         rel="noopener"
+         href='https://tuxseo.com/?ref=builtwithdjango.com&utm_source={{ request.get_host }}{{ request.path }}&utm_campaign=desktop-bottom-right-corner-ad-{% now "F-Y" %}'
+         class="font-black text-[var(--bw-primary-dark)]">TuxSEO</a>
+      <p class="mt-1 text-sm leading-5 bw-muted">AI-powered blog content generation.</p>
     </div>
   </div>
-  <p class="absolute top-1 left-1 p-1 text-sm text-gray-500">Ad</p>
-  <button class="absolute top-1 right-1 text-gray-500 close-ad hover:text-gray-700">
-    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-    </svg>
+  <button class="bw-icon-button close-ad absolute right-2 top-2 h-8 min-h-0 w-8 min-w-0" type="button" aria-label="Close ad">
+    <i class="las la-times" aria-hidden="true"></i>
   </button>
-</div>
+</aside>
 
 <script>
-  document.addEventListener('DOMContentLoaded', (event) => {
+  document.addEventListener('DOMContentLoaded', () => {
     const adContainerMobile = document.getElementById('ad-container-mobile');
     const adContainerDesktop = document.getElementById('ad-container-desktop');
     const closeAdButtons = document.querySelectorAll('.close-ad');
+
+    if (!adContainerMobile || !adContainerDesktop) return;
 
     function hideAd() {
       if (window.innerWidth < 1024) {
         adContainerMobile.style.transform = 'translateY(100%)';
       } else {
-        adContainerDesktop.style.transform = 'scale(0.1) rotate(360deg)';
+        adContainerDesktop.style.transform = 'translateY(8px)';
         adContainerDesktop.style.opacity = '0';
       }
-      setTimeout(() => {
+
+      window.setTimeout(() => {
         adContainerMobile.style.display = 'none';
         adContainerDesktop.style.display = 'none';
-      }, 500);
+      }, 220);
 
-      // Set a cookie to remember the ad was closed
       const date = new Date();
-      date.setTime(date.getTime() + (24 * 60 * 60 * 1000)); // Set expiry to 24 hours
-      const expires = "expires=" + date.toUTCString();
-      document.cookie = "adClosed=true;" + expires + ";path=/";
+      date.setTime(date.getTime() + (24 * 60 * 60 * 1000));
+      document.cookie = `adClosed=true; expires=${date.toUTCString()}; path=/`;
+    }
+
+    function isPastIntro() {
+      return window.scrollY > Math.min(420, window.innerHeight * 0.6);
     }
 
     function showAd() {
       if (window.innerWidth < 1024) {
+        adContainerDesktop.style.display = 'none';
         adContainerMobile.style.display = 'block';
-        setTimeout(() => {
+        window.setTimeout(() => {
           adContainerMobile.style.transform = 'translateY(0)';
-        }, 100);
+        }, 80);
       } else {
+        adContainerMobile.style.display = 'none';
         adContainerDesktop.style.display = 'block';
-        setTimeout(() => {
-          adContainerDesktop.style.transform = 'scale(1) rotate(0deg)';
+        window.setTimeout(() => {
+          adContainerDesktop.style.transform = 'translateY(0)';
           adContainerDesktop.style.opacity = '1';
-        }, 100);
+        }, 80);
       }
     }
 
-    closeAdButtons.forEach(button => {
+    function maybeShowAd() {
+      if (!document.cookie.includes('adClosed=true') && isPastIntro()) {
+        showAd();
+      }
+    }
+
+    closeAdButtons.forEach((button) => {
       button.addEventListener('click', hideAd);
     });
 
-    // Check and show the ad when the page loads
-    if (document.cookie.indexOf("adClosed=true") === -1) {
-      showAd();
-    }
+    maybeShowAd();
 
-    // Adjust layout on window resize
+    window.addEventListener('scroll', maybeShowAd, { passive: true });
+
     window.addEventListener('resize', () => {
-      if (document.cookie.indexOf("adClosed=true") === -1) {
-        if (window.innerWidth < 1024) {
-          adContainerDesktop.style.display = 'none';
-          showAd();
-        } else {
-          adContainerMobile.style.display = 'none';
-          showAd();
-        }
+      if (!document.cookie.includes('adClosed=true') && isPastIntro()) {
+        showAd();
       }
     });
   });
 </script>
 
 <style>
-  #ad-container-mobile, #ad-container-desktop {
-    display: none;
-  }
   #ad-container-mobile {
     transform: translateY(100%);
-    transition: transform 0.5s ease-in-out;
+    transition: transform 220ms var(--bw-ease);
   }
+
   #ad-container-desktop {
-    transform-origin: bottom right;
-    transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 180ms var(--bw-ease), transform 220ms var(--bw-ease);
   }
 </style>

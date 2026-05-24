@@ -4,135 +4,108 @@
 {% load widget_tweaks %}
 
 {% block meta %}
-    <title>Built with Django</title>
-    <meta name="description" content="Collection of cool projects people built with Django" />
+    <title>Submit a Django Project | Built with Django</title>
+    <meta name="description" content="Submit a project to the Built with Django directory." />
     <link rel="canonical" href="https://{{ request.get_host }}/projects/new/" />
-    <meta property="og:title" content="Built with Django" />
+    <meta property="og:title" content="Submit a Django Project | Built with Django" />
     <meta property="og:url" content="https://{{ request.get_host }}/projects/new/" />
-    <meta property="og:description" content="Collection of cool projects people built with Django" />
+    <meta property="og:description" content="Submit a project to the Built with Django directory." />
     <meta property="og:image" content="{% static 'vendors/images/logo.png' %}" />
     <meta name="twitter:creator" content="@rasulkireev" />
-    <meta name="twitter:site" content="@rasulkireev" />
-    <meta name="twitter:title" content="Built with Django" />
-    <meta name="twitter:description" content="Collection of cool projects people built with Django" />
+    <meta name="twitter:site" content="@builtwithdjango" />
+    <meta name="twitter:title" content="Submit a Django Project | Built with Django" />
+    <meta name="twitter:description" content="Submit a project to the Built with Django directory." />
     <meta name="twitter:image" content="{% static 'vendors/images/logo.png' %}" />
 {% endblock meta %}
 
 {% block content %}
+<section class="bw-page-hero pb-10">
+  <div class="bw-container">
+    <p class="bw-kicker">Add to the showcase</p>
+    <h1 class="bw-heading-lg mt-3">Submit a Django project</h1>
+    <p class="bw-lede mt-5">Share what you built so other Django developers can learn from it, use it, and send useful attention back to the maker.</p>
+  </div>
+</section>
+
+<section class="pb-16">
+  <div class="bw-container">
     {% if user.is_authenticated %}
-    <div class="mx-auto my-10 max-w-5xl">
-      <div class="overflow-hidden px-6 pt-6 bg-white rounded-lg shadow">
-          <form method="post" enctype="multipart/form-data">
-              {% csrf_token %}
-              {{ form.non_field_errors }}
-              <div class="space-y-8 divide-y divide-gray-200 sm:space-y-5">
-                  <div class="mt-6 space-y-6 sm:mt-5 sm:space-y-5">
-                    <div>
-                      <h3 class="text-lg font-medium leading-6 text-gray-900">Required Information</h3>
-                    </div>
-                    <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                      {{ form.title.errors | safe }}
-                      <label for="title"
-                             class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-                          Title
-                      </label>
-                      <div class="mt-1 sm:mt-0 sm:col-span-2">
-                        {% render_field form.title class="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm" %}
-                      </div>
-                    </div>
-                    <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                      {{ form.url.errors | safe }}
-                      <label for="url"
-                            class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-                          URL
-                      </label>
-                      <div class="mt-1 sm:mt-0 sm:col-span-2">
-                        {% render_field form.url class="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm" placeholder="https://example.com" %}
-                      </div>
-                    </div>
-                    <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                        {{ form.short_description.errors | safe }}
-                        <label for="short_description"
-                                class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-                            Short Description
-                        </label>
-                        <div class="mt-1 sm:mt-0 sm:col-span-2">
-                          {% render_field form.short_description class="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm" %}
-                            <p class="mt-2 text-sm text-gray-500">
-                                Write a few sentences about project (Up to 200 characters).
-                            </p>
-                        </div>
-                    </div>
-                    <div class="pt-8 space-y-6 sm:pt-10 sm:space-y-5">
-                      <div>
-                        <h3 class="text-lg font-medium leading-6 text-gray-900">Optional Information</h3>
-                      </div>
-                      <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                          {{ form.twitter_url.errors | safe }}
-                          <label for="twitter_url"
-                                class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-                              Twitter URL
-                          </label>
-                          <div class="mt-1 sm:mt-0 sm:col-span-2">
-                            {% render_field form.twitter_url class="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm" placeholder="https://twitter.com/rasulkireev" %}
-                          </div>
-                      </div>
-                      <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                          {{ form.github_url.errors | safe }}
-                          <label for="github_url"
-                                class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-                              Github URL
-                          </label>
-                          <div class="mt-1 sm:mt-0 sm:col-span-2">
-                            {% render_field form.github_url class="block w-full max-w-lg rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm" placeholder="https://github.com/rasulkireev" %}
-                          </div>
-                      </div>
-                      <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                          {{ form.technology_suggestions_by_user.errors | safe }}
-                          <label for="technology_suggestions_by_user"
-                                class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
-                              Technologies Used
-                          </label>
-                          <div class="mt-1 sm:mt-0 sm:col-span-2">
-                              {% render_field form.technology_suggestions_by_user class="block w-full max-w-lg rounded-md border border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 sm:text-sm" rows=6 %}
-                              <p class="mt-2 text-sm text-gray-500">
-                                  Please enter any technologies your site uses (e.g. TailwindCSS, Vuejs, React, or
-                                  <b>
-                                  anything
-                                  </b>
-                                  else that comes to mind.
-                              </p>
-                          </div>
-                      </div>
-                    </div>
-                  </div>
-              </div>
-              <div class="pt-5">
-                  <div class="flex justify-end">
-                      <button type="submit"
-                              class="inline-flex justify-center px-4 py-2 ml-3 text-sm font-medium text-white bg-green-600 rounded-md border border-transparent shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                          Submit
-                      </button>
-                  </div>
-              </div>
-          </form>
-      </div>
-  </div>
-    {% else %}
+      <div class="grid gap-8 lg:grid-cols-[minmax(0,44rem)_1fr]">
+        <form method="post" enctype="multipart/form-data" class="bw-surface grid gap-8 p-5 sm:p-8">
+          {% csrf_token %}
+          {{ form.non_field_errors }}
 
-    <div class="flex justify-center items-center px-4 py-12 my-4 sm:px-6 lg:px-8">
-      <div class="space-y-8 w-full max-w-md">
           <div>
-              <p class="mt-6 text-3xl font-extrabold text-center text-gray-900">
-                  Before you can submit the project please
-                  <a class="font-semibold text-gray-800 underline" href="{% url 'account_signup' %}">create your account</a>
-                  <span class="mt-6 text-xl font-normal text-center text-gray-900">
-                    This helps to prevent spam
-                </span>
-              </p>
+            <h2 class="text-2xl font-black text-[var(--bw-ink)]">Required info</h2>
+            <p class="mt-2 text-sm leading-6 bw-muted">Keep it clear. A real screenshot will be generated after submission.</p>
           </div>
-      </div>
-  </div>
-  {% endif %}
 
+          <div class="grid gap-5">
+            <div>
+              {{ form.title.errors | safe }}
+              <label for="title" class="block text-sm font-black text-[var(--bw-ink)]">Project title</label>
+              {% render_field form.title class="mt-2 block w-full rounded-md border-[var(--bw-border)] bg-[var(--bw-surface)] text-base focus:border-[var(--bw-primary)] focus:ring-[var(--bw-primary)]" placeholder="My Django App" %}
+            </div>
+            <div>
+              {{ form.url.errors | safe }}
+              <label for="url" class="block text-sm font-black text-[var(--bw-ink)]">Project URL</label>
+              {% render_field form.url class="mt-2 block w-full rounded-md border-[var(--bw-border)] bg-[var(--bw-surface)] text-base focus:border-[var(--bw-primary)] focus:ring-[var(--bw-primary)]" placeholder="https://example.com" %}
+            </div>
+            <div>
+              {{ form.short_description.errors | safe }}
+              <label for="short_description" class="block text-sm font-black text-[var(--bw-ink)]">Short description</label>
+              {% render_field form.short_description class="mt-2 block w-full rounded-md border-[var(--bw-border)] bg-[var(--bw-surface)] text-base focus:border-[var(--bw-primary)] focus:ring-[var(--bw-primary)]" placeholder="What does it do, and who is it for?" %}
+              <p class="mt-2 text-sm bw-muted">A few useful sentences, up to 200 characters.</p>
+            </div>
+          </div>
+
+          <div class="border-t border-[var(--bw-border)] pt-8">
+            <h2 class="text-2xl font-black text-[var(--bw-ink)]">Optional signals</h2>
+            <p class="mt-2 text-sm leading-6 bw-muted">These help visitors understand the project faster.</p>
+          </div>
+
+          <div class="grid gap-5">
+            <div class="grid gap-5 sm:grid-cols-2">
+              <div>
+                {{ form.twitter_url.errors | safe }}
+                <label for="twitter_url" class="block text-sm font-black text-[var(--bw-ink)]">X/Twitter URL</label>
+                {% render_field form.twitter_url class="mt-2 block w-full rounded-md border-[var(--bw-border)] bg-[var(--bw-surface)] text-base focus:border-[var(--bw-primary)] focus:ring-[var(--bw-primary)]" placeholder="https://twitter.com/builtwithdjango" %}
+              </div>
+              <div>
+                {{ form.github_url.errors | safe }}
+                <label for="github_url" class="block text-sm font-black text-[var(--bw-ink)]">GitHub URL</label>
+                {% render_field form.github_url class="mt-2 block w-full rounded-md border-[var(--bw-border)] bg-[var(--bw-surface)] text-base focus:border-[var(--bw-primary)] focus:ring-[var(--bw-primary)]" placeholder="https://github.com/example/repo" %}
+              </div>
+            </div>
+            <div>
+              {{ form.technology_suggestions_by_user.errors | safe }}
+              <label for="technology_suggestions_by_user" class="block text-sm font-black text-[var(--bw-ink)]">Technologies used</label>
+              {% render_field form.technology_suggestions_by_user class="mt-2 block w-full rounded-md border-[var(--bw-border)] bg-[var(--bw-surface)] text-base focus:border-[var(--bw-primary)] focus:ring-[var(--bw-primary)]" rows=5 placeholder="Django, HTMX, Tailwind, Postgres..." %}
+            </div>
+          </div>
+
+          <button type="submit" class="bw-button bw-button-primary justify-self-start">Submit project</button>
+        </form>
+
+        <aside class="bw-surface self-start p-5">
+          <h2 class="text-xl font-black">What makes a strong listing?</h2>
+          <ul class="mt-4 grid gap-3 text-sm leading-6 bw-muted">
+            <li><strong class="text-[var(--bw-ink)]">A clear use case.</strong> Say who it helps and what problem it solves.</li>
+            <li><strong class="text-[var(--bw-ink)]">A live URL.</strong> Visitors need somewhere to go after the screenshot catches interest.</li>
+            <li><strong class="text-[var(--bw-ink)]">Useful context.</strong> Tech stack links make the project more educational.</li>
+          </ul>
+        </aside>
+      </div>
+    {% else %}
+      <div class="bw-surface mx-auto max-w-xl p-8 text-center">
+        <h2 class="text-3xl font-black text-[var(--bw-ink)]">Create an account first</h2>
+        <p class="mt-4 leading-7 bw-muted">Accounts help prevent spam and let you update your listing later.</p>
+        <div class="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+          <a class="bw-button bw-button-primary" href="{% url 'account_signup' %}">Create account</a>
+          <a class="bw-button bw-button-secondary" href="{% url 'account_login' %}">Sign in</a>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
 {% endblock content %}
