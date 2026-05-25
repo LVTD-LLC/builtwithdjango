@@ -40,7 +40,7 @@
 <div data-controller="exit-intent" data-action="mouseout@document->exit-intent#openModal">
 {# djlint:on #}
   <section class="pb-16">
-    <div class="bw-container grid gap-8 lg:grid-cols-[minmax(0,48rem)_18rem] lg:items-start">
+    <div class="bw-container max-w-4xl">
       <article class="bw-surface p-5 sm:p-8">
         <div class="bw-prose prose max-w-none md:prose-lg">
           <div class="blog-post">
@@ -48,16 +48,6 @@
           </div>
         </div>
       </article>
-      <aside class="hidden lg:block lg:sticky lg:top-24">
-        <div class="bw-surface p-5">
-          <h2 class="text-xl font-black">Keep learning Django</h2>
-          <p class="mt-2 text-sm leading-6 bw-muted">Browse more guides or study real projects from the community.</p>
-          <div class="mt-5 grid gap-2">
-            <a href="{% url 'blog' %}" class="bw-button bw-button-secondary">More guides</a>
-            <a href="{% url 'projects' %}" class="bw-button bw-button-primary">Project directory</a>
-          </div>
-        </div>
-      </aside>
     </div>
   </section>
 </div>

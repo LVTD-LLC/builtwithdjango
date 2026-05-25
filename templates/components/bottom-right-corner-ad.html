@@ -1,13 +1,15 @@
-<aside id="ad-container-mobile" class="fixed inset-x-0 bottom-0 z-50 hidden border-t border-[var(--bw-border)] bg-[var(--bw-surface)] shadow-lg lg:hidden">
+<aside id="ad-container-mobile" class="fixed inset-x-0 bottom-0 z-50 hidden border-t border-[var(--bw-border-strong)] bg-[oklch(96.5%_0.025_128)] shadow-lg lg:hidden">
   <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
     <a target="_blank"
        rel="noopener"
-       href='https://tuxseo.com/?ref=builtwithdjango.com&utm_source={{ request.get_host }}{{ request.path }}&utm_campaign=mobile-bottom-ad-{% now "F-Y" %}'
+       href='https://djass.dev/?ref=builtwithdjango.com&utm_source={{ request.get_host }}{{ request.path }}&utm_campaign=mobile-bottom-ad-{% now "F-Y" %}'
        class="flex min-w-0 items-center gap-3">
-      <img src="https://tuxseo.com/static/vendors/images/logo.png" alt="TuxSEO" class="h-10 w-10 rounded-md object-contain" />
+      <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md border border-[var(--bw-border)] bg-[oklch(99%_0.01_118)]">
+        <img src="https://djass.dev/static/vendors/images/logo.6e2255bebd12.svg" alt="Djass" class="h-7 w-7 object-contain" />
+      </span>
       <span class="min-w-0">
-        <span class="block text-sm font-black text-[var(--bw-ink)]">TuxSEO <span class="font-bold bw-muted">Ad</span></span>
-        <span class="block truncate text-xs bw-muted">AI-powered blog content generation.</span>
+        <span class="block text-sm font-black text-[var(--bw-ink)]">Djass <span class="font-bold bw-muted">Ad</span></span>
+        <span class="block truncate text-xs bw-muted">Generate production-ready Django SaaS repos.</span>
       </span>
     </a>
     <button class="bw-icon-button close-ad shrink-0" type="button" aria-label="Close ad">
@@ -16,21 +18,21 @@
   </div>
 </aside>
 
-<aside id="ad-container-desktop" class="fixed bottom-4 right-4 z-50 hidden w-72 rounded-lg border border-[var(--bw-border)] bg-[var(--bw-surface)] p-4 shadow-lg lg:block">
+<aside id="ad-container-desktop" class="fixed bottom-4 right-4 z-50 hidden w-80 rounded-lg border border-[var(--bw-border-strong)] bg-[oklch(96.5%_0.025_128)] p-4 shadow-lg lg:block">
   <p class="text-xs font-black uppercase tracking-wider bw-muted">Ad</p>
   <div class="mt-2 flex gap-3">
     <a target="_blank"
        rel="noopener"
-       href='https://tuxseo.com/?ref=builtwithdjango.com&utm_source={{ request.get_host }}{{ request.path }}&utm_campaign=desktop-bottom-right-corner-ad-{% now "F-Y" %}'
-       class="shrink-0">
-      <img src="https://tuxseo.com/static/vendors/images/logo.png" alt="TuxSEO" class="h-14 w-14 rounded-md object-contain" />
+       href='https://djass.dev/?ref=builtwithdjango.com&utm_source={{ request.get_host }}{{ request.path }}&utm_campaign=desktop-bottom-right-corner-ad-{% now "F-Y" %}'
+       class="flex h-14 w-14 shrink-0 items-center justify-center rounded-md border border-[var(--bw-border)] bg-[oklch(99%_0.01_118)]">
+      <img src="https://djass.dev/static/vendors/images/logo.6e2255bebd12.svg" alt="Djass" class="h-10 w-10 object-contain" />
     </a>
     <div class="min-w-0">
       <a target="_blank"
          rel="noopener"
-         href='https://tuxseo.com/?ref=builtwithdjango.com&utm_source={{ request.get_host }}{{ request.path }}&utm_campaign=desktop-bottom-right-corner-ad-{% now "F-Y" %}'
-         class="font-black text-[var(--bw-primary-dark)]">TuxSEO</a>
-      <p class="mt-1 text-sm leading-5 bw-muted">AI-powered blog content generation.</p>
+         href='https://djass.dev/?ref=builtwithdjango.com&utm_source={{ request.get_host }}{{ request.path }}&utm_campaign=desktop-bottom-right-corner-ad-{% now "F-Y" %}'
+         class="font-black text-[var(--bw-primary-dark)]">Djass</a>
+      <p class="mt-1 text-sm leading-5 bw-muted">Generate a production-ready Django SaaS starter repo.</p>
     </div>
   </div>
   <button class="bw-icon-button close-ad absolute right-2 top-2 h-8 min-h-0 w-8 min-w-0" type="button" aria-label="Close ad">

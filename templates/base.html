@@ -67,7 +67,6 @@
           <a href="{% url 'projects' %}" class="bw-nav-link">Projects</a>
           <a href="{% url 'blog' %}" class="bw-nav-link">Guides</a>
           <a href="{% url 'jobs' %}" class="bw-nav-link">Jobs</a>
-          <a href="{% url 'developers' %}" class="bw-nav-link">Developers</a>
           <div data-controller="dropdown" class="relative">
             <button type="button" data-action="dropdown#toggle click@window->dropdown#hide" class="bw-nav-link" aria-expanded="false">
               Resources
@@ -87,13 +86,6 @@
                   <span>
                     <span class="block font-bold">Podcast</span>
                     <span class="block text-sm bw-muted">Conversations with Django builders.</span>
-                  </span>
-                </a>
-                <a href="{% url 'makers' %}" class="bw-menu-item">
-                  <span class="bw-menu-icon"><i class="las la-users" aria-hidden="true"></i></span>
-                  <span>
-                    <span class="block font-bold">Makers</span>
-                    <span class="block text-sm bw-muted">People shipping with Django.</span>
                   </span>
                 </a>
                 <a href="{% url 'advertize' %}" class="bw-menu-item">
@@ -192,7 +184,6 @@
               <a href="{% url 'projects' %}" class="bw-mobile-link">Projects <i class="las la-arrow-right" aria-hidden="true"></i></a>
               <a href="{% url 'blog' %}" class="bw-mobile-link">Guides <i class="las la-arrow-right" aria-hidden="true"></i></a>
               <a href="{% url 'jobs' %}" class="bw-mobile-link">Jobs <i class="las la-arrow-right" aria-hidden="true"></i></a>
-              <a href="{% url 'developers' %}" class="bw-mobile-link">Developers <i class="las la-arrow-right" aria-hidden="true"></i></a>
             </div>
             <div>
               <p class="mb-2 text-xs font-black uppercase tracking-wider bw-muted">Tools and community</p>
@@ -229,7 +220,7 @@
             <span>Built with Django</span>
           </a>
           <p class="mt-4 max-w-md text-sm leading-6 text-[oklch(82%_0.03_126)]">
-            A community showcase for Django projects, guides, jobs, and the builders behind them.
+            A community showcase for Django projects, guides, jobs, and the ecosystem around them.
           </p>
           <p class="mt-6 text-xs text-[oklch(70%_0.025_126)]">
             &copy; 2026 <a href="https://lvtd.dev">LVTD, LLC</a>. Curated by <a href="https://rasulkireev.com">Rasul Kireev</a>.
@@ -241,7 +232,6 @@
             <a href="{% url 'projects' %}">Projects</a>
             <a href="{% url 'blog' %}">Guides</a>
             <a href="{% url 'jobs' %}">Jobs</a>
-            <a href="{% url 'developers' %}">Developers</a>
             <a href="{% url 'podcast_episodes' %}">Podcast</a>
           </div>
         </div>

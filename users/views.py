@@ -10,8 +10,6 @@ from django.views.generic import CreateView, TemplateView, UpdateView
 from djstripe import models, settings as djstripe_settings
 
 from builtwithdjango.utils import get_builtwithdjango_logger
-from developers.forms import UpdateDeveloperForm
-from developers.models import Developer
 from newsletter.views import NewsletterSignupForm
 
 from .forms import CustomUserUpdateForm
@@ -41,18 +39,7 @@ class ProfileUpdateForm(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
     def get_initial(self):
         initial = super().get_initial()
         user = self.request.user
-        developer, _ = Developer.objects.get_or_create(user=user)
         models.Customer.get_or_create(subscriber=user)
-        initial["looking_for_a_job"] = developer.looking_for_a_job
-        initial["title"] = developer.title
-        initial["description"] = developer.description
-        initial["status"] = developer.status
-        initial["role"] = developer.role
-        initial["location"] = developer.location
-        initial["timezone"] = developer.timezone
-        initial["salary_expectation"] = developer.salary_expectation
-        initial["salary_cadence"] = developer.salary_cadence
-        initial["custom_capacity_field"] = developer.capacity.split(",")
         return initial
 
     def get_context_data(self, **kwargs):
@@ -61,11 +48,8 @@ class ProfileUpdateForm(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         user = self.request.user
         emailaddress = EmailAddress.objects.get_for_user(user, user.email)
         email_verified = emailaddress.verified
-        developer, created = Developer.objects.get_or_create(user=user)
 
         context["email_verified"] = email_verified
-        context["current_developer"] = developer
-        context["developer_form"] = UpdateDeveloperForm(initial=self.get_initial())
 
         return context
 

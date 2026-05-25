@@ -6,7 +6,7 @@
 ## Projects
 
 {% for project in projects %}
-- [{{ project.title }}](https://builtwithdjango.com{{ project.get_absolute_url }}) - {% if project.maker %}by [{{ project.maker.first_name }} {{ project.maker.last_name }}](https://builtwithdjango.com{{ project.maker.get_absolute_url }}):{% endif %} {{ project.short_description }}
+- [{{ project.title }}](https://builtwithdjango.com{{ project.get_absolute_url }}) - {{ project.short_description }}
 {% endfor %}
 
 ---
