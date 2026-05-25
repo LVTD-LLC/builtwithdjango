@@ -359,12 +359,55 @@
   }
 
   .bw-hero-placeholder {
+    display: flex;
     min-height: 14rem;
+    flex-direction: column;
+    justify-content: space-between;
     border: 1px solid var(--bw-border);
     border-radius: var(--bw-radius);
     background: var(--bw-surface);
     padding: 1.15rem;
     box-shadow: var(--bw-shadow-sm);
+    color: var(--bw-ink);
+    text-decoration: none;
+    transition:
+      transform 180ms var(--bw-ease),
+      border-color 180ms var(--bw-ease),
+      box-shadow 180ms var(--bw-ease);
+  }
+
+  .bw-hero-placeholder__action {
+    display: inline-flex;
+    width: fit-content;
+    max-width: 100%;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 1rem;
+    border-radius: var(--bw-radius);
+    color: var(--bw-primary-dark);
+    font-size: 0.9rem;
+    font-weight: 850;
+    line-height: 1.2;
+  }
+
+  @media (hover: hover) {
+    .bw-hero-placeholder:hover {
+      border-color: var(--bw-primary);
+      box-shadow: var(--bw-shadow);
+      transform: translateY(-2px);
+    }
+
+    .bw-hero-placeholder:hover .bw-hero-placeholder__action {
+      color: var(--bw-ink);
+    }
+
+    .bw-hero-placeholder.sm\:translate-y-6:hover {
+      transform: translateY(1.25rem);
+    }
+
+    .bw-hero-placeholder.sm\:-translate-y-6:hover {
+      transform: translateY(-1.75rem);
+    }
   }
 
   .bw-proof-strip {

@@ -48,26 +48,50 @@
             </a>
           {% endfor %}
         {% else %}
-          <div class="bw-hero-placeholder sm:translate-y-6">
-            <span class="bw-menu-icon"><i class="las la-window-restore" aria-hidden="true"></i></span>
-            <p class="mt-5 text-xl font-black leading-tight text-[var(--bw-ink)]">Project gallery</p>
-            <p class="mt-2 text-sm leading-6 bw-muted">A living shelf of Django apps, tools, and experiments.</p>
-          </div>
-          <div class="bw-hero-placeholder">
-            <span class="bw-menu-icon"><i class="las la-book-reader" aria-hidden="true"></i></span>
-            <p class="mt-5 text-xl font-black leading-tight text-[var(--bw-ink)]">Practical guides</p>
-            <p class="mt-2 text-sm leading-6 bw-muted">Short paths from idea to working Django feature.</p>
-          </div>
-          <div class="bw-hero-placeholder">
-            <span class="bw-menu-icon"><i class="las la-users" aria-hidden="true"></i></span>
-            <p class="mt-5 text-xl font-black leading-tight text-[var(--bw-ink)]">Builder profiles</p>
-            <p class="mt-2 text-sm leading-6 bw-muted">People, makers, and teams shipping in public.</p>
-          </div>
-          <div class="bw-hero-placeholder sm:-translate-y-6">
-            <span class="bw-menu-icon"><i class="las la-bullhorn" aria-hidden="true"></i></span>
-            <p class="mt-5 text-xl font-black leading-tight text-[var(--bw-ink)]">Community signals</p>
-            <p class="mt-2 text-sm leading-6 bw-muted">Jobs, launches, sponsorships, and useful resources.</p>
-          </div>
+          <a href="{% url 'projects' %}" class="bw-hero-placeholder sm:translate-y-6">
+            <span>
+              <span class="bw-menu-icon"><i class="las la-window-restore" aria-hidden="true"></i></span>
+              <span class="mt-5 block text-xl font-black leading-tight text-[var(--bw-ink)]">Project gallery</span>
+              <span class="mt-2 block text-sm leading-6 bw-muted">A living shelf of Django apps, tools, and experiments.</span>
+            </span>
+            <span class="bw-hero-placeholder__action">
+              Browse projects
+              <i class="las la-arrow-right" aria-hidden="true"></i>
+            </span>
+          </a>
+          <a href="{% url 'blog' %}" class="bw-hero-placeholder">
+            <span>
+              <span class="bw-menu-icon"><i class="las la-book-reader" aria-hidden="true"></i></span>
+              <span class="mt-5 block text-xl font-black leading-tight text-[var(--bw-ink)]">Practical guides</span>
+              <span class="mt-2 block text-sm leading-6 bw-muted">Short paths from idea to working Django feature.</span>
+            </span>
+            <span class="bw-hero-placeholder__action">
+              Read guides
+              <i class="las la-arrow-right" aria-hidden="true"></i>
+            </span>
+          </a>
+          <a href="{% url 'developers' %}" class="bw-hero-placeholder">
+            <span>
+              <span class="bw-menu-icon"><i class="las la-users" aria-hidden="true"></i></span>
+              <span class="mt-5 block text-xl font-black leading-tight text-[var(--bw-ink)]">Builder profiles</span>
+              <span class="mt-2 block text-sm leading-6 bw-muted">People, makers, and teams shipping in public.</span>
+            </span>
+            <span class="bw-hero-placeholder__action">
+              Meet developers
+              <i class="las la-arrow-right" aria-hidden="true"></i>
+            </span>
+          </a>
+          <a href="{% url 'jobs' %}" class="bw-hero-placeholder sm:-translate-y-6">
+            <span>
+              <span class="bw-menu-icon"><i class="las la-bullhorn" aria-hidden="true"></i></span>
+              <span class="mt-5 block text-xl font-black leading-tight text-[var(--bw-ink)]">Community signals</span>
+              <span class="mt-2 block text-sm leading-6 bw-muted">Jobs, launches, sponsorships, and useful resources.</span>
+            </span>
+            <span class="bw-hero-placeholder__action">
+              Browse jobs
+              <i class="las la-arrow-right" aria-hidden="true"></i>
+            </span>
+          </a>
         {% endif %}
       </div>
     </div>
