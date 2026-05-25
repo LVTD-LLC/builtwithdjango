@@ -21,4 +21,4 @@ ENV DJANGO_SETTINGS_MODULE=builtwithdjango.settings
 
 EXPOSE 80
 
-CMD ["deployment/entrypoint.sh", "-w"]
+CMD ["sh", "deployment/entrypoint.sh"]

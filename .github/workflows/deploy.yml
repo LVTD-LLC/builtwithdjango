@@ -3,38 +3,72 @@ name: Deploy Prod
 on:
   push:
     branches:
-        - master
+      - master
+
+env:
+  CAPROVER_APP_NAME: bwd
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   build-and-deploy:
-    name: Deploy
+    name: Build and deploy
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
+      - name: Prepare image name
+        id: image
+        shell: bash
+        run: echo "image_name=ghcr.io/${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
-          password: ${{ secrets.REGISTRY_TOKEN }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           context: .
-          file: deployment/Dockerfile.server
+          file: deployment/Dockerfile
           push: true
-          tags: ghcr.io/${{ github.repository }}
+          tags: |
+            ${{ steps.image.outputs.image_name }}:latest
+            ${{ steps.image.outputs.image_name }}:${{ github.sha }}
 
-      - name: Deploy to CapRover
-        uses: caprover/deploy-from-github@main
+      - name: Install uv for deploy script
+        uses: astral-sh/setup-uv@v6
         with:
-            server: ${{ secrets.CAPROVER_SERVER }}
-            app: bwd
-            token: '${{ secrets.APP_TOKEN }}'
-            image: ghcr.io/${{ github.repository }}
+          version: "latest"
+
+      - name: Deploy server and workers to CapRover
+        shell: bash
+        env:
+          CAPROVER_SERVER: ${{ secrets.CAPROVER_SERVER }}
+          CAPROVER_PASSWORD: ${{ secrets.CAPROVER_PASSWORD }}
+          IMAGE_NAME: ${{ steps.image.outputs.image_name }}:${{ github.sha }}
+          WORKERS_APP_PROCESS_TYPE: ${{ vars.WORKERS_APP_PROCESS_TYPE }}
+        run: |
+          if [ "$WORKERS_APP_PROCESS_TYPE" != "worker" ]; then
+            echo "::error::Set the WORKERS_APP_PROCESS_TYPE repository variable to 'worker' after setting APP_PROCESS_TYPE=worker on the $CAPROVER_APP_NAME-workers CapRover app."
+            exit 1
+          fi
+          uv run --with caprover-api python - <<'PY'
+          import os
+          from caprover_api.caprover_api import CaproverAPI
+
+          cap = CaproverAPI(os.environ["CAPROVER_SERVER"], os.environ["CAPROVER_PASSWORD"])
+          image = os.environ["IMAGE_NAME"]
+          app = os.environ["CAPROVER_APP_NAME"]
+          cap.deploy_app(app, image_name=image)
+          cap.deploy_app(f"{app}-workers", image_name=image)
+          PY
