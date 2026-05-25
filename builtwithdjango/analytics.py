@@ -134,9 +134,16 @@ def capture_event(event, properties=None, distinct_id=None, groups=None):
     if not getattr(settings, "POSTHOG_ENABLED", False):
         return None
 
-    kwargs = {"properties": properties or {}}
-    if distinct_id:
-        kwargs["distinct_id"] = distinct_id
+    event_properties = properties or {}
+    resolved_distinct_id = distinct_id or get_event_distinct_id(event, event_properties)
+    if not resolved_distinct_id:
+        logger.warning("posthog_capture_without_distinct_id", event=event)
+        return None
+
+    kwargs = {
+        "properties": event_properties,
+        "distinct_id": resolved_distinct_id,
+    }
     if groups:
         kwargs["groups"] = groups
 
@@ -218,6 +225,24 @@ def get_request_distinct_id(request):
     if _user_is_authenticated(user):
         return str(user.pk)
 
+    return get_anonymous_distinct_id(request)
+
+
+def get_anonymous_distinct_id(request):
+    session = getattr(request, "session", None)
+    session_key = getattr(session, "session_key", None)
+    if session_key:
+        return f"anonymous_session:{stable_hash(session_key)}"
+
+    fingerprint_parts = [
+        get_client_ip(request),
+        request.META.get("HTTP_USER_AGENT", ""),
+        request.META.get("HTTP_ACCEPT_LANGUAGE", ""),
+    ]
+    fingerprint = "|".join(part or "" for part in fingerprint_parts)
+    if fingerprint.strip("|"):
+        return f"anonymous_request:{stable_hash(fingerprint)}"
+
     return None
 
 
@@ -227,6 +252,27 @@ def get_request_session_id(request):
         return header_value
 
     return _sanitize_identifier(get_post_value(request, "_posthog_session_id"))
+
+
+def get_event_distinct_id(event, properties):
+    fallback_keys = (
+        ("user_id", "user"),
+        ("job_id", "job"),
+        ("project_id", "project"),
+        ("stripe_customer_id", "stripe_customer"),
+        ("stripe_checkout_session_id", "stripe_checkout"),
+        ("stripe_event_id", "stripe_event"),
+    )
+
+    for key, prefix in fallback_keys:
+        value = properties.get(key)
+        if value:
+            return _sanitize_identifier(f"{prefix}:{value}")
+
+    if event:
+        return _sanitize_identifier(f"server:{stable_hash(event)}")
+
+    return None
 
 
 def get_client_ip(request):
