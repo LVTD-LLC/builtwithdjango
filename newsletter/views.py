@@ -13,6 +13,7 @@ from django.urls import reverse_lazy
 from django.views.generic import CreateView, TemplateView
 from django_q.tasks import async_task
 
+from builtwithdjango.analytics import capture, email_domain, stable_hash
 from jobs.models import Job
 from podcast.models import Episode
 from projects.models import Project
@@ -42,6 +43,15 @@ class NewsletterSignupView(SuccessMessageMixin, CreateView):
         self.object = form.save()
         ip_address = self.get_client_ip(self.request)
         async_task(add_email_to_buttondown, self.object.user_email, tag="newsletter", ip_address=ip_address)
+        capture(
+            self.request,
+            "newsletter subscribed",
+            properties={
+                "email_domain": email_domain(self.object.user_email),
+                "email_hash": stable_hash(self.object.user_email),
+                "subscription_source": self.request.POST.get("source", "site"),
+            },
+        )
 
         messages.success(self.request, "Thanks for subscribing!")
 
@@ -76,6 +86,16 @@ def getWeeklyTemplateView(request):
             render_to_string("newsletter/weekly-newsletter-template.md", context),
             "Built with Django <rasul@builtwithdjango.com>",
             ["Built with Django <rasul@builtwithdjango.com>"],
+        )
+        capture(
+            request,
+            "weekly newsletter preview requested",
+            properties={
+                "days": days,
+                "project_count": projects.count(),
+                "job_count": jobs.count(),
+                "podcast_episode_count": podcast_episodes.count(),
+            },
         )
         return redirect("home")
     return render(request, "newsletter/send-weekly-email.html", {"form": form})

@@ -1,7 +1,17 @@
 {% load static %}
 
-<article class="bw-card bw-project-card {% if site.sponsored %}bw-project-card--sponsored{% endif %}">
-  <a href="{% url 'project' site.slug %}" class="bw-project-card__media" aria-label="View {{ site.title }}">
+<article class="bw-card bw-project-card {% if site.sponsored %}bw-project-card--sponsored{% endif %}"
+         data-ph-capture-attribute-project-id="{{ site.id }}"
+         data-ph-capture-attribute-project-title="{{ site.title }}"
+         data-ph-capture-attribute-project-sponsored="{{ site.sponsored }}">
+  <a href="{% url 'project' site.slug %}"
+     class="bw-project-card__media"
+     aria-label="View {{ site.title }}"
+     data-analytics-event="project card clicked"
+     data-analytics-project-id="{{ site.id }}"
+     data-analytics-project-title="{{ site.title }}"
+     data-analytics-project-sponsored="{{ site.sponsored }}"
+     data-analytics-click-target="screenshot">
     {% if site.homepage_screenshot %}
       <img
         src="{% get_media_prefix %}{{ site.homepage_screenshot }}"
@@ -18,7 +28,13 @@
   <div class="bw-project-card__body">
     <div class="flex items-start justify-between gap-3">
       <h2 class="m-0">
-        <a href="{% url 'project' site.slug %}" class="bw-project-card__title">{{ site.title }}</a>
+        <a href="{% url 'project' site.slug %}"
+           class="bw-project-card__title"
+           data-analytics-event="project card clicked"
+           data-analytics-project-id="{{ site.id }}"
+           data-analytics-project-title="{{ site.title }}"
+           data-analytics-project-sponsored="{{ site.sponsored }}"
+           data-analytics-click-target="title">{{ site.title }}</a>
       </h2>
       {% if site.sponsored %}
         <span class="shrink-0 rounded-md bg-[var(--bw-accent)] px-2 py-1 text-xs font-black text-[var(--bw-ink)]">Featured</span>
@@ -32,7 +48,11 @@
          href='{{ site.url }}?ref={{ request.get_host }}&utm_source={{ request.get_host }}{{ request.path }}&utm_campaign=list-of-projects-{% now "F-Y" %}-{% if site.sponsored %}sponsored{% else %}unsponsored{% endif %}'
          target="_blank"
          rel="noopener"
-         aria-label="Visit {{ site.title }}">
+         aria-label="Visit {{ site.title }}"
+         data-analytics-event="project external site clicked"
+         data-analytics-project-id="{{ site.id }}"
+         data-analytics-project-title="{{ site.title }}"
+         data-analytics-project-sponsored="{{ site.sponsored }}">
         <i class="las la-external-link-alt" aria-hidden="true"></i>
       </a>
       {% if site.github_url %}
@@ -40,7 +60,10 @@
            href="{{ site.github_url }}?ref={{ request.get_host }}"
            target="_blank"
            rel="noopener"
-           aria-label="{{ site.title }} on GitHub">
+           aria-label="{{ site.title }} on GitHub"
+           data-analytics-event="project github clicked"
+           data-analytics-project-id="{{ site.id }}"
+           data-analytics-project-title="{{ site.title }}">
           <i class="lab la-github" aria-hidden="true"></i>
         </a>
       {% endif %}
@@ -49,7 +72,10 @@
            href="{{ site.twitter_url }}?ref={{ request.get_host }}"
            target="_blank"
            rel="noopener"
-           aria-label="{{ site.title }} on X">
+           aria-label="{{ site.title }} on X"
+           data-analytics-event="project x clicked"
+           data-analytics-project-id="{{ site.id }}"
+           data-analytics-project-title="{{ site.title }}">
           <i class="lab la-twitter" aria-hidden="true"></i>
         </a>
       {% endif %}

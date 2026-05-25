@@ -11,7 +11,12 @@
         </p>
       </div>
       <div class="self-center">
-        <form class="grid gap-3 sm:grid-cols-[1fr_auto]" action="{% url 'newsletter_home' %}" method="post" enctype="multipart/form-data">
+        <form class="grid gap-3 sm:grid-cols-[1fr_auto]"
+              action="{% url 'newsletter_home' %}"
+              method="post"
+              enctype="multipart/form-data"
+              data-analytics-event="newsletter form submitted"
+              data-analytics-source="newsletter component">
           {% csrf_token %}
           {{ newsletter_form.non_field_errors }}
           <label for="email-address" class="sr-only">Email address</label>

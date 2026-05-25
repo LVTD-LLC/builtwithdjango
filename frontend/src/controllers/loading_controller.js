@@ -4,6 +4,9 @@ export default class extends Controller {
     static targets = [ "button", "loader" ];
 
     load() {
+      if (window.bwdTrack) {
+        window.bwdTrack('loading button submitted');
+      }
       this.loaderTarget.classList.replace('hidden', 'block');
       this.buttonTarget.classList.replace('bg-green-500', 'bg-green-200');
       this.buttonTarget.classList.remove('hover:bg-green-300');

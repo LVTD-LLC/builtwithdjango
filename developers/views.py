@@ -6,6 +6,7 @@ from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, TemplateView, UpdateView
 from djstripe import models, settings as djstripe_settings
 
+from builtwithdjango.analytics import capture
 from builtwithdjango.utils import get_builtwithdjango_logger
 
 from .forms import UpdateDeveloperForm
@@ -58,6 +59,23 @@ class DeveloperUpdateView(UpdateView):
         logger.info(f"Form: {form}")
 
         self.object = form.save()
+        capture(
+            self.request,
+            "developer profile updated",
+            properties={
+                "developer_id": self.object.id,
+                "looking_for_a_job": self.object.looking_for_a_job,
+                "status": self.object.status,
+                "role": self.object.role,
+                "location": self.object.location,
+                "timezone": self.object.timezone,
+                "salary_expectation": self.object.salary_expectation,
+                "salary_cadence": self.object.salary_cadence,
+                "capacity": capacity_choices,
+                "has_description": bool(self.object.description),
+            },
+            groups={"developer": str(self.object.id)},
+        )
 
         return super(DeveloperUpdateView, self).form_valid(form)
 
@@ -65,6 +83,26 @@ class DeveloperUpdateView(UpdateView):
 class DeveloperDetailView(DetailView):
     model = Developer
     template_name = "developers/developer_detail.html"
+
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        capture(
+            request,
+            "developer viewed",
+            properties={
+                "developer_id": self.object.id,
+                "looking_for_a_job": self.object.looking_for_a_job,
+                "status": self.object.status,
+                "role": self.object.role,
+                "location": self.object.location,
+                "timezone": self.object.timezone,
+                "salary_expectation": self.object.salary_expectation,
+                "salary_cadence": self.object.salary_cadence,
+                "capacity": self.object.capacity.split(",") if self.object.capacity else [],
+            },
+            groups={"developer": str(self.object.id)},
+        )
+        return response
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -105,6 +143,17 @@ def create_checkout_session(request):
         metadata={f"user_id": user.id, "price_id": price_id},
     )
 
+    capture(
+        request,
+        "django developers checkout started",
+        properties={
+            "price_id": price_id,
+            "stripe_customer_id": customer.id,
+            "stripe_checkout_session_id": checkout_session.id,
+            "checkout_mode": "subscription",
+        },
+    )
+
     return redirect(checkout_session.url, code=303)
 
 
@@ -113,6 +162,14 @@ def create_customer_portal_session(request):
     session = stripe.billing_portal.Session.create(
         customer=customer.id,
         return_url=request.build_absolute_uri(reverse_lazy("update-profile")),
+    )
+    capture(
+        request,
+        "customer portal opened",
+        properties={
+            "stripe_customer_id": customer.id,
+            "stripe_portal_session_id": session.id,
+        },
     )
 
     return redirect(session.url)

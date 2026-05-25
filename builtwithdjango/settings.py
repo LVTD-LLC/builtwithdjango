@@ -19,12 +19,12 @@ import logfire
 import posthog
 import sentry_sdk
 import structlog
-from posthog.sentry.posthog_integration import PostHogIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 from structlog_sentry import SentryProcessor
 
+from builtwithdjango.analytics import posthog_before_send, posthog_extra_tags, posthog_request_filter
 from builtwithdjango.logging_utils import scrubbing_callback
 
 env = environ.Env(
@@ -119,6 +119,8 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "posthog.integrations.django.PosthogContextMiddleware",
+    "builtwithdjango.analytics.AnalyticsRequestMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "allauth.account.middleware.AccountMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -142,6 +144,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "users.context_processors.available_social_providers",
+                "builtwithdjango.analytics.posthog_template_context",
             ],
         },
     },
@@ -485,7 +488,6 @@ if SENTRY_DSN and ENVIRONMENT == "prod":
         profile_session_sample_rate=1,
         profile_lifecycle="trace",
         integrations=[
-            PostHogIntegration(),
             DjangoIntegration(
                 middleware_spans=True,
                 signals_spans=True,
@@ -499,12 +501,54 @@ if SENTRY_DSN and ENVIRONMENT == "prod":
         include_local_variables=True,
     )
 
-posthog.project_api_key = env("POSTHOG_API_KEY")
-posthog.host = "https://app.posthog.com"
-if DEBUG:
-    posthog.debug = True
+POSTHOG_API_KEY = env("POSTHOG_API_KEY", default="phc_Xvm3S1MGcMQXMHo2VJZabDhNJwmwbyhLedddpIU83Mo")
+POSTHOG_HOST = env("POSTHOG_HOST", default="https://us.i.posthog.com")
+POSTHOG_UI_HOST = env("POSTHOG_UI_HOST", default="https://us.posthog.com")
+POSTHOG_PERSONAL_API_KEY = env("POSTHOG_PERSONAL_API_KEY", default="")
+POSTHOG_ENABLED = env.bool("POSTHOG_ENABLED", default=bool(POSTHOG_API_KEY))
+POSTHOG_JS_DEFAULTS = "2026-01-30"
 
-POSTHOG_DJANGO = {"distinct_id": lambda request: request.user and request.user.distinct_id}
+posthog.api_key = POSTHOG_API_KEY
+posthog.project_api_key = POSTHOG_API_KEY
+posthog.host = POSTHOG_HOST
+posthog.personal_api_key = POSTHOG_PERSONAL_API_KEY or None
+posthog.debug = DEBUG
+posthog.disabled = not POSTHOG_ENABLED
+posthog.disable_geoip = False
+posthog.enable_exception_autocapture = True
+posthog.capture_exception_code_variables = True
+posthog.code_variables_mask_patterns = [
+    r"(?i)password",
+    r"(?i)secret",
+    r"(?i)passwd",
+    r"(?i)pwd",
+    r"(?i)api_key",
+    r"(?i)apikey",
+    r"(?i)auth",
+    r"(?i)credentials",
+    r"(?i)privatekey",
+    r"(?i)private_key",
+    r"(?i)token",
+    r"(?i)aws_access_key_id",
+    r"(?i)_pass",
+    r"(?i)sk_",
+    r"(?i)jwt",
+    r"(?i)dsn",
+    r"(?i)cookie",
+    r"(?i)session",
+    r"(?i)stripe",
+    r"(?i)card",
+]
+posthog.code_variables_ignore_patterns = [r"^__.*"]
+posthog.before_send = posthog_before_send
+posthog.super_properties = {
+    "app": "builtwithdjango",
+    "environment": ENVIRONMENT,
+}
+posthog.enable_keep_alive()
+POSTHOG_MW_EXTRA_TAGS = posthog_extra_tags
+POSTHOG_MW_REQUEST_FILTER = posthog_request_filter
+POSTHOG_MW_CAPTURE_EXCEPTIONS = POSTHOG_ENABLED
 
 if DEBUG:
     CACHES = {

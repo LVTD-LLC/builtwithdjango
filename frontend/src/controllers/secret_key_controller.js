@@ -28,10 +28,14 @@ export default class extends Controller {
         .then(data => {
             this.outputTarget.value = data.secret_key;
             this.resetCopyButton();  // Reset the copy button when new secret is generated
+            this.capture('django secret generated');
         })
         .catch(error => {
             console.error('Error:', error);
             this.outputTarget.value = 'An error occurred: ' + error.message;
+            this.capture('django secret generation failed', {
+                error: error.message
+            });
         });
     }
 
@@ -39,6 +43,7 @@ export default class extends Controller {
         navigator.clipboard.writeText(this.outputTarget.value);
         this.copyButtonTarget.classList.replace("bg-green-600", "bg-blue-600");
         this.copyButtonTarget.textContent = "Copied";
+        this.capture('django secret copied');
     }
 
     resetCopyButton() {
@@ -59,5 +64,11 @@ export default class extends Controller {
             }
         }
         return cookieValue;
+    }
+
+    capture(eventName, properties = {}) {
+        if (window.bwdTrack) {
+            window.bwdTrack(eventName, properties);
+        }
     }
 }

@@ -3,6 +3,11 @@
 
 <li>
   <a href="{{ job.get_absolute_url }}"
+     data-analytics-event="job card clicked"
+     data-analytics-job-id="{{ job.id }}"
+     data-analytics-job-title="{{ job.title }}"
+     data-analytics-job-company="{% if job.company.name %}{{ job.company.name }}{% else %}{{ job.company_name }}{% endif %}"
+     data-analytics-job-paid="{{ job.paid }}"
      class="grid gap-4 border-b border-[var(--bw-border)] bg-[var(--bw-surface)] p-4 transition hover:bg-[var(--bw-primary-soft)] sm:grid-cols-[4rem_1fr_auto] sm:items-center sm:p-5">
     <span class="flex h-14 w-14 items-center justify-center overflow-hidden rounded-md border border-[var(--bw-border)] bg-[var(--bw-surface-raised)] text-lg font-black text-[var(--bw-primary-dark)]">
       {% if job.company.logo %}

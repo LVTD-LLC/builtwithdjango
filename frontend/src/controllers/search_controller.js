@@ -26,6 +26,7 @@ export default class extends Controller {
         if (event.key === "/" && document.activeElement !== this.inputTarget) {
             event.preventDefault();
             this.inputTarget.focus();
+            this.capture("search keyboard shortcut used");
             return;
         }
 
@@ -88,6 +89,9 @@ export default class extends Controller {
             return;
         }
         this.selectedIndex = -1;
+        this.capture("project search typed", {
+            query_length: query.length
+        });
         this.debouncedSearch(query);
     }
 
@@ -104,8 +108,19 @@ export default class extends Controller {
             }
             const data = await response.json();
             this.showResults(data.slice(0, 3));
+            this.capture("project search results shown", {
+                query,
+                query_length: query.length,
+                result_count: data.length,
+                visible_result_count: Math.min(data.length, 3),
+                has_results: data.length > 0
+            });
         } catch (error) {
             console.error("Search error:", error);
+            this.capture("project search failed", {
+                query_length: query.length,
+                error: error.message
+            });
             this.hideResults();
         }
     }
@@ -123,6 +138,10 @@ export default class extends Controller {
 
         this.resultsTarget.innerHTML = results.map(result => `
             <a href="/projects/${result.slug}"
+               data-analytics-event="project search result clicked"
+               data-analytics-project-id="${result.id}"
+               data-analytics-project-title="${result.title}"
+               data-analytics-project-slug="${result.slug}"
                class="flex flex-col p-4 border-b border-gray-100 hover:bg-gray-50 last:border-b-0">
                 <div class="font-medium text-gray-900">${result.title}</div>
                 <div class="text-sm text-gray-500">${result.short_description}</div>
@@ -147,5 +166,11 @@ export default class extends Controller {
             clearTimeout(timeout);
             timeout = setTimeout(later, wait);
         };
+    }
+
+    capture(eventName, properties = {}) {
+        if (window.bwdTrack) {
+            window.bwdTrack(eventName, properties);
+        }
     }
 }

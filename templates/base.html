@@ -41,10 +41,182 @@
     {% block style %}
     {% endblock style %}
 
-    <script>
-      !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.async=!0,p.src=s.api_host+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="capture identify alias people.set people.set_once set_config register register_once unregister opt_out_capturing has_opted_out_capturing opt_in_capturing reset isFeatureEnabled onFeatureFlags getFeatureFlag getFeatureFlagPayload reloadFeatureFlags group updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures getActiveMatchingSurveys getSurveys onSessionId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
-      posthog.init('phc_Xvm3S1MGcMQXMHo2VJZabDhNJwmwbyhLedddpIU83Mo',{api_host:'https://app.posthog.com'})
-    </script>
+    {% if posthog_enabled and posthog_api_key %}
+      <script>
+        !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
+
+        function bwdRedactUrl(value) {
+          if (!value) return value;
+          try {
+            var url = new URL(value, window.location.origin);
+            ["token", "auth", "code", "email", "session", "key", "signature", "password"].forEach(function(part) {
+              Array.from(url.searchParams.keys()).forEach(function(key) {
+                if (key.toLowerCase().indexOf(part) !== -1) {
+                  url.searchParams.set(key, "[REDACTED]");
+                }
+              });
+            });
+            return url.toString();
+          } catch (error) {
+            return "[REDACTED_URL]";
+          }
+        }
+
+        posthog.init('{{ posthog_api_key|escapejs }}', {
+          api_host: '{{ posthog_api_host|escapejs }}',
+          ui_host: '{{ posthog_ui_host|escapejs }}',
+          defaults: '{{ posthog_js_defaults|escapejs }}',
+          autocapture: {
+            dom_event_allowlist: ["click", "change", "submit", "input"],
+            element_allowlist: ["a", "button", "form", "input", "select", "textarea", "label", "summary"],
+            element_attribute_ignorelist: ["value", "placeholder", "aria-label", "data-sensitive"],
+            capture_copied_text: false
+          },
+          capture_pageview: "history_change",
+          capture_pageleave: true,
+          capture_dead_clicks: true,
+          capture_exceptions: {
+            capture_unhandled_errors: true,
+            capture_unhandled_rejections: true,
+            capture_console_errors: false
+          },
+          disable_session_recording: false,
+          enable_heatmaps: true,
+          person_profiles: "always",
+          addTracingHeaders: [window.location.host],
+          property_denylist: [
+            "password",
+            "password1",
+            "password2",
+            "csrfmiddlewaretoken",
+            "token",
+            "secret",
+            "api_key"
+          ],
+          session_recording: {
+            maskAllInputs: true,
+            maskTextSelector: ".ph-no-capture, [data-sensitive], [data-private]",
+            maskCapturedNetworkRequestFn: function(request) {
+              if (request.name) {
+                request.name = bwdRedactUrl(request.name);
+              }
+              if (request.requestBody) {
+                request.requestBody = undefined;
+              }
+              if (request.responseBody) {
+                request.responseBody = undefined;
+              }
+              return request;
+            }
+          },
+          before_send: function(event) {
+            if (event && event.properties) {
+              if (event.properties.$current_url) {
+                event.properties.$current_url = bwdRedactUrl(event.properties.$current_url);
+              }
+              if (event.properties.$referrer) {
+                event.properties.$referrer = bwdRedactUrl(event.properties.$referrer);
+              }
+            }
+            return event;
+          }
+        });
+
+        posthog.register({
+          app: "builtwithdjango",
+          environment: "{{ posthog_environment|escapejs }}"
+        });
+
+        {% if user.is_authenticated %}
+          posthog.identify("{{ user.pk|escapejs }}", {
+            email: "{{ user.email|escapejs }}",
+            username: "{{ user.username|escapejs }}",
+            subscription_level: "{{ user.subscription_level|escapejs }}",
+            has_active_django_devs_subscription: {{ user.has_active_django_devs_subscription|yesno:"true,false" }},
+            is_staff: {{ user.is_staff|yesno:"true,false" }},
+            is_superuser: {{ user.is_superuser|yesno:"true,false" }}
+          });
+        {% endif %}
+
+        window.bwdTrack = function(eventName, properties) {
+          if (!window.posthog || !eventName) return;
+          posthog.capture(eventName, Object.assign({
+            app: "builtwithdjango",
+            path: window.location.pathname,
+            page_title: document.title
+          }, properties || {}));
+        };
+
+        function bwdAddHiddenField(form, name, value) {
+          var formMethod = (form.getAttribute("method") || "get").toLowerCase();
+          if (!value || !form || formMethod === "get") return;
+          var input = form.querySelector('input[name="' + name + '"]');
+          if (!input) {
+            input = document.createElement("input");
+            input.type = "hidden";
+            input.name = name;
+            form.appendChild(input);
+          }
+          input.value = value;
+        }
+
+        function bwdDatasetProperties(element) {
+          var properties = {};
+          if (!element || !element.dataset) return properties;
+          Object.keys(element.dataset).forEach(function(key) {
+            if (key === "analyticsEvent") return;
+            if (key.indexOf("analytics") === 0) {
+              var propertyName = key.replace(/^analytics/, "");
+              propertyName = propertyName.charAt(0).toLowerCase() + propertyName.slice(1);
+              properties[propertyName] = element.dataset[key];
+            }
+          });
+          return properties;
+        }
+
+        document.addEventListener("submit", function(event) {
+          var form = event.target;
+          if (!form || form.tagName !== "FORM") return;
+          bwdAddHiddenField(form, "_posthog_distinct_id", posthog.get_distinct_id && posthog.get_distinct_id());
+          bwdAddHiddenField(form, "_posthog_session_id", posthog.get_session_id && posthog.get_session_id());
+          window.bwdTrack("form submitted", Object.assign({
+            form_id: form.id || "",
+            form_name: form.getAttribute("name") || "",
+            form_action: bwdRedactUrl(form.action || window.location.href),
+            form_method: (form.getAttribute("method") || "get").toUpperCase()
+          }, bwdDatasetProperties(form)));
+        }, true);
+
+        document.addEventListener("click", function(event) {
+          if (!event.target || !event.target.closest) return;
+
+          var analyticsElement = event.target.closest("[data-analytics-event]");
+          if (analyticsElement) {
+            window.bwdTrack(
+              analyticsElement.dataset.analyticsEvent,
+              bwdDatasetProperties(analyticsElement)
+            );
+          }
+
+          var link = event.target.closest("a[href]");
+          if (!link) return;
+
+          var destination;
+          try {
+            destination = new URL(link.href, window.location.origin);
+          } catch (error) {
+            return;
+          }
+          if (destination.host !== window.location.host) {
+            window.bwdTrack("outbound link clicked", {
+              link_url: bwdRedactUrl(destination.toString()),
+              link_host: destination.host,
+              link_text: (link.textContent || "").trim().slice(0, 120)
+            });
+          }
+        });
+      </script>
+    {% endif %}
   </head>
 
   <body class="antialiased">
@@ -64,9 +236,9 @@
         </a>
 
         <div class="hidden items-center gap-1 lg:flex">
-          <a href="{% url 'projects' %}" class="bw-nav-link">Projects</a>
-          <a href="{% url 'blog' %}" class="bw-nav-link">Guides</a>
-          <a href="{% url 'jobs' %}" class="bw-nav-link">Jobs</a>
+          <a href="{% url 'projects' %}" class="bw-nav-link" data-analytics-event="nav clicked" data-analytics-nav-item="projects">Projects</a>
+          <a href="{% url 'blog' %}" class="bw-nav-link" data-analytics-event="nav clicked" data-analytics-nav-item="guides">Guides</a>
+          <a href="{% url 'jobs' %}" class="bw-nav-link" data-analytics-event="nav clicked" data-analytics-nav-item="jobs">Jobs</a>
           <div data-controller="dropdown" class="relative">
             <button type="button" data-action="dropdown#toggle click@window->dropdown#hide" class="bw-nav-link" aria-expanded="false">
               Resources
@@ -132,7 +304,11 @@
         </div>
 
         <div class="hidden items-center gap-2 md:flex">
-          <a href="{% url 'submit_project' %}" class="bw-button bw-button-accent">Submit project</a>
+          <a href="{% url 'submit_project' %}"
+             class="bw-button bw-button-accent"
+             data-analytics-event="cta clicked"
+             data-analytics-cta="submit project"
+             data-analytics-location="header">Submit project</a>
           {% if user.is_authenticated %}
             <div data-controller="dropdown" class="relative">
               <button type="button"
@@ -161,7 +337,11 @@
               </div>
             </div>
           {% else %}
-            <a href="{% url 'account_login' %}" class="bw-button bw-button-secondary">Sign in</a>
+            <a href="{% url 'account_login' %}"
+               class="bw-button bw-button-secondary"
+               data-analytics-event="cta clicked"
+               data-analytics-cta="sign in"
+               data-analytics-location="header">Sign in</a>
           {% endif %}
         </div>
 
@@ -193,14 +373,26 @@
               <a href="{% url 'advertize' %}" class="bw-mobile-link">Advertise <i class="las la-arrow-right" aria-hidden="true"></i></a>
             </div>
             <div class="grid grid-cols-1 gap-2 pb-2 sm:grid-cols-2">
-              <a href="{% url 'submit_project' %}" class="bw-button bw-button-accent">Submit project</a>
+              <a href="{% url 'submit_project' %}"
+                 class="bw-button bw-button-accent"
+                 data-analytics-event="cta clicked"
+                 data-analytics-cta="submit project"
+                 data-analytics-location="mobile menu">Submit project</a>
               {% if user.is_authenticated %}
-                <a href="{% url 'update-profile' %}" class="bw-button bw-button-secondary">Your profile</a>
+                <a href="{% url 'update-profile' %}"
+                   class="bw-button bw-button-secondary"
+                   data-analytics-event="cta clicked"
+                   data-analytics-cta="your profile"
+                   data-analytics-location="mobile menu">Your profile</a>
                 {% if user.is_superuser %}
                   <a href="{% url 'admin-panel' %}" class="bw-button bw-button-secondary">Admin panel</a>
                 {% endif %}
               {% else %}
-                <a href="{% url 'account_login' %}" class="bw-button bw-button-secondary">Sign in</a>
+                <a href="{% url 'account_login' %}"
+                   class="bw-button bw-button-secondary"
+                   data-analytics-event="cta clicked"
+                   data-analytics-cta="sign in"
+                   data-analytics-location="mobile menu">Sign in</a>
               {% endif %}
             </div>
           </div>

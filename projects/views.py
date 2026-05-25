@@ -7,6 +7,7 @@ from django.views.generic import CreateView, DetailView, ListView, UpdateView
 from django_filters.views import FilterView
 from django_q.tasks import async_task
 
+from builtwithdjango.analytics import capture
 from newsletter.forms import NewsletterSignupForm
 
 from .filters import ProjectFilter
@@ -64,6 +65,27 @@ class ProjectDetailView(DetailView):
     model = Project
     template_name = "projects/project_detail.html"
 
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        capture(
+            request,
+            "project viewed",
+            properties={
+                "project_id": self.object.id,
+                "project_title": self.object.title,
+                "project_slug": self.object.slug,
+                "project_type": self.object.type,
+                "project_sponsored": self.object.sponsored,
+                "project_large_company": self.object.large_company,
+                "project_is_open_source": self.object.is_open_source,
+                "project_is_for_sale": self.object.is_for_sale,
+                "project_has_github_url": bool(self.object.github_url),
+                "project_has_twitter_url": bool(self.object.twitter_url),
+            },
+            groups={"project": str(self.object.id)},
+        )
+        return response
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["newsletter_form"] = NewsletterSignupForm
@@ -99,6 +121,19 @@ class ProjectCreateView(SuccessMessageMixin, CreateView):
         async_task(save_screenshot, self.object.title, hook=screenshot_saved)
         async_task(notify_of_new_project, self.object)
         async_task(fetch_page_content, self.object.id)
+        capture(
+            self.request,
+            "project submitted",
+            properties={
+                "project_id": self.object.id,
+                "project_title": self.object.title,
+                "project_slug": self.object.slug,
+                "has_github_url": bool(self.object.github_url),
+                "has_twitter_url": bool(self.object.twitter_url),
+                "has_technology_suggestions": bool(self.object.technology_suggestions_by_user),
+            },
+            groups={"project": str(self.object.id)},
+        )
 
         return super(ProjectCreateView, self).form_valid(form)
 
@@ -112,3 +147,22 @@ class ProjectUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_success_url(self):
         return reverse("project", kwargs={"slug": self.object.slug})
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        capture(
+            self.request,
+            "project updated",
+            properties={
+                "project_id": self.object.id,
+                "project_title": self.object.title,
+                "project_slug": self.object.slug,
+                "project_is_for_sale": self.object.is_for_sale,
+                "has_sale_link": bool(self.object.sale_link),
+                "has_github_url": bool(self.object.github_url),
+                "has_twitter_url": bool(self.object.twitter_url),
+                "has_description": bool(self.object.description),
+            },
+            groups={"project": str(self.object.id)},
+        )
+        return response

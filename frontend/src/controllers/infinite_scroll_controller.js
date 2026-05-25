@@ -43,9 +43,21 @@ export default class extends Controller {
             // Insert pagination from new page. Since next time we want to use next which points to page 3
             var pagination = doc.getElementById("pagination").innerHTML;
             pageLinks.innerHTML = pagination;
+            if (window.bwdTrack) {
+                window.bwdTrack('infinite scroll loaded', {
+                    url,
+                    entry_count: entries.length
+                });
+            }
         })
         .catch((error) => {
             console.error('Error:', error);
+            if (window.bwdTrack) {
+                window.bwdTrack('infinite scroll failed', {
+                    url,
+                    error: error.message
+                });
+            }
         });
     }
 }
