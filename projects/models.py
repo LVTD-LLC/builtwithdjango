@@ -198,8 +198,7 @@ class Project(models.Model):
                 result_type=ContentAnalysis,
             )
 
-            result = agent.run_sync(
-                f"""
+            result = agent.run_sync(f"""
                 Please analyze this project comprehensively.
 
                 Project Title: {project_content.title}
@@ -212,8 +211,7 @@ class Project(models.Model):
                 {project_content.html_content}
 
                 Provide a detailed analysis covering all requested aspects.
-                """
-            )
+                """)
 
             logger.info(f"Successfully analyzed content for project: {self.title}")
 
