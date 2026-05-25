@@ -28,7 +28,7 @@ class GenerateDjangoSecret(TemplateView):
 @require_POST
 def generate_django_secret(request):
     secret_key = get_random_secret_key()
-    capture(request, "django secret generated")
+    capture(request, "django secret generated server")
     return JsonResponse({"secret_key": secret_key})
 
 
@@ -48,7 +48,7 @@ def format_html_endpoint(request):
 
     if not html_string:
         logger.warning("[Format HTML] No HTML String provided")
-        capture(request, "html formatter failed", properties={"reason": "empty_html"})
+        capture(request, "html formatter failed server", properties={"reason": "empty_html"})
         return JsonResponse({"error": "No HTML string provided"}, status=400)
 
     try:
@@ -68,7 +68,7 @@ def format_html_endpoint(request):
 
         capture(
             request,
-            "html formatted",
+            "html formatted server",
             properties={
                 "input_length": len(html_string),
                 "output_length": len(formatted_html),
@@ -80,7 +80,7 @@ def format_html_endpoint(request):
         logger.error("[Format HTML] Subprocess Error", error=str(e))
         capture(
             request,
-            "html formatter failed",
+            "html formatter failed server",
             properties={
                 "reason": "djlint_error",
                 "input_length": len(html_string),
@@ -92,7 +92,7 @@ def format_html_endpoint(request):
         logger.error("[Format HTML] Error", error=str(e))
         capture(
             request,
-            "html formatter failed",
+            "html formatter failed server",
             properties={
                 "reason": "unexpected_error",
                 "input_length": len(html_string),

@@ -127,28 +127,37 @@ export default class extends Controller {
 
     showResults(results) {
         if (!results.length) {
-            this.resultsTarget.innerHTML = `
-                <div class="p-4 text-sm text-gray-500">
-                    No projects found
-                </div>
-            `;
+            const emptyState = document.createElement("div");
+            emptyState.className = "p-4 text-sm text-gray-500";
+            emptyState.textContent = "No projects found";
+            this.resultsTarget.replaceChildren(emptyState);
             this.resultsTarget.classList.remove("hidden");
             return;
         }
 
-        this.resultsTarget.innerHTML = results.map(result => `
-            <a href="/projects/${result.slug}"
-               data-analytics-event="project search result clicked"
-               data-analytics-project-id="${result.id}"
-               data-analytics-project-title="${result.title}"
-               data-analytics-project-slug="${result.slug}"
-               class="flex flex-col p-4 border-b border-gray-100 hover:bg-gray-50 last:border-b-0">
-                <div class="font-medium text-gray-900">${result.title}</div>
-                <div class="text-sm text-gray-500">${result.short_description}</div>
-            </a>
-        `).join("");
-
+        this.resultsTarget.replaceChildren(...results.map(result => this.buildResultLink(result)));
         this.resultsTarget.classList.remove("hidden");
+    }
+
+    buildResultLink(result) {
+        const link = document.createElement("a");
+        link.href = `/projects/${encodeURIComponent(result.slug || "")}`;
+        link.dataset.analyticsEvent = "project search result clicked";
+        link.dataset.analyticsProjectId = String(result.id || "");
+        link.dataset.analyticsProjectTitle = result.title || "";
+        link.dataset.analyticsProjectSlug = result.slug || "";
+        link.className = "flex flex-col p-4 border-b border-gray-100 hover:bg-gray-50 last:border-b-0";
+
+        const title = document.createElement("div");
+        title.className = "font-medium text-gray-900";
+        title.textContent = result.title || "";
+
+        const description = document.createElement("div");
+        description.className = "text-sm text-gray-500";
+        description.textContent = result.short_description || "";
+
+        link.append(title, description);
+        return link;
     }
 
     hideResults() {

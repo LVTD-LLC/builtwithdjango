@@ -213,17 +213,17 @@ def get_user_properties(user):
 
 
 def get_request_distinct_id(request):
-    header_value = _sanitize_identifier(request.headers.get("X-POSTHOG-DISTINCT-ID"))
-    if header_value:
-        return header_value
+    user = getattr(request, "user", None)
+    if _user_is_authenticated(user):
+        return str(user.pk)
 
     post_value = _sanitize_identifier(get_post_value(request, "_posthog_distinct_id"))
     if post_value:
         return post_value
 
-    user = getattr(request, "user", None)
-    if _user_is_authenticated(user):
-        return str(user.pk)
+    header_value = _sanitize_identifier(request.headers.get("X-POSTHOG-DISTINCT-ID"))
+    if header_value:
+        return header_value
 
     return get_anonymous_distinct_id(request)
 
