@@ -109,15 +109,21 @@
 
 <style>
   #ad-container-mobile {
-    background: var(--bw-surface);
+    background: oklch(98.8% 0.012 112) !important;
+    background-color: oklch(98.8% 0.012 112) !important;
+    opacity: 1 !important;
     transform: translateY(100%);
     transition: transform 220ms var(--bw-ease);
   }
 
   #ad-container-desktop {
     isolation: isolate;
-    background: var(--bw-surface);
-    box-shadow: 0 24px 60px oklch(16% 0.04 151 / 0.22), 0 1px 0 oklch(100% 0.01 118 / 0.75) inset;
+    background: oklch(98.8% 0.012 112) !important;
+    background-color: oklch(98.8% 0.012 112) !important;
+    background-clip: padding-box;
+    opacity: 1 !important;
+    backdrop-filter: none;
+    box-shadow: 0 24px 60px oklch(16% 0.04 151 / 0.26), 0 1px 0 oklch(100% 0.01 118) inset;
     transform: translateY(8px);
     transition: transform 220ms var(--bw-ease);
   }
