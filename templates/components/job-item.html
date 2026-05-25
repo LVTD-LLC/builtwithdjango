@@ -55,10 +55,12 @@
             {{ job.min_yearly_salary | intcomma }}{% if job.max_yearly_salary %} - {{ job.max_yearly_salary | intcomma }}{% endif %}
           </span>
         {% endif %}
-        <span class="inline-flex items-center gap-1.5">
-          <i class="las la-clock" aria-hidden="true"></i>
-          {{ job.submitted_datetime|timesince }} ago
-        </span>
+        {% if job.submitted_datetime %}
+          <span class="inline-flex items-center gap-1.5">
+            <i class="las la-clock" aria-hidden="true"></i>
+            {{ job.submitted_datetime|timesince }} ago
+          </span>
+        {% endif %}
       </span>
     </span>
 
