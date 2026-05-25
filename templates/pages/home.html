@@ -24,6 +24,10 @@
     </div>
 
     <div class="bw-hero-showcase">
+      <div class="bw-hero-showcase__header">
+        <p class="bw-hero-showcase__label">Start with the community</p>
+        <p class="bw-hero-showcase__note">Pick a path into projects, guides, people, or Django work.</p>
+      </div>
       <div class="grid gap-3 sm:grid-cols-2">
         {% if projects %}
           {% for project in projects|slice:":4" %}
@@ -48,7 +52,7 @@
             </a>
           {% endfor %}
         {% else %}
-          <a href="{% url 'projects' %}" class="bw-hero-placeholder sm:translate-y-6">
+          <a href="{% url 'projects' %}" class="bw-hero-placeholder">
             <span>
               <span class="bw-menu-icon"><i class="las la-window-restore" aria-hidden="true"></i></span>
               <span class="mt-5 block text-xl font-black leading-tight text-[var(--bw-ink)]">Project gallery</span>
@@ -81,7 +85,7 @@
               <i class="las la-arrow-right" aria-hidden="true"></i>
             </span>
           </a>
-          <a href="{% url 'jobs' %}" class="bw-hero-placeholder sm:-translate-y-6">
+          <a href="{% url 'jobs' %}" class="bw-hero-placeholder">
             <span>
               <span class="bw-menu-icon"><i class="las la-bullhorn" aria-hidden="true"></i></span>
               <span class="mt-5 block text-xl font-black leading-tight text-[var(--bw-ink)]">Community signals</span>

@@ -8,26 +8,26 @@
 
 @layer base {
   :root {
-    --bw-bg: oklch(96.5% 0.018 122);
-    --bw-bg-warm: oklch(98.3% 0.018 106);
-    --bw-surface: oklch(99% 0.008 118);
-    --bw-surface-raised: oklch(97.6% 0.012 118);
-    --bw-surface-muted: oklch(93.5% 0.022 124);
-    --bw-ink: oklch(20% 0.035 156);
-    --bw-ink-soft: oklch(34% 0.035 156);
-    --bw-muted: oklch(48% 0.026 156);
-    --bw-border: oklch(86% 0.025 126);
-    --bw-border-strong: oklch(76% 0.04 128);
-    --bw-primary: oklch(51% 0.15 151);
-    --bw-primary-dark: oklch(34% 0.12 151);
-    --bw-primary-soft: oklch(91% 0.055 147);
-    --bw-accent: oklch(82% 0.17 92);
-    --bw-accent-soft: oklch(94% 0.075 92);
-    --bw-blue: oklch(48% 0.13 238);
+    --bw-bg: oklch(94.5% 0.032 143);
+    --bw-bg-warm: oklch(97.3% 0.016 106);
+    --bw-surface: oklch(98.5% 0.012 112);
+    --bw-surface-raised: oklch(96.5% 0.018 126);
+    --bw-surface-muted: oklch(91.8% 0.03 138);
+    --bw-ink: oklch(18% 0.045 157);
+    --bw-ink-soft: oklch(31% 0.04 157);
+    --bw-muted: oklch(45% 0.03 157);
+    --bw-border: oklch(82% 0.036 134);
+    --bw-border-strong: oklch(67% 0.065 143);
+    --bw-primary: oklch(45% 0.13 151);
+    --bw-primary-dark: oklch(27% 0.09 154);
+    --bw-primary-soft: oklch(88% 0.06 145);
+    --bw-accent: oklch(79% 0.15 88);
+    --bw-accent-soft: oklch(93% 0.06 88);
+    --bw-blue: oklch(48% 0.11 231);
     --bw-danger: oklch(55% 0.18 28);
     --bw-radius: 0.5rem;
-    --bw-shadow-sm: 0 1px 2px oklch(25% 0.035 156 / 0.08);
-    --bw-shadow: 0 14px 34px oklch(25% 0.035 156 / 0.11);
+    --bw-shadow-sm: 0 1px 0 oklch(25% 0.035 156 / 0.08);
+    --bw-shadow: 0 12px 26px oklch(25% 0.04 156 / 0.12);
     --bw-ease: cubic-bezier(0.22, 1, 0.36, 1);
   }
 
@@ -41,10 +41,7 @@
   body {
     min-height: 100%;
     background:
-      linear-gradient(90deg, oklch(88% 0.018 122 / 0.32) 1px, transparent 1px),
-      linear-gradient(0deg, oklch(88% 0.018 122 / 0.32) 1px, transparent 1px),
-      linear-gradient(180deg, var(--bw-bg-warm), var(--bw-bg));
-    background-size: 32px 32px, 32px 32px, auto;
+      linear-gradient(180deg, oklch(97% 0.018 116) 0, oklch(94.5% 0.032 143) 28rem, oklch(92.8% 0.038 148) 56rem, oklch(95% 0.024 130) 100%);
     color: var(--bw-ink);
     font-family: ui-rounded, "Avenir Next", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     font-kerning: normal;
@@ -172,11 +169,11 @@
       box-shadow 150ms var(--bw-ease);
   }
 
-  .bw-button-primary {
-    background: var(--bw-primary-dark);
-    color: oklch(98% 0.01 118);
-    box-shadow: 0 10px 22px oklch(34% 0.12 151 / 0.2);
-  }
+	  .bw-button-primary {
+	    background: var(--bw-primary-dark);
+	    color: oklch(98% 0.01 118);
+	    box-shadow: 0 8px 18px oklch(27% 0.09 154 / 0.18);
+	  }
 
   .bw-button-primary:hover {
     background: var(--bw-primary);
@@ -256,7 +253,7 @@
     top: 0;
     z-index: 40;
     border-bottom: 1px solid var(--bw-border);
-    background: oklch(97.5% 0.016 118 / 0.94);
+    background: oklch(96.5% 0.022 128 / 0.94);
     backdrop-filter: blur(14px);
   }
 
@@ -342,32 +339,67 @@
   .bw-hero-showcase {
     position: relative;
     isolation: isolate;
-    padding: clamp(0.25rem, 2vw, 1rem);
+    overflow: hidden;
+    border: 1px solid oklch(49% 0.085 150);
+    border-radius: var(--bw-radius);
+    background:
+      linear-gradient(140deg, oklch(31% 0.09 153), oklch(21% 0.065 158)),
+      var(--bw-primary-dark);
+    padding: clamp(0.8rem, 2.5vw, 1.25rem);
+    box-shadow: var(--bw-shadow);
   }
 
   .bw-hero-showcase::before {
     position: absolute;
-    inset: 10% 0 8% 8%;
+    inset: 0;
     z-index: -1;
-    border: 1px solid var(--bw-border);
-    border-radius: var(--bw-radius);
     background:
-      linear-gradient(135deg, oklch(99% 0.008 118), oklch(93.5% 0.035 133)),
-      var(--bw-surface);
-    box-shadow: var(--bw-shadow);
+      linear-gradient(115deg, transparent 0 58%, oklch(46% 0.1 150 / 0.24) 58% 100%),
+      linear-gradient(180deg, oklch(100% 0.01 118 / 0.08), transparent 42%);
     content: "";
+  }
+
+  .bw-hero-showcase__header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .bw-hero-showcase__header {
+      flex-direction: row;
+      align-items: end;
+      justify-content: space-between;
+    }
+  }
+
+  .bw-hero-showcase__label {
+    color: var(--bw-accent);
+    font-size: 0.78rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .bw-hero-showcase__note {
+    max-width: 20rem;
+    color: oklch(84% 0.035 126);
+    font-size: 0.9rem;
+    line-height: 1.35;
   }
 
   .bw-hero-placeholder {
     display: flex;
-    min-height: 14rem;
+    min-height: 11.5rem;
     flex-direction: column;
     justify-content: space-between;
-    border: 1px solid var(--bw-border);
+    border: 1px solid oklch(62% 0.065 150);
     border-radius: var(--bw-radius);
-    background: var(--bw-surface);
+    background: oklch(97.5% 0.018 116);
     padding: 1.15rem;
-    box-shadow: var(--bw-shadow-sm);
+    box-shadow: 0 1px 0 oklch(100% 0.01 118 / 0.36) inset;
     color: var(--bw-ink);
     text-decoration: none;
     transition:
@@ -390,23 +422,20 @@
     line-height: 1.2;
   }
 
-  @media (hover: hover) {
-    .bw-hero-placeholder:hover {
-      border-color: var(--bw-primary);
-      box-shadow: var(--bw-shadow);
-      transform: translateY(-2px);
-    }
+	  @media (hover: hover) {
+	    .bw-hero-placeholder:hover {
+	      border-color: var(--bw-accent);
+	      box-shadow: 0 10px 20px oklch(13% 0.05 156 / 0.16);
+	      transform: translateY(-2px);
+	    }
 
     .bw-hero-placeholder:hover .bw-hero-placeholder__action {
       color: var(--bw-ink);
     }
 
-    .bw-hero-placeholder.sm\:translate-y-6:hover {
-      transform: translateY(1.25rem);
-    }
-
-    .bw-hero-placeholder.sm\:-translate-y-6:hover {
-      transform: translateY(-1.75rem);
+    .bw-hero-placeholder:hover .bw-menu-icon {
+      background: var(--bw-accent);
+      color: var(--bw-ink);
     }
   }
 
@@ -415,7 +444,8 @@
     grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
     border: 1px solid var(--bw-border);
     border-radius: var(--bw-radius);
-    background: var(--bw-surface);
+    background: oklch(97.3% 0.016 106 / 0.86);
+    box-shadow: var(--bw-shadow-sm);
   }
 
   .bw-proof-strip > * {
