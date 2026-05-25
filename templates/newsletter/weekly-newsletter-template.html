@@ -38,12 +38,6 @@
                            target="_blank">
                             {{ project.title }}
                         </a>
-                        by
-                        <a href="https://builtwithdjango.com{{ project.maker.get_absolute_url }}"
-                           rel="noopener noreferrer"
-                           target="_blank">
-                            {{ project.maker.first_name }} {{ project.maker.last_name }}
-                        </a>
                     </p>
                     <p style="margin: 0 0 10px 0; padding:0; font-size: 12px; color: rgba(55, 65, 81, 1);">
                         {{ project.short_description }}

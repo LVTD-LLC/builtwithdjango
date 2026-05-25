@@ -12,7 +12,7 @@
       </p>
       <h1 class="bw-heading-xl mt-5">Built with Django</h1>
       <p class="bw-lede mt-6">
-        See what people are shipping with Django, learn from practical guides, find Django work, and discover builders from the community.
+        See what people are shipping with Django, learn from practical guides, find Django work, and discover useful community resources.
       </p>
       <div class="mt-8 flex flex-col gap-3 sm:flex-row">
         <a href="{% url 'projects' %}" class="bw-button bw-button-primary">
@@ -26,7 +26,7 @@
     <div class="bw-hero-showcase">
       <div class="bw-hero-showcase__header">
         <p class="bw-hero-showcase__label">Start with the community</p>
-        <p class="bw-hero-showcase__note">Pick a path into projects, guides, people, or Django work.</p>
+        <p class="bw-hero-showcase__note">Pick a path into projects, guides, tools, or Django work.</p>
       </div>
       <div class="grid gap-3 sm:grid-cols-2">
         {% if projects %}
@@ -37,7 +37,7 @@
                   <img
                     src="{% get_media_prefix %}{{ project.homepage_screenshot }}"
                     alt="{{ project.title }} screenshot"
-                    class="h-full w-full object-cover object-left-top transition duration-200 group-hover:scale-[1.025]"
+                    class="bw-project-screenshot transition duration-200 group-hover:scale-[1.025]"
                     loading="{% if forloop.counter <= 2 %}eager{% else %}lazy{% endif %}"
                     decoding="async"
                   />
@@ -74,14 +74,14 @@
               <i class="las la-arrow-right" aria-hidden="true"></i>
             </span>
           </a>
-          <a href="{% url 'developers' %}" class="bw-hero-placeholder">
+          <a href="{% url 'podcast_episodes' %}" class="bw-hero-placeholder">
             <span>
-              <span class="bw-menu-icon"><i class="las la-users" aria-hidden="true"></i></span>
-              <span class="mt-5 block text-xl font-black leading-tight text-[var(--bw-ink)]">Builder profiles</span>
-              <span class="mt-2 block text-sm leading-6 bw-muted">People, makers, and teams shipping in public.</span>
+              <span class="bw-menu-icon"><i class="las la-microphone-alt" aria-hidden="true"></i></span>
+              <span class="mt-5 block text-xl font-black leading-tight text-[var(--bw-ink)]">Django conversations</span>
+              <span class="mt-2 block text-sm leading-6 bw-muted">Podcast episodes and practical context from the ecosystem.</span>
             </span>
             <span class="bw-hero-placeholder__action">
-              Meet developers
+              Listen in
               <i class="las la-arrow-right" aria-hidden="true"></i>
             </span>
           </a>
@@ -113,7 +113,7 @@
       </div>
       <div>
         <p class="font-black text-[var(--bw-ink)]">Community signals</p>
-        <p class="mt-1 text-sm bw-muted">Jobs, makers, developers, and useful tools.</p>
+        <p class="mt-1 text-sm bw-muted">Jobs, useful tools, launches, and resources.</p>
       </div>
     </div>
   </div>
@@ -121,7 +121,7 @@
 
 <section class="bw-section pt-0">
   <div class="bw-container">
-    <div class="grid gap-4 md:grid-cols-4">
+    <div class="grid gap-4 md:grid-cols-3">
       <a href="{% url 'projects' %}" class="bw-card p-5">
         <span class="bw-menu-icon"><i class="las la-window-restore" aria-hidden="true"></i></span>
         <h2 class="mt-5 text-2xl font-black leading-tight">Browse projects</h2>
@@ -135,12 +135,7 @@
       <a href="{% url 'jobs' %}" class="bw-card p-5">
         <span class="bw-menu-icon"><i class="las la-briefcase" aria-hidden="true"></i></span>
         <h2 class="mt-5 text-2xl font-black leading-tight">Find Django work</h2>
-        <p class="mt-3 text-sm leading-6 bw-muted">A job board for teams and developers who want Django experience.</p>
-      </a>
-      <a href="{% url 'developers' %}" class="bw-card p-5">
-        <span class="bw-menu-icon"><i class="las la-user-astronaut" aria-hidden="true"></i></span>
-        <h2 class="mt-5 text-2xl font-black leading-tight">Meet developers</h2>
-        <p class="mt-3 text-sm leading-6 bw-muted">Find Django people who are available for contracts, roles, and collaborations.</p>
+        <p class="mt-3 text-sm leading-6 bw-muted">A job board for teams hiring for Django experience.</p>
       </a>
     </div>
   </div>

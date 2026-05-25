@@ -79,12 +79,12 @@
 </section>
 
 <section class="pb-16">
-  <div class="bw-container grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+  <div class="bw-container-wide grid gap-8">
     <div class="grid gap-6">
       <div class="bw-card">
         <div class="aspect-[16/10] overflow-hidden bg-[var(--bw-surface-muted)]">
           {% if object.homepage_screenshot %}
-            <img class="h-full w-full object-cover object-left-top"
+            <img class="bw-project-screenshot"
                  src="{% get_media_prefix %}{{ object.homepage_screenshot }}"
                  alt="{{ object.title }} screenshot"
                  loading="eager"
@@ -96,7 +96,7 @@
       </div>
 
       {% if object.description %}
-        <article class="bw-surface p-5 sm:p-7">
+        <article class="bw-surface p-5 sm:p-7 lg:mx-auto lg:w-full lg:max-w-4xl">
           <h2 class="text-2xl font-black text-[var(--bw-ink)]">About {{ object.title }}</h2>
           <div class="bw-prose prose mt-4 max-w-none md:prose-lg">
             {{ object.description | markdown | safe }}
@@ -104,8 +104,21 @@
         </article>
       {% endif %}
 
+      {% if object.technologies.all %}
+        <article class="bw-surface p-5 sm:p-7 lg:mx-auto lg:w-full lg:max-w-4xl">
+          <h2 class="text-sm font-black uppercase tracking-wider bw-muted">Tech stack</h2>
+          <div class="mt-4 flex flex-wrap gap-2">
+            {% for tech in object.technologies.all %}
+              <span class="inline-flex items-center rounded-md bg-{{ tech.color }}-100 px-3 py-1 text-sm font-black text-{{ tech.color }}-800">
+                {{ tech.name }}
+              </span>
+            {% endfor %}
+          </div>
+        </article>
+      {% endif %}
+
       {% if object.content_summary or object.target_audience or object.key_features or object.pain_points or object.usage_instructions or object.additional_info %}
-        <article class="bw-surface p-5 sm:p-7">
+        <article class="bw-surface p-5 sm:p-7 lg:mx-auto lg:w-full lg:max-w-4xl">
           <h2 class="text-2xl font-black text-[var(--bw-ink)]">What to notice</h2>
           <div class="mt-5 grid gap-5">
             {% if object.content_summary %}
@@ -149,7 +162,7 @@
       {% endif %}
 
       {% if object.podcast_episodes.all %}
-        <article class="bw-surface p-5 sm:p-7">
+        <article class="bw-surface p-5 sm:p-7 lg:mx-auto lg:w-full lg:max-w-4xl">
           <h2 class="text-2xl font-black text-[var(--bw-ink)]">Podcast episodes</h2>
           <div class="mt-5 grid gap-4">
             {% for episode in object.podcast_episodes.all %}
@@ -169,75 +182,6 @@
         </article>
       {% endif %}
     </div>
-
-    <aside class="grid content-start gap-4">
-      {% if object.maker.first_name %}
-        <section class="bw-surface p-5">
-          <h2 class="text-sm font-black uppercase tracking-wider bw-muted">Maker</h2>
-          <a href="{{ object.maker.get_absolute_url }}" class="mt-4 flex items-center gap-3">
-            {% if object.maker.maker_profile_image %}
-              <img class="h-14 w-14 rounded-md object-cover"
-                   src="{% get_media_prefix %}{{ object.maker.maker_profile_image }}"
-                   alt="{{ object.maker.first_name }} {{ object.maker.last_name }}" />
-            {% else %}
-              <img class="h-14 w-14 rounded-md object-cover"
-                   src="https://api.dicebear.com/7.x/pixel-art/svg?seed={{ object.maker.slug }}"
-                   alt="" />
-            {% endif %}
-            <span>
-              <span class="block font-black">
-                {% if object.maker.first_name %}{{ object.maker.first_name }}{% endif %}
-                {% if object.maker.last_name %}{{ object.maker.last_name }}{% endif %}
-              </span>
-              <span class="block text-sm bw-muted">View maker profile</span>
-            </span>
-          </a>
-          <div class="mt-4 flex gap-2">
-            {% if object.maker.github_handle %}
-              <a class="bw-icon-button" href="https://github.com/{{ object.maker.github_handle }}?ref={{ request.get_host }}" target="_blank" rel="noopener" aria-label="Maker on GitHub">
-                <i class="lab la-github" aria-hidden="true"></i>
-              </a>
-            {% endif %}
-            {% if object.maker.twitter_handle %}
-              <a class="bw-icon-button" href="https://twitter.com/{{ object.maker.twitter_handle }}?ref={{ request.get_host }}" target="_blank" rel="noopener" aria-label="Maker on X">
-                <i class="lab la-twitter" aria-hidden="true"></i>
-              </a>
-            {% endif %}
-          </div>
-        </section>
-      {% endif %}
-
-      <section class="bw-surface p-5">
-        <h2 class="text-sm font-black uppercase tracking-wider bw-muted">Project signals</h2>
-        <div class="mt-4 grid gap-2 text-sm">
-          {% if object.is_open_source %}
-            <p class="rounded-md bg-[var(--bw-primary-soft)] px-3 py-2 font-bold text-[var(--bw-primary-dark)]">Open source</p>
-          {% endif %}
-          {% if object.is_profitable %}
-            <p class="rounded-md bg-[var(--bw-accent-soft)] px-3 py-2 font-bold text-[var(--bw-ink)]">Profitable</p>
-          {% endif %}
-          {% if object.large_company %}
-            <p class="rounded-md bg-[var(--bw-surface-muted)] px-3 py-2 font-bold text-[var(--bw-ink)]">Company-backed</p>
-          {% endif %}
-          {% if object.sponsored %}
-            <p class="rounded-md bg-[var(--bw-accent)] px-3 py-2 font-bold text-[var(--bw-ink)]">Featured listing</p>
-          {% endif %}
-        </div>
-      </section>
-
-      {% if object.technologies.all %}
-        <section class="bw-surface p-5">
-          <h2 class="text-sm font-black uppercase tracking-wider bw-muted">Tech stack</h2>
-          <div class="mt-4 flex flex-wrap gap-2">
-            {% for tech in object.technologies.all %}
-              <span class="inline-flex items-center rounded-md bg-{{ tech.color }}-100 px-3 py-1 text-sm font-black text-{{ tech.color }}-800">
-                {{ tech.name }}
-              </span>
-            {% endfor %}
-          </div>
-        </section>
-      {% endif %}
-    </aside>
   </div>
 </section>
 {% endblock content %}

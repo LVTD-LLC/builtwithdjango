@@ -498,8 +498,9 @@
   .bw-project-card__media img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    object-position: left top;
+    background: var(--bw-surface-muted);
+    object-fit: contain;
+    object-position: center top;
     transition: transform 240ms var(--bw-ease);
   }
 
@@ -563,6 +564,15 @@
     background: var(--bw-primary-soft);
     color: var(--bw-primary-dark);
     transform: translateY(-1px);
+  }
+
+  .bw-project-screenshot {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: var(--bw-surface-muted);
+    object-fit: contain;
+    object-position: center top;
   }
 
   .bw-page-hero {
