@@ -1,0 +1,31 @@
+{% load markdown_extras %}
+
+<article class="bw-card flex min-h-full flex-col sm:flex-row">
+  {% if item.icon %}
+    <a href="{% url 'post' item.slug %}" class="flex min-h-[6rem] items-center justify-center bg-[var(--bw-surface-muted)] p-5 sm:w-32 sm:shrink-0" aria-label="Read {{ item.title }}">
+      <img class="h-14 w-14 object-contain"
+           src="https://res.cloudinary.com/built-with-django/{{ item.icon }}"
+           alt=""
+           loading="lazy"
+           decoding="async" />
+    </a>
+  {% endif %}
+  <div class="flex flex-1 flex-col justify-between p-5">
+    <div>
+      <h2 class="text-xl font-black leading-tight text-[var(--bw-ink)]">
+        <a href="{% url 'post' item.slug %}">{{ item.title }}</a>
+      </h2>
+      <div class="bw-prose mt-3 text-sm leading-6">
+        {{ item.description | truncatechars:220 | markdown | safe }}
+      </div>
+    </div>
+    <div class="mt-4 flex flex-wrap gap-2">
+      {% if item.get_type_display %}
+        <span class="rounded-md bg-[var(--bw-primary-soft)] px-2.5 py-1 text-xs font-black text-[var(--bw-primary-dark)]">{{ item.get_type_display }}</span>
+      {% endif %}
+      {% if item.level %}
+        <span class="rounded-md bg-[var(--bw-surface-muted)] px-2.5 py-1 text-xs font-black text-[var(--bw-ink-soft)]">{{ item.get_level_display }}</span>
+      {% endif %}
+    </div>
+  </div>
+</article>

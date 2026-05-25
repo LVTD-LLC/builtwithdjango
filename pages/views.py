@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from allauth.account.models import EmailAddress
 from django.conf import settings
@@ -9,6 +9,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.http import HttpResponseRedirect
 from django.templatetags.static import static  # Add this import
 from django.urls import reverse, reverse_lazy
+from django.utils import timezone
 from django.views import View
 from django.views.generic import CreateView, RedirectView, TemplateView, UpdateView
 from django_q.tasks import async_task
@@ -38,7 +39,10 @@ class HomeView(TemplateView):
         ]
         context["guides"] = Post.objects.filter(type="TUTORIAL")[:4]
         context["podcast_episodes"] = Episode.objects.all()[:3]
-        context["jobs"] = Job.objects.filter(approved=True).order_by("-created_datetime")[:6]
+        filter_date = timezone.now() - timedelta(days=60)
+        context["jobs"] = Job.objects.filter(approved=True, created_datetime__gte=filter_date).order_by(
+            "-created_datetime"
+        )[:6]
 
         title = "Built with Django"
         description = "Learn to bring your project and business ideas to life with Django. Get inspired by others."

@@ -1,83 +1,72 @@
 {% load static %}
 {% load humanize %}
 
-<li class="
-    relative flex justify-between px-4 py-5 gap-x-6 hover:bg-gray-50 sm:px-6 items-center space-x-3
-    {% if job.paid %} bg-yellow-300 border-yellow-300 hover:bg-yellow-400 hover:border-yellow-400
-    {% else %} bg-white border-gray-300 hover:bg-gray-100 hover:border-gray-400 {% endif %}
-  ">
-  <div class="flex-shrink-0">
+<li>
+  <a href="{{ job.get_absolute_url }}"
+     class="grid gap-4 border-b border-[var(--bw-border)] bg-[var(--bw-surface)] p-4 transition hover:bg-[var(--bw-primary-soft)] sm:grid-cols-[4rem_1fr_auto] sm:items-center sm:p-5">
+    <span class="flex h-14 w-14 items-center justify-center overflow-hidden rounded-md border border-[var(--bw-border)] bg-[var(--bw-surface-raised)] text-lg font-black text-[var(--bw-primary-dark)]">
       {% if job.company.logo %}
-      <img class="w-16 h-16 rounded-full"
-           src="{% get_media_prefix %}{{ job.company.logo }}"
-           alt="{{ job.company.name }} Logo" />
+        <img class="h-full w-full object-cover"
+             src="{% get_media_prefix %}{{ job.company.logo }}"
+             alt="{{ job.company.name }} Logo"
+             loading="lazy"
+             decoding="async" />
       {% elif job.company_logo %}
-      <img class="w-16 h-16 rounded-full"
-           src="{{ job.company_logo.build_url }}"
-           alt="{{ job.company_name }}" />
+        <img class="h-full w-full object-cover"
+             src="{{ job.company_logo.build_url }}"
+             alt="{{ job.company_name }}"
+             loading="lazy"
+             decoding="async" />
+      {% else %}
+        {% if job.company.name %}
+          {{ job.company.name|first }}
+        {% elif job.company_name %}
+          {{ job.company_name|first }}
+        {% else %}
+          D
+        {% endif %}
       {% endif %}
-  </div>
-  <div class="flex-1 min-w-0">
-      <a href="{{ job.get_absolute_url }}" class="focus:outline-none">
-          <span class="absolute inset-0" aria-hidden="true"></span>
-          <p class="text-xl font-semibold text-gray-900">
-              {{ job.title }}
-          </p>
-          <div class="flex items-center mb-2 space-x-1">
-              <p class="text-lg text-gray-600">
-                  {% if job.company.name %}
-                    {{ job.company.name }}
-                  {% elif job.company_name %}
-                    {{ job.company_name }}
-                  {% endif %}
-              </p>
-            </div>
-            <div class="flex flex-col justify-between space-y-4 md:space-y-0 md:flex-row">
-              <div class="flex flex-col items-start space-y-4 md:space-y-0 md:space-x-4 md:items-center md:flex-row">
-                {% if not job.location and not job.min_yearly_salary %}
-                <p></p>
-                {% endif %}
-                {% if job.location %}
-                <p class="flex items-center text-sm text-gray-500">
-                    <svg class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        aria-hidden="true">
-                        <path fill-rule="evenodd"
-                              d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z"
-                              clip-rule="evenodd"/>
-                    </svg>
-                    {{ job.location | truncatechars:100 }}
-                </p>
-                {% endif %}
-                {% if job.min_yearly_salary %}
-                <p class="flex items-center text-sm text-gray-500">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  {% if job.min_yearly_salary %}{{ job.min_yearly_salary | intcomma }}{% endif %}
-                  {% if job.max_yearly_salary %}- {{ job.max_yearly_salary | intcomma }}{% endif %}
-                </p>
-                {% endif %}
-              </div>
-              <div class="flex flex-col items-start space-y-4 md:space-y-0 md:space-x-4 md:items-center md:flex-row">
-                <p class="flex items-center text-sm text-gray-500">
-                    <!-- Heroicon name: solid/location-marker -->
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                        class="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round"
-                              stroke-linejoin="round"
-                              stroke-width="2"
-                              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    {{ job.submitted_datetime|timesince }} ago
-                </p>
-              </div>
-            </div>
-      </a>
-  </div>
+    </span>
+
+    <span class="min-w-0">
+      <span class="flex flex-wrap items-center gap-2">
+        <span class="text-xl font-black leading-tight text-[var(--bw-ink)]">{{ job.title }}</span>
+        {% if job.paid %}
+          <span class="rounded-md bg-[var(--bw-accent)] px-2 py-1 text-xs font-black text-[var(--bw-ink)]">Featured</span>
+        {% endif %}
+      </span>
+      <span class="mt-1 block text-base font-bold bw-muted">
+        {% if job.company.name %}
+          {{ job.company.name }}
+        {% elif job.company_name %}
+          {{ job.company_name }}
+        {% endif %}
+      </span>
+      <span class="mt-3 flex flex-wrap gap-x-5 gap-y-2 text-sm bw-muted">
+        {% if job.location %}
+          <span class="inline-flex items-center gap-1.5">
+            <i class="las la-map-marker" aria-hidden="true"></i>
+            {{ job.location | truncatechars:80 }}
+          </span>
+        {% endif %}
+        {% if job.min_yearly_salary %}
+          <span class="inline-flex items-center gap-1.5">
+            <i class="las la-dollar-sign" aria-hidden="true"></i>
+            {{ job.min_yearly_salary | intcomma }}{% if job.max_yearly_salary %} - {{ job.max_yearly_salary | intcomma }}{% endif %}
+          </span>
+        {% endif %}
+        {% if job.submitted_datetime %}
+          <span class="inline-flex items-center gap-1.5">
+            <i class="las la-clock" aria-hidden="true"></i>
+            {{ job.submitted_datetime|timesince }} ago
+          </span>
+        {% endif %}
+      </span>
+    </span>
+
+    <span class="hidden text-sm font-black text-[var(--bw-primary-dark)] sm:inline-flex">
+      View role
+      <i class="las la-arrow-right ml-1" aria-hidden="true"></i>
+    </span>
+  </a>
 </li>

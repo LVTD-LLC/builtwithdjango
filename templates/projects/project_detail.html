@@ -14,217 +14,232 @@
     <meta property="og:title" content="{{ object.title }}" />
     <meta property="og:url" content="https://{{ request.get_host }}/projects/{{ object.slug }}" />
     <meta property="og:description" content="{{ object.short_description }}" />
-    <meta property="og:image" content="https://osig.app/g?style=base&site=facebook&font=markerfelt&title={{ object.title }}&subtitle={{ object.short_description }}&eyebrow=Project&image_url={{ object.homepage_screenshot.url }}" />
-    <meta name="twitter:card" content="summary_large_image" />
+    <meta property="og:image" content="https://osig.app/g?style=base&site=facebook&font=markerfelt&title={{ object.title }}&subtitle={{ object.short_description }}&eyebrow=Project&image_url={{ project_screenshot_url }}" />
     <meta name="twitter:creator" content="@rasulkireev" />
     <meta name="twitter:site" content="@builtwithdjango" />
     <meta name="twitter:title" content="{{ object.title }}" />
     <meta name="twitter:description" content="{{ object.description }}" />
-    <meta property="og:image" content="https://osig.app/g?style=base&site=x&font=markerfelt&title={{ object.title }}&subtitle={{ object.short_description }}&eyebrow=Project&image_url={{ object.homepage_screenshot.url }}" />
+    <meta property="og:image" content="https://osig.app/g?style=base&site=x&font=markerfelt&title={{ object.title }}&subtitle={{ object.short_description }}&eyebrow=Project&image_url={{ project_screenshot_url }}" />
 {% endblock meta %}
 
 {% block content %}
-    <p class="mt-4 text-blue-700">
-        ←
-        <a href="{% url 'projects' %}">back to all projects</a>
-    </p>
-
-    <div class="px-6 py-2 bg-white lg:px-8">
-      <div class="mx-auto max-w-2xl text-center">
-        <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">{{ object.title }}</h1>
-        <p class="mt-6 text-lg leading-8 text-gray-600 prose">{{ object.short_description }}</p>
+<section class="bw-page-hero pb-10">
+  <div class="bw-container">
+    <a href="{% url 'projects' %}" class="inline-flex items-center gap-2 text-sm font-black text-[var(--bw-primary-dark)]">
+      <i class="las la-arrow-left" aria-hidden="true"></i>
+      All projects
+    </a>
+    <div class="mt-8 grid gap-8 lg:grid-cols-[1fr_22rem] lg:items-start">
+      <div>
+        <p class="bw-kicker">Django project</p>
+        <h1 class="bw-heading-lg mt-3">{{ object.title }}</h1>
+        <p class="bw-lede mt-5">{{ object.short_description }}</p>
       </div>
+
+      <aside class="bw-surface p-4">
+        <div class="grid gap-3">
+          <a class="bw-button bw-button-primary w-full"
+             href='{{ object.url }}?ref={{ request.get_host }}&utm_source={{ request.get_host }}{{ request.path }}&utm_campaign=project-detail-{% now "F-Y" %}-{% if object.sponsored %}sponsored{% else %}unsponsored{% endif %}'
+             target="_blank"
+             rel="noopener">
+            Visit website
+            <i class="las la-external-link-alt" aria-hidden="true"></i>
+          </a>
+          <div class="grid grid-cols-3 gap-2">
+            {% if object.github_url %}
+              <a class="bw-icon-button w-full"
+                 href="{{ object.github_url }}?ref={{ request.get_host }}"
+                 target="_blank"
+                 rel="noopener"
+                 aria-label="{{ object.title }} on GitHub">
+                <i class="lab la-github" aria-hidden="true"></i>
+              </a>
+            {% endif %}
+            {% if object.twitter_url %}
+              <a class="bw-icon-button w-full"
+                 href="{{ object.twitter_url }}?ref={{ request.get_host }}"
+                 target="_blank"
+                 rel="noopener"
+                 aria-label="{{ object.title }} on X">
+                <i class="lab la-twitter" aria-hidden="true"></i>
+              </a>
+            {% endif %}
+            {% include "components/project-likes.html" with site=object %}
+          </div>
+          {% if object.is_for_sale and object.sale_link %}
+            <a class="bw-button bw-button-accent w-full" href="{{ object.sale_link }}" target="_blank" rel="noopener">View sale listing</a>
+          {% endif %}
+          {% if user == object.maker.user or user == object.logged_in_maker %}
+            <a href="{% url 'project_update' object.slug %}" class="bw-button bw-button-secondary w-full">Edit project</a>
+          {% endif %}
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<section class="pb-16">
+  <div class="bw-container grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    <div class="grid gap-6">
+      <div class="bw-card">
+        <div class="aspect-[16/10] overflow-hidden bg-[var(--bw-surface-muted)]">
+          {% if object.homepage_screenshot %}
+            <img class="h-full w-full object-cover object-left-top"
+                 src="{% get_media_prefix %}{{ object.homepage_screenshot }}"
+                 alt="{{ object.title }} screenshot"
+                 loading="eager"
+                 decoding="async" />
+          {% else %}
+            <div class="flex h-full items-center justify-center p-8 text-center font-bold bw-muted">Screenshot coming soon</div>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if object.description %}
+        <article class="bw-surface p-5 sm:p-7">
+          <h2 class="text-2xl font-black text-[var(--bw-ink)]">About {{ object.title }}</h2>
+          <div class="bw-prose prose mt-4 max-w-none md:prose-lg">
+            {{ object.description | markdown | safe }}
+          </div>
+        </article>
+      {% endif %}
+
+      {% if object.content_summary or object.target_audience or object.key_features or object.pain_points or object.usage_instructions or object.additional_info %}
+        <article class="bw-surface p-5 sm:p-7">
+          <h2 class="text-2xl font-black text-[var(--bw-ink)]">What to notice</h2>
+          <div class="mt-5 grid gap-5">
+            {% if object.content_summary %}
+              <section class="border-b border-[var(--bw-border)] pb-5 last:border-0 last:pb-0">
+                <h3 class="text-lg font-black">Summary</h3>
+                <div class="bw-prose prose mt-2 max-w-none">{{ object.content_summary | markdown | safe }}</div>
+              </section>
+            {% endif %}
+            {% if object.target_audience %}
+              <section class="border-b border-[var(--bw-border)] pb-5 last:border-0 last:pb-0">
+                <h3 class="text-lg font-black">Target audience</h3>
+                <p class="mt-2 leading-7 bw-muted">{{ object.target_audience }}</p>
+              </section>
+            {% endif %}
+            {% if object.key_features %}
+              <section class="border-b border-[var(--bw-border)] pb-5 last:border-0 last:pb-0">
+                <h3 class="text-lg font-black">Key features</h3>
+                <div class="bw-prose prose mt-2 max-w-none">{{ object.key_features | markdown | safe }}</div>
+              </section>
+            {% endif %}
+            {% if object.pain_points %}
+              <section class="border-b border-[var(--bw-border)] pb-5 last:border-0 last:pb-0">
+                <h3 class="text-lg font-black">Pain points</h3>
+                <div class="bw-prose prose mt-2 max-w-none">{{ object.pain_points | markdown | safe }}</div>
+              </section>
+            {% endif %}
+            {% if object.usage_instructions %}
+              <section class="border-b border-[var(--bw-border)] pb-5 last:border-0 last:pb-0">
+                <h3 class="text-lg font-black">Usage instructions</h3>
+                <div class="bw-prose prose mt-2 max-w-none">{{ object.usage_instructions | markdown | safe }}</div>
+              </section>
+            {% endif %}
+            {% if object.additional_info %}
+              <section class="border-b border-[var(--bw-border)] pb-5 last:border-0 last:pb-0">
+                <h3 class="text-lg font-black">Additional info</h3>
+                <div class="bw-prose prose mt-2 max-w-none">{{ object.additional_info | markdown | safe }}</div>
+              </section>
+            {% endif %}
+          </div>
+        </article>
+      {% endif %}
+
+      {% if object.podcast_episodes.all %}
+        <article class="bw-surface p-5 sm:p-7">
+          <h2 class="text-2xl font-black text-[var(--bw-ink)]">Podcast episodes</h2>
+          <div class="mt-5 grid gap-4">
+            {% for episode in object.podcast_episodes.all %}
+              <a href="{% url 'episode_details' episode.slug %}" class="bw-card grid gap-4 p-4 md:grid-cols-[9rem_1fr]">
+                <img class="aspect-square w-full rounded-md object-cover"
+                     src="{% get_media_prefix %}{{ episode.thumbnail }}"
+                     alt="{{ episode.title }} thumbnail"
+                     loading="lazy"
+                     decoding="async" />
+                <span>
+                  <span class="block text-lg font-black">{{ episode.title }}</span>
+                  <span class="mt-2 block text-sm leading-6 bw-muted">{{ episode.details }}</span>
+                </span>
+              </a>
+            {% endfor %}
+          </div>
+        </article>
+      {% endif %}
     </div>
 
-    <div class="flex flex-col justify-center mx-auto my-10 space-y-2 max-w-5xl">
-        {% if user == object.maker.user or user == object.logged_in_maker %}
-            <div>
-                <a href="{% url 'project_update' object.slug %}"
-                   class="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-green-600 rounded-md border border-transparent shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                    Edit Project
-                </a>
-            </div>
-        {% endif %}
-
-        <!-- Projects -->
-        <div class="overflow-hidden p-6 bg-white rounded-lg shadow">
-            <div class="overflow-hidden mb-2 bg-white rounded-lg divide-y divide-gray-200 shadow">
-                <div>
-                    <img class="w-full"
-                         src="{% get_media_prefix %}{{ object.homepage_screenshot }}"
-                         alt="{{ object.title }} | Screenshot" />
-                </div>
-            </div>
-            <div class="flex flex-row mb-4 space-x-2 w-full text-center">
-                <a class="inline-flex justify-center items-center px-4 py-3 w-full text-sm font-bold text-center text-white no-underline uppercase bg-green-500 rounded-lg shadow transition flex-no-shrink hover:bg-green-400 hover:-translateY-sm hover:shadow"
-                   href='{{ object.url }}?ref={{ request.get_host }}&utm_source={{ request.get_host }}{{ request.path }}&utm_campaign=project-detail-{% now "F-Y" %}-{% if object.sponsored %}sponsored{% else %}unsponsored{% endif %}'
-                   target="_blank">
-                    Visit Website
-                </a>
-                {% if object.github_url %}
-                    <a class="flex items-center bg-gray-100 rounded-lg hover:bg-gray-300"
-                       href="{{ object.github_url }}?ref={{ request.get_host }}"
-                       target="_blank">
-                        <i class="p-2 text-3xl lab la-github"></i>
-                    </a>
-                {% endif %}
-                {% if object.twitter_url %}
-                    <a class="flex items-center bg-gray-100 rounded-lg hover:bg-gray-300"
-                       href="{{ object.twitter_url }}?ref={{ request.get_host }}"
-                       target="_blank">
-                        <i class="p-2 text-3xl text-blue-400 lab la-twitter"></i>
-                    </a>
-                {% endif %}
-                {% include "components/project-likes.html" with site=object %}
-            </div>
-            {% if object.description %}
-                <div aria-hidden="true">
-                    <h2 class="text-lg font-semibold md:text-2xl">
-                        Full Description
-                    </h2>
-                    <div class="text-base prose-sm prose md:prose-lg md:text-lg">
-                        {{ object.description | markdown | safe }}
-                    </div>
-                </div>
+    <aside class="grid content-start gap-4">
+      {% if object.maker.first_name %}
+        <section class="bw-surface p-5">
+          <h2 class="text-sm font-black uppercase tracking-wider bw-muted">Maker</h2>
+          <a href="{{ object.maker.get_absolute_url }}" class="mt-4 flex items-center gap-3">
+            {% if object.maker.maker_profile_image %}
+              <img class="h-14 w-14 rounded-md object-cover"
+                   src="{% get_media_prefix %}{{ object.maker.maker_profile_image }}"
+                   alt="{{ object.maker.first_name }} {{ object.maker.last_name }}" />
+            {% else %}
+              <img class="h-14 w-14 rounded-md object-cover"
+                   src="https://api.dicebear.com/7.x/pixel-art/svg?seed={{ object.maker.slug }}"
+                   alt="" />
             {% endif %}
+            <span>
+              <span class="block font-black">
+                {% if object.maker.first_name %}{{ object.maker.first_name }}{% endif %}
+                {% if object.maker.last_name %}{{ object.maker.last_name }}{% endif %}
+              </span>
+              <span class="block text-sm bw-muted">View maker profile</span>
+            </span>
+          </a>
+          <div class="mt-4 flex gap-2">
+            {% if object.maker.github_handle %}
+              <a class="bw-icon-button" href="https://github.com/{{ object.maker.github_handle }}?ref={{ request.get_host }}" target="_blank" rel="noopener" aria-label="Maker on GitHub">
+                <i class="lab la-github" aria-hidden="true"></i>
+              </a>
+            {% endif %}
+            {% if object.maker.twitter_handle %}
+              <a class="bw-icon-button" href="https://twitter.com/{{ object.maker.twitter_handle }}?ref={{ request.get_host }}" target="_blank" rel="noopener" aria-label="Maker on X">
+                <i class="lab la-twitter" aria-hidden="true"></i>
+              </a>
+            {% endif %}
+          </div>
+        </section>
+      {% endif %}
+
+      <section class="bw-surface p-5">
+        <h2 class="text-sm font-black uppercase tracking-wider bw-muted">Project signals</h2>
+        <div class="mt-4 grid gap-2 text-sm">
+          {% if object.is_open_source %}
+            <p class="rounded-md bg-[var(--bw-primary-soft)] px-3 py-2 font-bold text-[var(--bw-primary-dark)]">Open source</p>
+          {% endif %}
+          {% if object.is_profitable %}
+            <p class="rounded-md bg-[var(--bw-accent-soft)] px-3 py-2 font-bold text-[var(--bw-ink)]">Profitable</p>
+          {% endif %}
+          {% if object.large_company %}
+            <p class="rounded-md bg-[var(--bw-surface-muted)] px-3 py-2 font-bold text-[var(--bw-ink)]">Company-backed</p>
+          {% endif %}
+          {% if object.sponsored %}
+            <p class="rounded-md bg-[var(--bw-accent)] px-3 py-2 font-bold text-[var(--bw-ink)]">Featured listing</p>
+          {% endif %}
         </div>
+      </section>
 
-        <!-- Author Card -->
-        {% if object.maker.first_name %}
-            <div class="overflow-hidden px-6 py-4 bg-white rounded-lg shadow">
-                <a href="{{ object.maker.get_absolute_url }}" class="flex items-center">
-                    <h2 class="text-2xl font-semibold text-black">
-                        Author(s)
-                    </h2>
-                    <div class="flex items-center py-4">
-                        {% if object.maker.maker_profile_image %}
-                            <img class="w-16 h-16 rounded-full"
-                                 src="{% get_media_prefix %}{{ object.maker.maker_profile_image }}"
-                                 alt="" />
-                        {% else %}
-                            <!-- get image gray sillhoutte -->
-                            <img class="w-10 h-10 rounded-full"
-                                 src="https://avatars.dicebear.com/api/gridy/{{ object.maker.slug }}.svg"
-                                 alt="" />
-                        {% endif %}
-                        {% if object.maker.first_name or object.maker.last_name %}
-                            <div class="ml-3">
-                                <p class="text-lg font-medium text-gray-900">
-                                    {% if object.maker.first_name %}{{ object.maker.first_name }}{% endif %}
-                                    {% if object.maker.last_name %}{{ object.maker.last_name }}{% endif %}
-                                </p>
-                                <div>
-                                    {% if object.maker.github_handle %}
-                                        <a class="inline-block rounded-full"
-                                           href="https://github.com/{{ object.maker.github_handle }}?ref={{ request.get_host }}"
-                                           target="_blank">
-                                            <i class="text-2xl lab la-github"></i>
-                                        </a>
-                                    {% endif %}
-                                    {% if object.maker.twitter_handle %}
-                                        <a class="inline-block rounded-full"
-                                           href="https://twitter.com/{{ object.maker.twitter_handle }}?ref={{ request.get_host }}"
-                                           target="_blank">
-                                            <i class="text-2xl lab la-twitter"></i>
-                                        </a>
-                                    {% endif %}
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </a>
-            </div>
-        {% endif %}
-
-        <!-- Tech Stack Card-->
-        {% if object.technologies.all %}
-            <div class="overflow-hidden px-6 py-4 bg-white rounded-lg shadow">
-                <h2 class="text-2xl font-semibold text-black">
-                    TechStack
-                </h2>
-                <div class="flex flex-wrap items-center py-4 -m-1">
-                    {% for tech in object.technologies.all %}
-                        <div class="inline-flex items-center px-3 m-1 py-1 rounded-full text-md font-medium bg-{{ tech.color }}-100 text-{{ tech.color }}-800">
-                            {{ tech.name }}
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        {% endif %}
-
-        {% if object.podcast_episodes.all %}
-            <div class="overflow-hidden px-6 py-4 bg-white rounded-lg shadow">
-                <h2 class="text-2xl font-semibold text-black">
-                    Podcast Episodes
-                </h2>
-                {% for episode in object.podcast_episodes.all %}
-                    <article class="flex flex-col justify-start mt-4 space-y-4 bg-white rounded border border-solid md:border-0 md:mt-2 md:flex-row">
-                        <header class="rounded-t-lg border-b border-gray-300 border-solid md:border-0">
-                            <a href="{% url 'episode_details' episode.slug %}">
-                                <img class="object-cover object-left-top w-full h-auto rounded-t border-0"
-                                     src="{% get_media_prefix %}{{ episode.thumbnail }}"
-                                     alt="{{ episode.title }} | Screenshot"/>
-                            </a>
-                        </header>
-                        <div class="flex-auto p-4 h-full">
-                            <h2 class="mb-2 text-lg font-semibold text-gray-900">
-                                <a href="">{{ episode.title }}</a>
-                            </h2>
-                            <p class="text-sm leading-normal text-grey-700">
-                                {{ episode.details }}
-                            </p>
-                        </div>
-                    </article>
-                {% endfor %}
-            </div>
-        {% endif %}
-
-        <!-- Additional Info Card-->
-        <div class="rounded-lg prose-lg">
-            {% if object.additional_info %}
-            <div class="-mt-10">
-                <h2>Additional Info</h2>
-                <p>{{ object.additional_info | markdown | safe }}</p>
-            </div>
-            {% endif %}
-
-            {% if project.content_summary %}
-            <div>
-                <h2>Summary</h2>
-                <p>{{ project.content_summary | markdown | safe }}</p>
-            </div>
-            {% endif %}
-
-            {% if project.target_audience %}
-            <div>
-                <h2>Target Audience</h2>
-                <p>{{ project.target_audience }}</p>
-            </div>
-            {% endif %}
-
-            {% if project.key_features %}
-            <div>
-                <h2>Key Features</h2>
-                <p>{{ project.key_features | markdown | safe }}</p>
-            </div>
-            {% endif %}
-
-            {% if project.pain_points %}
-            <div>
-                <h2>Pain Points</h2>
-                <p>{{ project.pain_points | markdown | safe }}</p>
-            </div>
-            {% endif %}
-
-            {% if project.usage_instructions %}
-            <div>
-                <h2>Usage Instructions</h2>
-                <p>{{ project.usage_instructions | markdown | safe }}</p>
-            </div>
-            {% endif %}
-        </div>
-
-      </div>
+      {% if object.technologies.all %}
+        <section class="bw-surface p-5">
+          <h2 class="text-sm font-black uppercase tracking-wider bw-muted">Tech stack</h2>
+          <div class="mt-4 flex flex-wrap gap-2">
+            {% for tech in object.technologies.all %}
+              <span class="inline-flex items-center rounded-md bg-{{ tech.color }}-100 px-3 py-1 text-sm font-black text-{{ tech.color }}-800">
+                {{ tech.name }}
+              </span>
+            {% endfor %}
+          </div>
+        </section>
+      {% endif %}
+    </aside>
+  </div>
+</section>
 {% endblock content %}
 
 {% block schema %}
@@ -240,8 +255,8 @@
     "image": "https://{{ request.get_host }}{% get_media_prefix %}{{ object.maker.maker_profile_image }}"
   },
   "name":"{{ object.title }}",
-  "thumbnailUrl": "https://osig.app/g?style=base&site=x&font=markerfelt&title={{ object.title }}&subtitle={{ object.short_description }}&eyebrow=Project&image_url={{ object.homepage_screenshot.url }}",
-  "image": "https://osig.app/g?style=base&site=x&font=markerfelt&title={{ object.title }}&subtitle={{ object.short_description }}&eyebrow=Project&image_url={{ object.homepage_screenshot.url }}",
+  "thumbnailUrl": "https://osig.app/g?style=base&site=x&font=markerfelt&title={{ object.title }}&subtitle={{ object.short_description }}&eyebrow=Project&image_url={{ project_screenshot_url }}",
+  "image": "https://osig.app/g?style=base&site=x&font=markerfelt&title={{ object.title }}&subtitle={{ object.short_description }}&eyebrow=Project&image_url={{ project_screenshot_url }}",
   "abstract": "{{ object.short_description }}"
 }
     </script>

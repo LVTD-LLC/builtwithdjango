@@ -1,6 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db.models import Count, Q
+from django.templatetags.static import static
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
 from django_filters.views import FilterView
@@ -66,6 +67,13 @@ class ProjectDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["newsletter_form"] = NewsletterSignupForm
+        context["project_screenshot_url"] = self.request.build_absolute_uri(static("vendors/images/logo.png"))
+
+        try:
+            if self.object.homepage_screenshot:
+                context["project_screenshot_url"] = self.request.build_absolute_uri(self.object.homepage_screenshot.url)
+        except ValueError:
+            pass
 
         return context
 

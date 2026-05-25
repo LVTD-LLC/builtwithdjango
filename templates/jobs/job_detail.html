@@ -12,7 +12,6 @@
     <meta property="og:title" content="{{ object.title }} @ {% if object.company %}{{ object.company.name }}{% else %}{{ object.company_name }}{% endif %}" />
     <meta property="og:description" content="{% if object.company %}{{ object.company.name }}{% else %}{{ object.company_name }}{% endif %} is looking for a {{ object.title }}" />
     <meta property="og:image" content="{{ og_image }}" />
-    <meta property="og:image" content="{{ job.company_logo.build_url }}" />
 
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:creator" content="@rasulkireev" />
@@ -23,78 +22,106 @@
 {% endblock meta %}
 
 {% block content %}
-    <p class="mt-4 text-blue-700">
-        ←
-        <a href="{% url 'jobs' %}">back to all jobs</a>
-    </p>
-    <div class="mx-auto my-10 max-w-3xl">
-        <div class="flex flex-col items-center mt-10 prose md:mx-auto lg:prose-lg">
-            <div class="flex-shrink-0">
-              {% if object.company.logo %}
-                <img class="w-24 h-24 rounded-full"
-                      src="{% get_media_prefix %}{{ object.company.logo }}"
-                      alt="{{ object.company }} Logo"/>
-              {% elif object.company_logo %}
-                <img class="w-24 h-24 rounded-full"
-                    src="{{ job.company_logo.build_url }}"
-                    alt="{% if object.company %}{{ object.company.name }}{% else %}{{ object.company_name }}{% endif %}" />
+<section class="bw-page-hero pb-10">
+  <div class="bw-container">
+    <a href="{% url 'jobs' %}" class="inline-flex items-center gap-2 text-sm font-black text-[var(--bw-primary-dark)]">
+      <i class="las la-arrow-left" aria-hidden="true"></i>
+      All jobs
+    </a>
+    <div class="mt-8 grid gap-8 lg:grid-cols-[1fr_20rem] lg:items-start">
+      <div>
+        <div class="flex items-center gap-4">
+          <span class="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-md border border-[var(--bw-border)] bg-[var(--bw-surface)] text-2xl font-black text-[var(--bw-primary-dark)]">
+            <span aria-hidden="true">
+              {% if object.company.name %}
+                {{ object.company.name|first }}
+              {% elif object.company_name %}
+                {{ object.company_name|first }}
+              {% else %}
+                D
               {% endif %}
-            </div>
-            <h1 class="text-center">
-                {{ object.title }} @
-                {% if object.company_name %}
-                  <a href="{{ object.company.project.get_absolute_url }}">
-                      {% if object.company %}{{ object.company.name }}{% else %}{{ object.company_name }}{% endif %}
-                  </a>
-                {% elif object.company_name %}
-                  <span>{% if object.company %}{{ object.company.name }}{% else %}{{ object.company_name }}{% endif %}</span>
-                {% endif %}
-            </h1>
-        </div>
-        <div class="flex justify-center mt-10">
-            <a class="inline-flex items-center px-6 py-3 text-xl font-light text-white bg-green-600 rounded-full border border-transparent border-solid shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-               href="{{ object.listing_url }}?utm_source={{ request.get_host }}&ref={{ request.get_host }}"
-               target="_blank">
-                Apply for this position
-            </a>
-        </div>
-        <div class="py-6 my-10 w-full border-t border-b border-gray-300 border-solid-2">
-            {% if object.location %}
-                <p class="text-lg text-gray-800">
-                    Location:
-                    <b>
-                    {{ object.location }}
-                    </b>
-                </p>
+            </span>
+            {% if object.company.logo %}
+              <img class="absolute inset-0 h-full w-full object-cover"
+                   src="{% get_media_prefix %}{{ object.company.logo }}"
+                   alt="{{ object.company }} Logo"
+                   onerror="this.style.display='none'" />
+            {% elif company_logo_url %}
+              <img class="absolute inset-0 h-full w-full object-cover"
+                   src="{{ company_logo_url }}"
+                   alt="{% if object.company %}{{ object.company.name }}{% else %}{{ object.company_name }}{% endif %}"
+                   onerror="this.style.display='none'" />
             {% endif %}
-            {% if object.min_yearly_salary %}
-                <p class="text-lg text-gray-800">
-                    Salary:
-                    <b>
-                    ${{ object.min_yearly_salary | intcomma }} - ${{ object.max_yearly_salary | intcomma }}
-                    </b>
-                </p>
-            {% endif %}
-            <p class="text-lg text-gray-800">
-                Job Posted: <b>{{ object.created_datetime|timesince }} ago</b>
-            </p>
-        </div>
-        <div class="prose md:prose-lg">
-            {% if object.description %}
-                {{ object.description | markdown | safe }}
+          </span>
+          <p class="font-black bw-muted">
+            {% if object.company %}
+              {{ object.company.name }}
             {% else %}
-                There is no decription
+              {{ object.company_name }}
             {% endif %}
+          </p>
         </div>
-        <div class="flex justify-center mt-10">
-            <a class="inline-flex items-center px-6 py-3 text-xl font-light text-white bg-green-600 rounded-full border border-transparent border-solid shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-               href="{{ object.listing_url }}?utm_source={{ request.get_host }}&ref={{ request.get_host }}"
-               target="_blank">
-                Apply for this position
-            </a>
-        </div>
+        <h1 class="bw-heading-lg mt-6">{{ object.title }}</h1>
+      </div>
+
+      <aside class="bw-surface p-4">
+        <a class="bw-button bw-button-primary w-full"
+           href="{{ object.listing_url }}?utm_source={{ request.get_host }}&ref={{ request.get_host }}"
+           target="_blank"
+           rel="noopener">
+          Apply for this role
+          <i class="las la-external-link-alt" aria-hidden="true"></i>
+        </a>
+        <dl class="mt-5 grid gap-3 text-sm">
+          {% if object.location %}
+            <div class="rounded-md bg-[var(--bw-surface-raised)] p-3">
+              <dt class="font-black text-[var(--bw-ink)]">Location</dt>
+              <dd class="mt-1 bw-muted">{{ object.location }}</dd>
+            </div>
+          {% endif %}
+          {% if object.min_yearly_salary %}
+            <div class="rounded-md bg-[var(--bw-surface-raised)] p-3">
+              <dt class="font-black text-[var(--bw-ink)]">Salary</dt>
+              <dd class="mt-1 bw-muted">${{ object.min_yearly_salary | intcomma }}{% if object.max_yearly_salary %} - ${{ object.max_yearly_salary | intcomma }}{% endif %}</dd>
+            </div>
+          {% endif %}
+          <div class="rounded-md bg-[var(--bw-surface-raised)] p-3">
+            <dt class="font-black text-[var(--bw-ink)]">Posted</dt>
+            <dd class="mt-1 bw-muted">{{ object.created_datetime|timesince }} ago</dd>
+          </div>
+        </dl>
+      </aside>
     </div>
+  </div>
+</section>
+
+<section class="pb-16">
+  <div class="bw-container grid gap-8 lg:grid-cols-[minmax(0,1fr)_20rem]">
+    <article class="bw-surface p-5 sm:p-8">
+      <div class="bw-prose prose max-w-none md:prose-lg">
+        {% if object.description %}
+          {{ object.description | markdown | safe }}
+        {% else %}
+          <p>There is no description for this role yet.</p>
+        {% endif %}
+      </div>
+    </article>
+    <aside class="lg:sticky lg:top-24 lg:self-start">
+      <div class="bw-surface p-5">
+        <h2 class="text-xl font-black">Interested?</h2>
+        <p class="mt-2 text-sm leading-6 bw-muted">Apply on the company site. Built with Django adds tracking params so teams know the community sent you.</p>
+        <a class="bw-button bw-button-primary mt-5 w-full"
+           href="{{ object.listing_url }}?utm_source={{ request.get_host }}&ref={{ request.get_host }}"
+           target="_blank"
+           rel="noopener">
+          Apply now
+        </a>
+      </div>
+    </aside>
+  </div>
+</section>
 {% endblock content %}
+
 {% block schema %}
     <script type="application/ld+json">
 {

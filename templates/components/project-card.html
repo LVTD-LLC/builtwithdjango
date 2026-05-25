@@ -1,0 +1,59 @@
+{% load static %}
+
+<article class="bw-card bw-project-card {% if site.sponsored %}bw-project-card--sponsored{% endif %}">
+  <a href="{% url 'project' site.slug %}" class="bw-project-card__media" aria-label="View {{ site.title }}">
+    {% if site.homepage_screenshot %}
+      <img
+        src="{% get_media_prefix %}{{ site.homepage_screenshot }}"
+        alt="{{ site.title }} screenshot"
+        loading="lazy"
+        decoding="async"
+      />
+    {% else %}
+      <div class="flex h-full items-center justify-center bg-[var(--bw-surface-muted)] p-6 text-center text-sm font-bold bw-muted">
+        Screenshot coming soon
+      </div>
+    {% endif %}
+  </a>
+  <div class="bw-project-card__body">
+    <div class="flex items-start justify-between gap-3">
+      <h2 class="m-0">
+        <a href="{% url 'project' site.slug %}" class="bw-project-card__title">{{ site.title }}</a>
+      </h2>
+      {% if site.sponsored %}
+        <span class="shrink-0 rounded-md bg-[var(--bw-accent)] px-2 py-1 text-xs font-black text-[var(--bw-ink)]">Featured</span>
+      {% endif %}
+    </div>
+    <p class="text-sm leading-6 bw-muted">{{ site.short_description }}</p>
+  </div>
+  <div class="bw-project-card__actions">
+    <div class="flex flex-wrap items-center gap-2">
+      <a class="bw-icon-button"
+         href='{{ site.url }}?ref={{ request.get_host }}&utm_source={{ request.get_host }}{{ request.path }}&utm_campaign=list-of-projects-{% now "F-Y" %}-{% if site.sponsored %}sponsored{% else %}unsponsored{% endif %}'
+         target="_blank"
+         rel="noopener"
+         aria-label="Visit {{ site.title }}">
+        <i class="las la-external-link-alt" aria-hidden="true"></i>
+      </a>
+      {% if site.github_url %}
+        <a class="bw-icon-button"
+           href="{{ site.github_url }}?ref={{ request.get_host }}"
+           target="_blank"
+           rel="noopener"
+           aria-label="{{ site.title }} on GitHub">
+          <i class="lab la-github" aria-hidden="true"></i>
+        </a>
+      {% endif %}
+      {% if site.twitter_url %}
+        <a class="bw-icon-button"
+           href="{{ site.twitter_url }}?ref={{ request.get_host }}"
+           target="_blank"
+           rel="noopener"
+           aria-label="{{ site.title }} on X">
+          <i class="lab la-twitter" aria-hidden="true"></i>
+        </a>
+      {% endif %}
+    </div>
+    {% include "components/project-likes.html" with site=site %}
+  </div>
+</article>

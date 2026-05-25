@@ -3,63 +3,56 @@
 {% load widget_tweaks %}
 
 {% block meta %}
-    <title>Django Jobs</title>
-    <meta name="description" content="Best jobs for best Django Developers!"/>
+    <title>Django Jobs | Built with Django</title>
+    <meta name="description" content="Django jobs for developers who want to work with Django." />
     <link rel="canonical" href="https://{{ request.get_host }}/jobs/" />
     <meta name="twitter:card" content="summary" />
     <meta name="twitter:creator" content="@rasulkireev" />
     <meta name="twitter:site" content="@builtwithdjango" />
-    <meta name="twitter:title" content="Django Jobs" />
-    <meta name="twitter:description" content="Best jobs for best Django Developers!"/>
+    <meta name="twitter:title" content="Django Jobs | Built with Django" />
+    <meta name="twitter:description" content="Django jobs for developers who want to work with Django." />
     <meta name="twitter:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
-    <meta property="og:title" content="Django Jobs" />
+    <meta property="og:title" content="Django Jobs | Built with Django" />
     <meta property="og:url" content="https://{{ request.get_host }}/jobs/" />
-    <meta property="og:description" content="Best jobs for best Django Developers!"/>
+    <meta property="og:description" content="Django jobs for developers who want to work with Django." />
     <meta property="og:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
 {% endblock meta %}
 
 {% block content %}
-
-    <div class="px-6 py-20 bg-white sm:py-24 lg:px-8">
-      <div class="max-w-2xl mx-auto text-center">
-        <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">Django Jobs</h1>
-        <p class="mt-6 text-lg leading-8 prose text-gray-600">Advertize your jobs to the best Django Developers out there.</p>
-      </div>
-      <div class="flex flex-wrap items-center justify-between mt-8 sm:flex-nowrap">
-          <div class="mx-auto">
-            <a type="button"
-                href="{% url 'post_job' %}"
-                class="flex items-center justify-center w-full px-5 py-3 mt-3 text-base font-medium text-white bg-green-500 border border-transparent rounded-md shadow hover:bg-green-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-green-700 focus:ring-white sm:mt-0 sm:ml-3 sm:w-auto sm:flex-shrink-0">
-                Post a Job
-            </a>
-          </div>
-      </div>
+<section class="bw-page-hero">
+  <div class="bw-container grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
+    <div>
+      <p class="bw-kicker">Django job board</p>
+      <h1 class="bw-heading-lg mt-3">Find teams building with Django</h1>
+      <p class="bw-lede mt-5">
+        Jobs from teams that care about Django experience, practical web development, and shipping real products.
+      </p>
     </div>
+    <a href="{% url 'post_job' %}" class="bw-button bw-button-accent">Post a job</a>
+  </div>
+</section>
 
+<section class="pb-16">
+  <div class="bw-container">
     {% if object_list %}
-    <div class="mx-auto lg:py-8">
-      <div class="grid items-start grid-cols-1 gap-4 lg:grid-cols-4 lg:gap-8">
-        <div class="grid grid-cols-1 gap-4 lg:col-span-4">
-          <div class="grid grid-cols-1 border border-gray-200 shadow sm:rounded-xl lg:col-span-3">
-            <ul role="list" class="overflow-hidden bg-white divide-y divide-gray-100 shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
-              {% for job in object_list %}
-                    {% include "components/job-item.html" with job=job %}
-              {% endfor %}
-            </ul>
-          </div>
-        </div>
+      <div class="overflow-hidden rounded-lg border border-[var(--bw-border)] bg-[var(--bw-surface)] shadow-sm">
+        <ul role="list" class="divide-y divide-[var(--bw-border)]">
+          {% for job in object_list %}
+            {% include "components/job-item.html" with job=job %}
+          {% endfor %}
+        </ul>
       </div>
-    </div>
     {% else %}
-        <div class="flex justify-center mx-auto my-10">
-            <p class="text-3xl md:text-4xl">
-                There are currently no jobs available...
-                <span class="font-bold">that we know of</span>
-            </p>
-        </div>
+      <div class="bw-surface p-8 text-center">
+        <h2 class="text-2xl font-black">No jobs are live right now</h2>
+        <p class="mx-auto mt-3 max-w-md bw-muted">The board is quiet today. Post a Django role if your team is hiring.</p>
+        <a href="{% url 'post_job' %}" class="bw-button bw-button-accent mt-6">Post the first job</a>
+      </div>
     {% endif %}
+  </div>
+</section>
 
-    {% include "components/newsletter.html" with newsletter_form=newsletter_form %}
+{% include "components/newsletter.html" with newsletter_form=newsletter_form %}
 
 {% endblock content %}
 
@@ -70,8 +63,8 @@
     "@type": "WebSite",
     "name": "Django Jobs",
     "about": "Job Board",
-    "description": "Best jobs for best Django Developers!",
-    "abstract": "Best jobs for best Django Developers!",
+    "description": "Django jobs for developers who want to work with Django.",
+    "abstract": "Django jobs for developers who want to work with Django.",
     "thumbnailUrl": "https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
     "url": "https://{{ request.get_host }}/jobs/",
     "author": {

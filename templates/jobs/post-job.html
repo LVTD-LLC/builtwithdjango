@@ -1,97 +1,91 @@
 {% extends "base.html" %}
 {% load static %}
+{% load widget_tweaks %}
 
 {% block meta %}
-    <title>Built with Django</title>
-    <meta name="description" content="Collection of cool projects people built with Django" />
+    <title>Post a Django Job | Built with Django</title>
+    <meta name="description" content="Post a Django job for the Built with Django community." />
     <link rel="canonical" href="https://{{ request.get_host }}/jobs/new" />
-    <meta property="og:title" content="Built with Django" />
+    <meta property="og:title" content="Post a Django Job | Built with Django" />
     <meta property="og:url" content="https://{{ request.get_host }}/jobs/new" />
-    <meta property="og:description" content="Collection of cool projects people built with Django" />
+    <meta property="og:description" content="Post a Django job for the Built with Django community." />
     <meta property="og:image" content="{% static 'vendors/images/logo.png' %}" />
     <meta name="twitter:creator" content="@rasulkireev" />
-    <meta name="twitter:site" content="@rasulkireev" />
-    <meta name="twitter:title" content="Built with Django" />
-    <meta name="twitter:description" content="Collection of cool projects people built with Django" />
+    <meta name="twitter:site" content="@builtwithdjango" />
+    <meta name="twitter:title" content="Post a Django Job | Built with Django" />
+    <meta name="twitter:description" content="Post a Django job for the Built with Django community." />
     <meta name="twitter:image" content="{% static 'vendors/images/logo.png' %}" />
 {% endblock meta %}
 
 {% block content %}
-    <div class="w-auto mx-auto mt-10 lg:w-1/3">
-        <div data-controller="loading" class="p-8 mb-6 bg-white border-t-8 border-green-500 rounded-lg shadow-lg">
-            <div class="prose-sm prose">
-                <h1>Post a Job</h1>
-                <p>
-                    It is my intention to make this form super simple. I will fill out all
-                    the necessary info based on the job listing URL you will provide (company logo, description, location, etc.)
-                </p>
-            </div>
-            <form name="form" class="my-4" method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                {{ form.non_field_errors }}
-                <div class="mb-4">
-                    {{ form.title.errors }}
-                    <label class="block text-sm font-medium text-gray-700" for="{{ form.title.id_for_label }}">
-                        Title
-                    </label>
-                    {{ form.title }}
-                </div>
-                <div class="mb-4">
-                    {{ form.company_name.errors }}
-                    <label class="block text-sm font-medium text-gray-700" for="{{ form.company_name.id_for_label }}">
-                        Company Name
-                    </label>
-                    {{ form.company_name }}
-                </div>
-                <div class="mb-4">
-                    {{ form.listing_url.errors }}
-                    <label class="block text-sm font-medium text-gray-700" for="{{ form.listing_url.id_for_label }}">
-                        Job Listing URL
-                    </label>
-                    {{ form.listing_url }}
-                </div>
-                <div class="mb-4">
-                    {{ form.email.errors }}
-                    <label class="block text-sm font-medium text-gray-700" for="{{ form.email.id_for_label }}">
-                        Your Email (will not be shown)
-                    </label>
-                    {{ form.email }}
-                </div>
-                <div class="mb-4">
-                    {{ form.min_yearly_salary.errors }}
-                    <label class="block text-sm font-medium text-gray-700"
-                           for="{{ form.min_yearly_salary.id_for_label }}">
-                        Min Yearly Salary in USD (optional)
-                    </label>
-                    {{ form.min_yearly_salary }}
-                </div>
-                <div class="mb-4">
-                    {{ form.max_yearly_salary.errors }}
-                    <label class="block text-sm font-medium text-gray-700"
-                           for="{{ form.max_yearly_salary.id_for_label }}">
-                        Max Yearly Salary in USD (optional)
-                    </label>
-                    {{ form.max_yearly_salary }}
-                </div>
+<section class="bw-page-hero pb-10">
+  <div class="bw-container">
+    <p class="bw-kicker">Reach Django developers</p>
+    <h1 class="bw-heading-lg mt-3">Post a Django job</h1>
+    <p class="bw-lede mt-5">Share the core role details. The listing URL lets us fill in the rest and send people to your canonical job post.</p>
+  </div>
+</section>
 
-                <button
-                  data-action="click->loading#load"
-                  data-loading-target="button"
-                  class="flex flex-row px-4 py-2 font-bold text-white bg-green-500 rounded hover:bg-green-300"
-                  type="submit"
-                >
-                  <div data-loading-target="loader" class="hidden" role="status">
-                      <svg aria-hidden="true" class="w-6 h-6 mr-2 text-white animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
-                          <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
-                      </svg>
-                      <span class="sr-only">Loading...</span>
-                  </div>
-                  <div>
-                    Submit
-                  </div>
-                </button>
-            </form>
+<section class="pb-16">
+  <div class="bw-container grid gap-8 lg:grid-cols-[minmax(0,42rem)_1fr]">
+    <div data-controller="loading" class="bw-surface p-5 sm:p-8">
+      <form name="form" class="grid gap-5" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <div>
+          {{ form.title.errors }}
+          <label class="block text-sm font-black text-[var(--bw-ink)]" for="{{ form.title.id_for_label }}">Role title</label>
+          {% render_field form.title class="mt-2 block w-full rounded-md border-[var(--bw-border)] bg-[var(--bw-surface)] text-base focus:border-[var(--bw-primary)] focus:ring-[var(--bw-primary)]" placeholder="Senior Django Engineer" %}
         </div>
+        <div>
+          {{ form.company_name.errors }}
+          <label class="block text-sm font-black text-[var(--bw-ink)]" for="{{ form.company_name.id_for_label }}">Company name</label>
+          {% render_field form.company_name class="mt-2 block w-full rounded-md border-[var(--bw-border)] bg-[var(--bw-surface)] text-base focus:border-[var(--bw-primary)] focus:ring-[var(--bw-primary)]" placeholder="Acme Studio" %}
+        </div>
+        <div>
+          {{ form.listing_url.errors }}
+          <label class="block text-sm font-black text-[var(--bw-ink)]" for="{{ form.listing_url.id_for_label }}">Job listing URL</label>
+          {% render_field form.listing_url class="mt-2 block w-full rounded-md border-[var(--bw-border)] bg-[var(--bw-surface)] text-base focus:border-[var(--bw-primary)] focus:ring-[var(--bw-primary)]" placeholder="https://example.com/jobs/django-engineer" %}
+        </div>
+        <div>
+          {{ form.email.errors }}
+          <label class="block text-sm font-black text-[var(--bw-ink)]" for="{{ form.email.id_for_label }}">Your email</label>
+          {% render_field form.email class="mt-2 block w-full rounded-md border-[var(--bw-border)] bg-[var(--bw-surface)] text-base focus:border-[var(--bw-primary)] focus:ring-[var(--bw-primary)]" placeholder="hiring@example.com" %}
+          <p class="mt-2 text-sm bw-muted">Only used to contact you about this listing.</p>
+        </div>
+        <div class="grid gap-5 sm:grid-cols-2">
+          <div>
+            {{ form.min_yearly_salary.errors }}
+            <label class="block text-sm font-black text-[var(--bw-ink)]" for="{{ form.min_yearly_salary.id_for_label }}">Min salary, USD</label>
+            {% render_field form.min_yearly_salary class="mt-2 block w-full rounded-md border-[var(--bw-border)] bg-[var(--bw-surface)] text-base focus:border-[var(--bw-primary)] focus:ring-[var(--bw-primary)]" placeholder="120000" %}
+          </div>
+          <div>
+            {{ form.max_yearly_salary.errors }}
+            <label class="block text-sm font-black text-[var(--bw-ink)]" for="{{ form.max_yearly_salary.id_for_label }}">Max salary, USD</label>
+            {% render_field form.max_yearly_salary class="mt-2 block w-full rounded-md border-[var(--bw-border)] bg-[var(--bw-surface)] text-base focus:border-[var(--bw-primary)] focus:ring-[var(--bw-primary)]" placeholder="180000" %}
+          </div>
+        </div>
+        <button data-action="click->loading#load" data-loading-target="button" class="bw-button bw-button-primary justify-self-start" type="submit">
+          <span data-loading-target="loader" class="hidden" role="status">
+            <svg aria-hidden="true" class="h-5 w-5 animate-spin text-[oklch(98%_0.01_118)]" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908Z" fill="currentColor" opacity="0.28"/>
+              <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentColor"/>
+            </svg>
+            <span class="sr-only">Submitting job...</span>
+          </span>
+          Post job
+        </button>
+      </form>
     </div>
+
+    <aside class="bw-surface self-start p-5">
+      <h2 class="text-xl font-black">Why post here?</h2>
+      <ul class="mt-4 grid gap-3 text-sm leading-6 bw-muted">
+        <li><strong class="text-[var(--bw-ink)]">Django-specific audience.</strong> Reach people who already care about this stack.</li>
+        <li><strong class="text-[var(--bw-ink)]">Simple submission.</strong> The listing URL keeps the source of truth on your site.</li>
+        <li><strong class="text-[var(--bw-ink)]">Community context.</strong> Jobs sit alongside projects, guides, and developer profiles.</li>
+      </ul>
+    </aside>
+  </div>
+</section>
 {% endblock content %}
