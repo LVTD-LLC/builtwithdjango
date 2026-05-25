@@ -4,7 +4,6 @@
         <div class="p-8 mb-6 bg-white border-t-8 border-green-500 rounded-lg shadow-lg">
             <form method="post"
                   enctype="multipart/form-data"
-                  data-analytics-event="newsletter form submitted"
                   data-analytics-source="newsletter page">
                 {% csrf_token %}
                 {{ form.non_field_errors }}
@@ -15,7 +14,10 @@
                     </label>
                     {{ form.user_email }}
                 </div>
-                <button class="px-4 py-2 font-bold text-white bg-green-500 rounded hover:bg-green-300" type="submit">
+                <button class="px-4 py-2 font-bold text-white bg-green-500 rounded hover:bg-green-300"
+                        type="submit"
+                        data-analytics-event="newsletter submit clicked"
+                        data-analytics-source="newsletter page">
                     Submit
                 </button>
             </form>
