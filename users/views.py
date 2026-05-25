@@ -1,21 +1,14 @@
 from allauth.account.adapter import get_adapter
 from allauth.account.models import EmailAddress
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import LoginView
 from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, TemplateView, UpdateView
+from django.views.generic import TemplateView, UpdateView
 from djstripe import models
-
-from builtwithdjango.utils import get_builtwithdjango_logger
-from newsletter.views import NewsletterSignupForm
 
 from .forms import CustomUserUpdateForm
 from .models import CustomUser
-
-logger = get_builtwithdjango_logger(__name__)
-
 
 # Authentication is handled by Django Allauth
 # See ACCOUNT_FORMS in settings.py for custom form configuration
