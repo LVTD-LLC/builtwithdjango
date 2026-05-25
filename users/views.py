@@ -6,6 +6,7 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, TemplateView, UpdateView
+from djstripe import models
 
 from builtwithdjango.utils import get_builtwithdjango_logger
 from newsletter.views import NewsletterSignupForm
@@ -32,6 +33,10 @@ class ProfileUpdateForm(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
     def get_object(self, queryset=None):
         return self.request.user
+
+    def form_valid(self, form):
+        models.Customer.get_or_create(subscriber=self.request.user)
+        return super().form_valid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
