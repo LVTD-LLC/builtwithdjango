@@ -257,11 +257,137 @@
           </div>
         </div>
       </div>
-      <div class="bw-container border-t border-[oklch(35%_0.035_156)] py-4">
-        <div class="scale-75 origin-left">
-          <webring-css site="https://builtwithdjango.com"></webring-css>
-          <script src="https://djangowebring.com/static/webring.js"></script>
+      <div class="bw-webring-shell">
+        <div class="bw-webring-panel">
+          <div class="bw-webring-copy">
+            <p class="bw-webring-label">Community ring</p>
+            <h2>A small Django neighborhood</h2>
+            <p>Built with Django is part of a small loop of independent Django sites. Follow the ring to find another corner of the community.</p>
+          </div>
+          <div class="bw-webring-widget">
+            <webring-css site="https://builtwithdjango.com"></webring-css>
+          </div>
         </div>
+        <script src="https://djangowebring.com/static/webring.js" defer></script>
+        <script>
+          function restyleDjangoWebring() {
+            const host = document.querySelector('.bw-webring-widget webring-css');
+            if (!host) return;
+
+            const styleId = 'builtwithdjango-webring-restyle';
+            const applyStyle = () => {
+              if (!host.shadowRoot) return false;
+              if (host.shadowRoot.getElementById(styleId)) return true;
+
+              const style = document.createElement('style');
+              style.id = styleId;
+              style.textContent = `
+                :host {
+                  display: block;
+                  width: 100%;
+                }
+
+                .django-webring {
+                  display: block !important;
+                  border: 0 !important;
+                  border-radius: 0 !important;
+                  background: transparent !important;
+                  box-shadow: none !important;
+                  padding: 0 !important;
+                  color: oklch(91% 0.025 126) !important;
+                  font-family: inherit !important;
+                  text-align: left !important;
+                }
+
+                .django-webring__icon {
+                  display: none !important;
+                }
+
+                .django-webring__content {
+                  display: grid !important;
+                  gap: 0.8rem !important;
+                }
+
+                .django-webring__content h1 {
+                  margin: 0 !important;
+                  color: oklch(96% 0.025 126) !important;
+                  font-size: clamp(1.1rem, 3vw, 1.45rem) !important;
+                  font-weight: 900 !important;
+                  line-height: 1.05 !important;
+                }
+
+                .django-webring__content h2 {
+                  margin: 0 !important;
+                  color: oklch(78% 0.12 92) !important;
+                  font-size: 0.95rem !important;
+                  font-weight: 850 !important;
+                  line-height: 1.35 !important;
+                }
+
+                .django-webring__content p {
+                  margin: 0 !important;
+                  color: oklch(78% 0.03 126) !important;
+                  font-size: 0.92rem !important;
+                  line-height: 1.55 !important;
+                }
+
+                .django-webring__content a {
+                  display: inline-flex !important;
+                  min-height: 2.45rem !important;
+                  align-items: center !important;
+                  justify-content: center !important;
+                  margin: 0.25rem 0.35rem 0 0 !important;
+                  border: 1px solid oklch(50% 0.06 150) !important;
+                  border-radius: 8px !important;
+                  background: oklch(18% 0.035 151) !important;
+                  color: oklch(94% 0.025 126) !important;
+                  padding: 0.58rem 0.8rem !important;
+                  font-size: 0.88rem !important;
+                  font-weight: 850 !important;
+                  line-height: 1 !important;
+                  text-decoration: none !important;
+                  transition:
+                    background-color 160ms cubic-bezier(0.22, 1, 0.36, 1),
+                    border-color 160ms cubic-bezier(0.22, 1, 0.36, 1),
+                    color 160ms cubic-bezier(0.22, 1, 0.36, 1),
+                    transform 160ms cubic-bezier(0.22, 1, 0.36, 1) !important;
+                }
+
+                .django-webring__content a:hover,
+                .django-webring__content a:focus-visible {
+                  border-color: oklch(79% 0.16 92) !important;
+                  background: oklch(78% 0.17 92) !important;
+                  color: oklch(16% 0.04 151) !important;
+                  transform: translateY(-1px) !important;
+                }
+
+                @media (max-width: 600px) {
+                  .django-webring__content {
+                    gap: 0.7rem !important;
+                  }
+
+                  .django-webring__content a {
+                    width: 100% !important;
+                    margin-right: 0 !important;
+                  }
+                }
+              `;
+              host.shadowRoot.appendChild(style);
+              return true;
+            };
+
+            let attempts = 0;
+            const interval = window.setInterval(() => {
+              attempts += 1;
+              if (applyStyle() || attempts > 40) {
+                window.clearInterval(interval);
+              }
+            }, 100);
+          }
+
+          document.addEventListener('DOMContentLoaded', restyleDjangoWebring);
+          document.addEventListener('turbo:load', restyleDjangoWebring);
+        </script>
       </div>
     </footer>
 

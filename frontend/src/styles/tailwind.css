@@ -552,6 +552,74 @@
     color: var(--bw-accent);
   }
 
+  .bw-webring-shell {
+    width: min(100% - 2rem, 72rem);
+    margin-inline: auto;
+    border-top: 1px solid oklch(35% 0.035 156);
+    padding-top: clamp(1.4rem, 4vw, 2.5rem);
+    padding-bottom: clamp(7.25rem, 13vw, 9.5rem);
+  }
+
+  .bw-webring-panel {
+    display: grid;
+    gap: 1.25rem;
+    align-items: center;
+    border: 1px solid oklch(35% 0.045 151);
+    border-radius: var(--bw-radius);
+    background:
+      linear-gradient(135deg, oklch(18% 0.045 151), oklch(13% 0.035 151)),
+      var(--bw-ink);
+    padding: clamp(1rem, 4vw, 1.4rem);
+    box-shadow: inset 0 1px 0 oklch(100% 0.01 118 / 0.08);
+  }
+
+  @media (min-width: 768px) {
+    .bw-webring-panel {
+      grid-template-columns: minmax(14rem, 0.9fr) minmax(0, 1.25fr);
+      gap: clamp(1.5rem, 5vw, 3rem);
+    }
+  }
+
+  .bw-webring-copy {
+    max-width: 28rem;
+  }
+
+  .bw-webring-label {
+    color: var(--bw-accent);
+    font-size: 0.74rem;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .bw-webring-copy h2 {
+    margin-top: 0.7rem;
+    color: oklch(96% 0.025 126);
+    font-size: clamp(1.65rem, 4vw, 2.35rem);
+    font-weight: 900;
+    line-height: 0.98;
+  }
+
+  .bw-webring-copy p:not(.bw-webring-label) {
+    margin-top: 0.85rem;
+    color: oklch(78% 0.03 126);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .bw-webring-widget {
+    min-width: 0;
+    border-radius: var(--bw-radius);
+    background: oklch(11% 0.03 151);
+    padding: clamp(0.9rem, 3vw, 1.2rem);
+  }
+
+  .bw-webring-widget webring-css {
+    display: block;
+    min-width: 0;
+  }
+
   .btn-blue {
     @apply inline-flex items-center px-4 py-2 font-semibold text-white bg-blue-500 rounded-lg shadow-md;
     @apply hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75;
