@@ -13,6 +13,13 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 **Fixed** for any bug fixes.
 **Security** in case of vulnerabilities.
 
+## Unreleased
+### Changed
+- Simplified the landing page by removing the hero showcase, proof strip, and quick-link card band.
+- Expanded the home page project and guide sections to show six items and gave guides and jobs full-width sections.
+
+### Fixed
+- Made the bottom-right desktop ad use a solid surface instead of an opacity fade.
 
 ## [0.4.6] - 2025-12-08
 ### Added

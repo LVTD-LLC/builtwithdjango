@@ -1,4 +1,4 @@
-<aside id="ad-container-mobile" class="fixed inset-x-0 bottom-0 z-50 hidden border-t border-[var(--bw-border-strong)] bg-[oklch(96.5%_0.025_128)] shadow-lg lg:hidden">
+<aside id="ad-container-mobile" class="fixed inset-x-0 bottom-0 z-50 hidden border-t border-[var(--bw-border-strong)] bg-white shadow-lg lg:hidden">
   <div class="mx-auto flex max-w-6xl items-center justify-between gap-3 px-4 py-3">
     <a target="_blank"
        rel="noopener"
@@ -18,7 +18,7 @@
   </div>
 </aside>
 
-<aside id="ad-container-desktop" class="fixed bottom-4 right-4 z-50 hidden w-80 rounded-lg border border-[var(--bw-border-strong)] bg-[oklch(96.5%_0.025_128)] p-4 shadow-lg lg:block">
+<aside id="ad-container-desktop" class="fixed bottom-4 right-4 z-50 hidden w-80 rounded-lg border border-[var(--bw-border-strong)] bg-white p-4 shadow-lg">
   <p class="text-xs font-black uppercase tracking-wider bw-muted">Ad</p>
   <div class="mt-2 flex gap-3">
     <a target="_blank"
@@ -53,7 +53,6 @@
         adContainerMobile.style.transform = 'translateY(100%)';
       } else {
         adContainerDesktop.style.transform = 'translateY(8px)';
-        adContainerDesktop.style.opacity = '0';
       }
 
       window.setTimeout(() => {
@@ -82,7 +81,6 @@
         adContainerDesktop.style.display = 'block';
         window.setTimeout(() => {
           adContainerDesktop.style.transform = 'translateY(0)';
-          adContainerDesktop.style.opacity = '1';
         }, 80);
       }
     }
@@ -111,13 +109,16 @@
 
 <style>
   #ad-container-mobile {
+    background: var(--bw-surface);
     transform: translateY(100%);
     transition: transform 220ms var(--bw-ease);
   }
 
   #ad-container-desktop {
-    opacity: 0;
+    isolation: isolate;
+    background: var(--bw-surface);
+    box-shadow: 0 24px 60px oklch(16% 0.04 151 / 0.22), 0 1px 0 oklch(100% 0.01 118 / 0.75) inset;
     transform: translateY(8px);
-    transition: opacity 180ms var(--bw-ease), transform 220ms var(--bw-ease);
+    transition: transform 220ms var(--bw-ease);
   }
 </style>

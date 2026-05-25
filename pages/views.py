@@ -35,9 +35,9 @@ class HomeView(TemplateView):
         context = super().get_context_data(**kwargs)
         context["newsletter_form"] = NewsletterSignupForm
         context["projects"] = Project.objects.filter(published=True, active=True).order_by("-sponsored", "-date_added")[
-            :4
+            :6
         ]
-        context["guides"] = Post.objects.filter(type="TUTORIAL")[:4]
+        context["guides"] = Post.objects.filter(type="TUTORIAL")[:6]
         context["podcast_episodes"] = Episode.objects.all()[:3]
         filter_date = timezone.now() - timedelta(days=60)
         context["jobs"] = Job.objects.filter(approved=True, created_datetime__gte=filter_date).order_by(

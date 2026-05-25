@@ -4,145 +4,27 @@
 
 {% block content %}
 <section class="bw-section">
-  <div class="bw-container-wide grid items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
-    <div>
-      <p class="bw-kicker">
-        <i class="las la-seedling" aria-hidden="true"></i>
-        Community showcase
-      </p>
-      <h1 class="bw-heading-xl mt-5">Built with Django</h1>
-      <p class="bw-lede mt-6">
-        See what people are shipping with Django, learn from practical guides, find Django work, and discover useful community resources.
-      </p>
-      <div class="mt-8 flex flex-col gap-3 sm:flex-row">
-        <a href="{% url 'projects' %}" class="bw-button bw-button-primary">
-          Explore projects
-          <i class="las la-arrow-right" aria-hidden="true"></i>
-        </a>
-        <a href="{% url 'blog' %}" class="bw-button bw-button-secondary">Read guides</a>
-      </div>
-    </div>
-
-    <div class="bw-hero-showcase">
-      <div class="bw-hero-showcase__header">
-        <p class="bw-hero-showcase__label">Start with the community</p>
-        <p class="bw-hero-showcase__note">Pick a path into projects, guides, tools, or Django work.</p>
-      </div>
-      <div class="grid gap-3 sm:grid-cols-2">
-        {% if projects %}
-          {% for project in projects|slice:":4" %}
-            <a href="{% url 'project' project.slug %}" class="group block overflow-hidden rounded-md border border-[var(--bw-border)] bg-[var(--bw-surface)] shadow-sm">
-              <div class="aspect-[16/10] overflow-hidden bg-[var(--bw-surface-muted)]">
-                {% if project.homepage_screenshot %}
-                  <img
-                    src="{% get_media_prefix %}{{ project.homepage_screenshot }}"
-                    alt="{{ project.title }} screenshot"
-                    class="bw-project-screenshot transition duration-200 group-hover:scale-[1.025]"
-                    loading="{% if forloop.counter <= 2 %}eager{% else %}lazy{% endif %}"
-                    decoding="async"
-                  />
-                {% else %}
-                  <div class="flex h-full items-center justify-center p-6 text-center text-sm font-bold bw-muted">Screenshot coming soon</div>
-                {% endif %}
-              </div>
-              <div class="p-3">
-                <p class="font-black leading-tight text-[var(--bw-ink)]">{{ project.title }}</p>
-                <p class="mt-1 line-clamp-2 text-sm leading-5 bw-muted">{{ project.short_description }}</p>
-              </div>
-            </a>
-          {% endfor %}
-        {% else %}
-          <a href="{% url 'projects' %}" class="bw-hero-placeholder">
-            <span>
-              <span class="bw-menu-icon"><i class="las la-window-restore" aria-hidden="true"></i></span>
-              <span class="mt-5 block text-xl font-black leading-tight text-[var(--bw-ink)]">Project gallery</span>
-              <span class="mt-2 block text-sm leading-6 bw-muted">A living shelf of Django apps, tools, and experiments.</span>
-            </span>
-            <span class="bw-hero-placeholder__action">
-              Browse projects
-              <i class="las la-arrow-right" aria-hidden="true"></i>
-            </span>
-          </a>
-          <a href="{% url 'blog' %}" class="bw-hero-placeholder">
-            <span>
-              <span class="bw-menu-icon"><i class="las la-book-reader" aria-hidden="true"></i></span>
-              <span class="mt-5 block text-xl font-black leading-tight text-[var(--bw-ink)]">Practical guides</span>
-              <span class="mt-2 block text-sm leading-6 bw-muted">Short paths from idea to working Django feature.</span>
-            </span>
-            <span class="bw-hero-placeholder__action">
-              Read guides
-              <i class="las la-arrow-right" aria-hidden="true"></i>
-            </span>
-          </a>
-          <a href="{% url 'podcast_episodes' %}" class="bw-hero-placeholder">
-            <span>
-              <span class="bw-menu-icon"><i class="las la-microphone-alt" aria-hidden="true"></i></span>
-              <span class="mt-5 block text-xl font-black leading-tight text-[var(--bw-ink)]">Django conversations</span>
-              <span class="mt-2 block text-sm leading-6 bw-muted">Podcast episodes and practical context from the ecosystem.</span>
-            </span>
-            <span class="bw-hero-placeholder__action">
-              Listen in
-              <i class="las la-arrow-right" aria-hidden="true"></i>
-            </span>
-          </a>
-          <a href="{% url 'jobs' %}" class="bw-hero-placeholder">
-            <span>
-              <span class="bw-menu-icon"><i class="las la-bullhorn" aria-hidden="true"></i></span>
-              <span class="mt-5 block text-xl font-black leading-tight text-[var(--bw-ink)]">Community signals</span>
-              <span class="mt-2 block text-sm leading-6 bw-muted">Jobs, launches, sponsorships, and useful resources.</span>
-            </span>
-            <span class="bw-hero-placeholder__action">
-              Browse jobs
-              <i class="las la-arrow-right" aria-hidden="true"></i>
-            </span>
-          </a>
-        {% endif %}
-      </div>
-    </div>
-  </div>
-
-  <div class="bw-container mt-10">
-    <div class="bw-proof-strip">
-      <div>
-        <p class="font-black text-[var(--bw-ink)]">Real products</p>
-        <p class="mt-1 text-sm bw-muted">Screenshots and links from the ecosystem.</p>
-      </div>
-      <div>
-        <p class="font-black text-[var(--bw-ink)]">Practical learning</p>
-        <p class="mt-1 text-sm bw-muted">Guides for people building real apps.</p>
-      </div>
-      <div>
-        <p class="font-black text-[var(--bw-ink)]">Community signals</p>
-        <p class="mt-1 text-sm bw-muted">Jobs, useful tools, launches, and resources.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="bw-section pt-0">
-  <div class="bw-container">
-    <div class="grid gap-4 md:grid-cols-3">
-      <a href="{% url 'projects' %}" class="bw-card p-5">
-        <span class="bw-menu-icon"><i class="las la-window-restore" aria-hidden="true"></i></span>
-        <h2 class="mt-5 text-2xl font-black leading-tight">Browse projects</h2>
-        <p class="mt-3 text-sm leading-6 bw-muted">Study shipped products, open source apps, internal tools, and indie experiments.</p>
+  <div class="bw-container-wide">
+    <p class="bw-kicker">
+      <i class="las la-seedling" aria-hidden="true"></i>
+      Community showcase
+    </p>
+    <h1 class="bw-heading-xl mt-5">Built with Django</h1>
+    <p class="bw-lede mt-6">
+      See what people are shipping with Django, learn from practical guides, find Django work, and discover useful community resources.
+    </p>
+    <div class="mt-8 flex flex-col gap-3 sm:flex-row">
+      <a href="{% url 'projects' %}" class="bw-button bw-button-primary">
+        Explore projects
+        <i class="las la-arrow-right" aria-hidden="true"></i>
       </a>
-      <a href="{% url 'blog' %}" class="bw-card p-5">
-        <span class="bw-menu-icon"><i class="las la-book-open" aria-hidden="true"></i></span>
-        <h2 class="mt-5 text-2xl font-black leading-tight">Learn Django</h2>
-        <p class="mt-3 text-sm leading-6 bw-muted">Read focused tutorials and notes that help you build with less guessing.</p>
-      </a>
-      <a href="{% url 'jobs' %}" class="bw-card p-5">
-        <span class="bw-menu-icon"><i class="las la-briefcase" aria-hidden="true"></i></span>
-        <h2 class="mt-5 text-2xl font-black leading-tight">Find Django work</h2>
-        <p class="mt-3 text-sm leading-6 bw-muted">A job board for teams hiring for Django experience.</p>
-      </a>
+      <a href="{% url 'blog' %}" class="bw-button bw-button-secondary">Read guides</a>
     </div>
   </div>
 </section>
 
 <section class="bw-section bg-[oklch(93.5%_0.022_124_/_0.72)]">
-  <div class="bw-container">
+  <div class="bw-container-wide">
     <div class="flex flex-col justify-between gap-5 md:flex-row md:items-end">
       <div>
         <p class="bw-kicker">Latest showcase</p>
@@ -169,67 +51,62 @@
 </section>
 
 <section class="bw-section">
-  <div class="bw-container grid gap-6 lg:grid-cols-[1fr_0.85fr]">
-    <div>
-      <div class="mb-6 flex items-end justify-between gap-4">
-        <div>
-          <p class="bw-kicker">Guides</p>
-          <h2 class="bw-heading-md mt-3">Learn by building</h2>
-        </div>
-        <a href="{% url 'blog' %}" class="hidden font-bold text-[var(--bw-primary-dark)] md:inline-flex">All guides</a>
+  <div class="bw-container-wide">
+    <div class="mb-6 flex items-end justify-between gap-4">
+      <div>
+        <p class="bw-kicker">Guides</p>
+        <h2 class="bw-heading-md mt-3">Learn by building</h2>
       </div>
-      <div class="grid gap-3 md:grid-cols-2">
-        {% for guide in guides %}
-          <a href="{% url 'post' guide.slug %}" class="bw-card flex gap-4 p-4">
-            {% if guide.icon %}
-              <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-[var(--bw-surface-muted)]">
-                <img class="h-9 w-9 object-contain" src="https://res.cloudinary.com/built-with-django/{{ guide.icon }}" alt="" loading="lazy" decoding="async" />
-              </span>
-            {% endif %}
-            <span>
-              <span class="block font-black leading-snug text-[var(--bw-ink)]">{{ guide.title }}</span>
-              <span class="mt-2 block text-sm leading-6 bw-muted">{{ guide.description | truncatewords:18 }}</span>
-            </span>
-          </a>
-        {% empty %}
-          <div class="bw-empty-state md:col-span-2">
-            <span class="bw-menu-icon"><i class="las la-pen-nib" aria-hidden="true"></i></span>
-            <h3 class="mt-5 text-xl font-black text-[var(--bw-ink)]">Guides are being curated</h3>
-            <p class="mt-2 text-sm leading-6 bw-muted">This area is designed for practical Django walkthroughs and community notes.</p>
-          </div>
-        {% endfor %}
-      </div>
+      <a href="{% url 'blog' %}" class="hidden font-bold text-[var(--bw-primary-dark)] md:inline-flex">All guides</a>
     </div>
-
-    <aside class="bw-card p-5">
-      <div class="flex items-center justify-between gap-4">
-        <div>
-          <p class="bw-kicker">Jobs</p>
-          <h2 class="mt-3 text-2xl font-black">Django teams are hiring</h2>
+    <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      {% for guide in guides %}
+        <a href="{% url 'post' guide.slug %}" class="bw-card flex gap-4 p-4">
+          {% if guide.icon %}
+            <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-md bg-[var(--bw-surface-muted)]">
+              <img class="h-9 w-9 object-contain" src="https://res.cloudinary.com/built-with-django/{{ guide.icon }}" alt="" loading="lazy" decoding="async" />
+            </span>
+          {% endif %}
+          <span>
+            <span class="block font-black leading-snug text-[var(--bw-ink)]">{{ guide.title }}</span>
+            <span class="mt-2 block text-sm leading-6 bw-muted">{{ guide.description | truncatewords:18 }}</span>
+          </span>
+        </a>
+      {% empty %}
+        <div class="bw-empty-state md:col-span-2 xl:col-span-3">
+          <span class="bw-menu-icon"><i class="las la-pen-nib" aria-hidden="true"></i></span>
+          <h3 class="mt-5 text-xl font-black text-[var(--bw-ink)]">Guides are being curated</h3>
+          <p class="mt-2 text-sm leading-6 bw-muted">This area is designed for practical Django walkthroughs and community notes.</p>
         </div>
-        <a href="{% url 'post_job' %}" class="bw-button bw-button-secondary hidden sm:inline-flex">Post job</a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="bw-section pt-0">
+  <div class="bw-container-wide">
+    <div class="flex flex-col justify-between gap-5 md:flex-row md:items-end">
+      <div>
+        <p class="bw-kicker">Jobs</p>
+        <h2 class="bw-heading-md mt-3">Django teams are hiring</h2>
       </div>
-      <div class="mt-5 grid gap-3">
-        {% for job in jobs %}
-          <a href="{{ job.get_absolute_url }}" class="block rounded-md border border-[var(--bw-border)] bg-[var(--bw-surface-raised)] p-4 hover:border-[var(--bw-primary)]">
-            <p class="font-black leading-snug text-[var(--bw-ink)]">{{ job.title }}</p>
-            <p class="mt-1 text-sm bw-muted">
-              {% if job.company.name %}
-                {{ job.company.name }}
-              {% elif job.company_name %}
-                {{ job.company_name }}
-              {% endif %}
-            </p>
-          </a>
-        {% empty %}
-          <p class="rounded-md border border-dashed border-[var(--bw-border)] p-4 text-sm bw-muted">No jobs are live right now.</p>
-        {% endfor %}
-      </div>
-      <div class="mt-5 flex flex-col gap-2 sm:flex-row">
-        <a href="{% url 'jobs' %}" class="bw-button bw-button-primary">Browse jobs</a>
-        <a href="{% url 'post_job' %}" class="bw-button bw-button-secondary sm:hidden">Post job</a>
-      </div>
-    </aside>
+      <a href="{% url 'post_job' %}" class="bw-button bw-button-secondary hidden sm:inline-flex">Post job</a>
+    </div>
+    <div class="bw-card mt-8 overflow-hidden">
+      {% if jobs %}
+        <ul>
+          {% for job in jobs %}
+            {% include "components/job-item.html" with job=job %}
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="p-5 text-sm bw-muted">No jobs are live right now.</p>
+      {% endif %}
+    </div>
+    <div class="mt-5 flex flex-col gap-2 sm:flex-row">
+      <a href="{% url 'jobs' %}" class="bw-button bw-button-primary">Browse jobs</a>
+      <a href="{% url 'post_job' %}" class="bw-button bw-button-secondary sm:hidden">Post job</a>
+    </div>
   </div>
 </section>
 
