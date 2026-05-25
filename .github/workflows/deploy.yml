@@ -48,7 +48,7 @@ jobs:
       - name: Install uv for deploy script
         uses: astral-sh/setup-uv@v6
         with:
-          version: "latest"
+          version: "0.11.16"
 
       - name: Deploy server and workers to CapRover
         shell: bash
@@ -56,19 +56,50 @@ jobs:
           CAPROVER_SERVER: ${{ secrets.CAPROVER_SERVER }}
           CAPROVER_PASSWORD: ${{ secrets.CAPROVER_PASSWORD }}
           IMAGE_NAME: ${{ steps.image.outputs.image_name }}:${{ github.sha }}
+          SERVER_HEALTH_URL: ${{ vars.SERVER_HEALTH_URL }}
+          SERVER_MIGRATION_GRACE_SECONDS: ${{ vars.SERVER_MIGRATION_GRACE_SECONDS || '60' }}
           WORKERS_APP_PROCESS_TYPE: ${{ vars.WORKERS_APP_PROCESS_TYPE }}
         run: |
           if [ "$WORKERS_APP_PROCESS_TYPE" != "worker" ]; then
             echo "::error::Set the WORKERS_APP_PROCESS_TYPE repository variable to 'worker' after setting APP_PROCESS_TYPE=worker on the $CAPROVER_APP_NAME-workers CapRover app."
             exit 1
           fi
-          uv run --with caprover-api python - <<'PY'
+          uv run --with caprover-api==0.1.24 python - <<'PY'
           import os
+          import time
+
+          import requests
           from caprover_api.caprover_api import CaproverAPI
+
+          def wait_for_server_ready():
+              health_url = os.environ.get("SERVER_HEALTH_URL", "").strip()
+              if not health_url:
+                  wait_seconds = int(os.environ["SERVER_MIGRATION_GRACE_SECONDS"])
+                  print(f"SERVER_HEALTH_URL is not set. Waiting {wait_seconds}s before worker deploy.")
+                  time.sleep(wait_seconds)
+                  return
+
+              deadline = time.monotonic() + 180
+              last_error = None
+              while time.monotonic() < deadline:
+                  try:
+                      response = requests.get(health_url, timeout=10)
+                      if response.status_code < 400:
+                          print(f"Server is ready: {health_url} returned {response.status_code}.")
+                          return
+                      last_error = f"{response.status_code} {response.reason}"
+                  except requests.RequestException as exc:
+                      last_error = str(exc)
+
+                  print(f"Waiting for server readiness at {health_url}: {last_error}")
+                  time.sleep(5)
+
+              raise RuntimeError(f"Server did not become ready at {health_url}: {last_error}")
 
           cap = CaproverAPI(os.environ["CAPROVER_SERVER"], os.environ["CAPROVER_PASSWORD"])
           image = os.environ["IMAGE_NAME"]
           app = os.environ["CAPROVER_APP_NAME"]
           cap.deploy_app(app, image_name=image)
+          wait_for_server_ready()
           cap.deploy_app(f"{app}-workers", image_name=image)
           PY

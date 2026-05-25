@@ -47,6 +47,7 @@ worker)
     # export OTEL_SERVICE_NAME="builtwithdjango_${ENV:-dev}_workers"
     # export OTEL_RESOURCE_ATTRIBUTES=service.name=builtwithdjango_${ENV:-dev}_workers
     # opentelemetry-instrument python manage.py qcluster
+    python manage.py migrate --noinput
     exec python manage.py qcluster
     ;;
 *)
