@@ -367,7 +367,8 @@ class AnalyticsRequestMiddleware:
             properties.update(
                 {
                     "exception_type": exception.__class__.__name__,
-                    "exception_message": str(exception),
+                    "exception_message": "[REDACTED]",
+                    "exception_message_hash": stable_hash(str(exception)),
                 }
             )
 

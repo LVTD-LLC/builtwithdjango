@@ -6,6 +6,7 @@
                   enctype="multipart/form-data"
                   data-analytics-source="newsletter page">
                 {% csrf_token %}
+                <input type="hidden" name="source" value="newsletter page" />
                 {{ form.non_field_errors }}
                 <div class="mb-4">
                     {{ form.user_email.errors }}
