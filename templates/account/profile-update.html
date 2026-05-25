@@ -1,148 +1,184 @@
 {% extends "base.html" %}
 {% load static %}
 {% load widget_tweaks %}
-
-{% block meta %}<title>Built with Django | Update Profile</title>{% endblock meta %}
-
+{% block meta %}
+    <title>Built with Django | Update Profile</title>
+{% endblock meta %}
 {% block content %}
-
-{% if not email_verified %}
-<div class="p-4 my-4 border-2 border-yellow-400 rounded-md bg-yellow-50">
-  <div class="flex">
-    <div class="flex-shrink-0">
-      <!-- Heroicon name: mini/exclamation-triangle -->
-      <svg class="w-5 h-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-        <path fill-rule="evenodd" d="M8.485 3.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 3.495zM10 6a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 6zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
-      </svg>
-    </div>
-    <div class="ml-3">
-      <h3 class="text-sm font-medium text-yellow-800">Attention needed</h3>
-      <div class="mt-2 text-sm text-yellow-700">
-        <p>Your email is not yet confirmed. This may limit the available functionality. You should have gotten a link to confirm in your email. </p>
-        <p>If you haven't received it,
-          <a class="font-semibold text-yellow-800 underline" href="{% url 'resend_email_confirmation_email' %}">try re-sending it</a>.
-        </p>
-      </div>
-    </div>
-  </div>
-</div>
-{% endif %}
-
-  <section class="mb-4" aria-labelledby="available-plans">
-    <div class="shadow sm:overflow-hidden sm:rounded-md">
-      <div class="px-4 py-6 bg-white sm:p-6">
-        <div class="md:grid md:grid-cols-3 md:gap-6">
-          <div class="md:col-span-1">
-            <h3 class="text-base font-semibold leading-6 text-gray-900">Available Plans</h3>
-            <p class="mt-1 text-sm text-gray-500">These are the plans and purchases available to "Built with Django" users.</p>
-          </div>
-          <div class="mt-5 space-y-6 md:col-span-2 md:mt-0">
-            <div class="grid grid-cols-4 gap-6 mt-6">
-              <div class="col-span-4">
-                <div class="w-full max-w-md mx-auto overflow-hidden bg-white rounded shadow">
-                  <div class="max-w-md mx-auto">
-                    <div class="p-4 sm:p-6">
-                      <p class="mb-1 text-lg font-semibold leading-7 text-gray-700">General User Upgrade</p>
-                      {% if object.subscription_level == "FREE" %}
-                        <p class="font-semibold">$100</p>
-                        <p class="mt-6 prose text-gray-500">
-                          This plan is for general users who would like to support the site and get access to <a href="{% url 'upgrade-profile' %}">Pro features</a>.
-                        </p>
-                        <a href="{% url 'user_upgrade_checkout_session' pk=user.id %}" class="block mt-10 w-full px-4 py-3 font-medium tracking-wide text-center capitalize transition-colors duration-300 transform bg-yellow-400 rounded hover:bg-yellow-500">
-                            Purchase
-                        </a>
-                        <a href="{% url 'upgrade-profile' %}" class="block mt-1.5 w-full px-4 py-3 font-medium tracking-wide text-center capitalize transition-colors duration-300 transform rounded hover:bg-gray-200">
-                            Detailed Pricing
-                        </a>
-                      {% else %}
-                        <p class="mt-6 prose text-gray-500">
-                        You are the best 🎉🎉🎉 Thank you for supporting the development of "Built with Django".
-                        </p>
-                      {% endif %}
+    <section class="py-8 sm:py-10 lg:py-12"
+             aria-labelledby="profile-settings-title">
+        <div class="bw-container-wide">
+            <div class="grid gap-8 lg:grid-cols-[17rem_minmax(0,1fr)] lg:items-start">
+                <aside class="lg:sticky lg:top-24">
+                    <p class="bw-kicker">Account</p>
+                    <h1 id="profile-settings-title"
+                        class="mt-3 text-3xl font-black leading-tight tracking-normal text-[var(--bw-ink)] sm:text-4xl">
+                        Profile settings
+                    </h1>
+                    <p class="mt-3 text-sm leading-6 bw-muted">Keep your account details and community profile links current.</p>
+                    <div class="mt-6 flex items-center gap-3 border-y border-[var(--bw-border)] py-4">
+                        <span class="inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--bw-surface-muted)]">
+                            {% include "components/profile-image.html" with size=12 %}
+                        </span>
+                        <div class="min-w-0">
+                            <p class="truncate text-sm font-black text-[var(--bw-ink)]">{{ user.username }}</p>
+                            {% if email_verified %}
+                                <p class="mt-1 inline-flex items-center gap-1.5 rounded-md bg-[var(--bw-primary-soft)] px-2 py-1 text-xs font-bold text-[var(--bw-primary-dark)]">
+                                    <i class="las la-check-circle text-base" aria-hidden="true"></i>
+                                    Email verified
+                                </p>
+                            {% else %}
+                                <p class="mt-1 inline-flex items-center gap-1.5 rounded-md bg-[oklch(94%_0.07_88)] px-2 py-1 text-xs font-bold text-[oklch(35%_0.08_80)]">
+                                    <i class="las la-exclamation-circle text-base" aria-hidden="true"></i>
+                                    Email unverified
+                                </p>
+                            {% endif %}
+                        </div>
                     </div>
-                  </div>
+                </aside>
+                <div class="space-y-4">
+                    {% if not email_verified %}
+                        <div class="rounded-md border border-[oklch(80%_0.11_88)] bg-[oklch(97%_0.04_88)] p-4 text-[oklch(32%_0.07_82)]">
+                            <div class="flex gap-3">
+                                <i class="las la-envelope-open-text mt-0.5 text-2xl" aria-hidden="true"></i>
+                                <div>
+                                    <h2 class="text-sm font-black">Confirm your email address</h2>
+                                    <p class="mt-1 text-sm leading-6">
+                                        Some account features may be limited until your email is confirmed.
+                                        <a class="font-black underline decoration-[oklch(52%_0.11_88)] underline-offset-2"
+                                           href="{% url 'resend_email_confirmation_email' %}">Send the confirmation email again</a>.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                    <form method="post"
+                          enctype="multipart/form-data"
+                          class="overflow-hidden rounded-md border border-[var(--bw-border)] bg-[var(--bw-surface)] shadow-[var(--bw-shadow-sm)]">
+                        {% csrf_token %}
+                        {{ form.referred_by.as_hidden }}
+                        {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+                        {% if form.non_field_errors %}
+                            <div class="bw-field-error border-b border-[var(--bw-border)] bg-[oklch(96%_0.035_28)] px-5 py-4 sm:px-6">
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+                        <div class="divide-y divide-[var(--bw-border)]">
+                            <section class="bw-settings-section" aria-labelledby="identity-section-title">
+                                <div>
+                                    <h2 id="identity-section-title"
+                                        class="text-base font-black leading-6 text-[var(--bw-ink)]">Identity</h2>
+                                    <p class="mt-1 text-sm leading-6 bw-muted">Name and email for your account.</p>
+                                </div>
+                                <div class="grid gap-5 sm:grid-cols-2">
+                                    <div>
+                                        <label for="{{ form.first_name.id_for_label }}" class="bw-form-label">First name</label>
+                                        {% render_field form.first_name autocomplete="given-name" class="bw-form-input" %}
+                                        {% if form.first_name.errors %}<div class="bw-field-error">{{ form.first_name.errors }}</div>{% endif %}
+                                    </div>
+                                    <div>
+                                        <label for="{{ form.last_name.id_for_label }}" class="bw-form-label">Last name</label>
+                                        {% render_field form.last_name autocomplete="family-name" class="bw-form-input" %}
+                                        {% if form.last_name.errors %}<div class="bw-field-error">{{ form.last_name.errors }}</div>{% endif %}
+                                    </div>
+                                    <div class="sm:col-span-2">
+                                        <label for="{{ form.email.id_for_label }}" class="bw-form-label">Email address</label>
+                                        {% render_field form.email autocomplete="email" class="bw-form-input" %}
+                                        {% if form.email.errors %}<div class="bw-field-error">{{ form.email.errors }}</div>{% endif %}
+                                    </div>
+                                </div>
+                            </section>
+                            <section class="bw-settings-section"
+                                     aria-labelledby="profile-photo-section-title">
+                                <div>
+                                    <h2 id="profile-photo-section-title"
+                                        class="text-base font-black leading-6 text-[var(--bw-ink)]">Photo</h2>
+                                    <p class="mt-1 text-sm leading-6 bw-muted">Used in the site header and public profile.</p>
+                                </div>
+                                <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+                                    <span class="inline-flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[var(--bw-surface-muted)]">
+                                        {% include "components/profile-image.html" with size=20 %}
+                                    </span>
+                                    <div>
+                                        <label class="bw-button bw-button-secondary cursor-pointer"
+                                               for="{{ form.profile_image.id_for_label }}">
+                                            <i class="las la-image text-xl" aria-hidden="true"></i>
+                                            Change photo
+                                        </label>
+                                        {% render_field form.profile_image class="sr-only" %}
+                                        <p class="mt-2 text-sm bw-muted">Square images work best.</p>
+                                        {% if form.profile_image.errors %}<div class="bw-field-error">{{ form.profile_image.errors }}</div>{% endif %}
+                                    </div>
+                                </div>
+                            </section>
+                            <section class="bw-settings-section" aria-labelledby="community-section-title">
+                                <div>
+                                    <h2 id="community-section-title"
+                                        class="text-base font-black leading-6 text-[var(--bw-ink)]">
+                                        Community links
+                                    </h2>
+                                    <p class="mt-1 text-sm leading-6 bw-muted">Links people can use to find your work.</p>
+                                </div>
+                                <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+                                    <div class="sm:col-span-2 xl:col-span-3">
+                                        <label for="{{ form.personal_website.id_for_label }}" class="bw-form-label">Website</label>
+                                        {% render_field form.personal_website placeholder="https://example.com" class="bw-form-input" %}
+                                        {% if form.personal_website.errors %}<div class="bw-field-error">{{ form.personal_website.errors }}</div>{% endif %}
+                                    </div>
+                                    <div>
+                                        <label for="{{ form.twitter_handle.id_for_label }}" class="bw-form-label">Twitter handle</label>
+                                        {% render_field form.twitter_handle type="text" placeholder="username" class="bw-form-input" %}
+                                        {% if form.twitter_handle.errors %}<div class="bw-field-error">{{ form.twitter_handle.errors }}</div>{% endif %}
+                                    </div>
+                                    <div>
+                                        <label for="{{ form.github_handle.id_for_label }}" class="bw-form-label">GitHub handle</label>
+                                        {% render_field form.github_handle type="text" placeholder="username" class="bw-form-input" %}
+                                        {% if form.github_handle.errors %}<div class="bw-field-error">{{ form.github_handle.errors }}</div>{% endif %}
+                                    </div>
+                                    <div>
+                                        <label for="{{ form.indiehackers_handle.id_for_label }}"
+                                               class="bw-form-label">Indie Hackers handle</label>
+                                        {% render_field form.indiehackers_handle type="text" placeholder="username" class="bw-form-input" %}
+                                        {% if form.indiehackers_handle.errors %}
+                                            <div class="bw-field-error">{{ form.indiehackers_handle.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </section>
+                            <section class="bw-settings-section"
+                                     aria-labelledby="visibility-section-title">
+                                <div>
+                                    <h2 id="visibility-section-title"
+                                        class="text-base font-black leading-6 text-[var(--bw-ink)]">Visibility</h2>
+                                    <p class="mt-1 text-sm leading-6 bw-muted">Control whether your profile can appear publicly.</p>
+                                </div>
+                                <div class="rounded-md border border-[var(--bw-border)] bg-[var(--bw-bg-warm)] p-4">
+                                    <div class="flex gap-3">
+                                        {% render_field form.make_public class="bw-form-checkbox" %}
+                                        <div>
+                                            <label for="{{ form.make_public.id_for_label }}"
+                                                   class="text-sm font-black text-[var(--bw-ink)]">
+                                                Show my profile publicly
+                                            </label>
+                                            <p class="mt-1 text-sm leading-6 bw-muted">
+                                                Public profiles can show your photo, website, and community links around Built with Django.
+                                            </p>
+                                            {% if form.make_public.errors %}<div class="bw-field-error">{{ form.make_public.errors }}</div>{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                        <div class="flex flex-col gap-3 border-t border-[var(--bw-border)] bg-[var(--bw-surface-raised)] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+                            <p class="text-sm bw-muted">Changes are saved to your account profile.</p>
+                            <button type="submit" class="bw-button bw-button-primary w-full sm:w-auto">
+                                <i class="las la-save text-xl" aria-hidden="true"></i>
+                                Save changes
+                            </button>
+                        </div>
+                    </form>
                 </div>
-              </div>
             </div>
-          </div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <section aria-labelledby="personal-information">
-    <form method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ form.non_field_errors }}
-      <div class="shadow sm:overflow-hidden sm:rounded-md">
-        <div class="px-4 py-6 bg-white sm:p-6">
-          <div class="md:grid md:grid-cols-3 md:gap-6">
-            <div class="md:col-span-1">
-              <h3 class="text-base font-semibold leading-6 text-gray-900">Personal Information</h3>
-              <p class="mt-1 text-sm text-gray-500">This info helps personalize your account.</p>
-            </div>
-            <div class="mt-5 space-y-6 md:col-span-2 md:mt-0">
-              <div class="grid grid-cols-4 gap-6">
-                <div class="col-span-4 sm:col-span-2">
-                  {{ form.first_name.errors }}
-                  <label for="first-name" class="block text-sm font-medium text-gray-700">First name</label>
-                  {% render_field form.first_name name="first-name" id="first-name" autocomplete="cc-given-name" class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:border-gray-900 focus:outline-none focus:ring-gray-900 sm:text-sm" %}
-                </div>
-                <div class="col-span-4 sm:col-span-2">
-                  {{ form.last_name.errors }}
-                  <label for="last-name" class="block text-sm font-medium text-gray-700">Last name</label>
-                  {% render_field form.last_name name="last-name" id="last-name" autocomplete="cc-family-name" class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:border-gray-900 focus:outline-none focus:ring-gray-900 sm:text-sm" %}
-                </div>
-                <div class="col-span-4 sm:col-span-2">
-                  {{ form.email.errors }}
-                  <label for="email-address" class="block text-sm font-medium text-gray-700">Email address</label>
-                  {% render_field form.email name="email-address" id="email-address" autocomplete="email" class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:border-gray-900 focus:outline-none focus:ring-gray-900 sm:text-sm" %}
-                </div>
-                <div class="col-span-4 sm:col-span-1">
-                  {{ form.twitter_handle.errors }}
-                  <label for="{{ form.twitter_handle.id_for_label }}" class="block text-sm font-medium text-gray-700"> Twitter Handle </label>
-                  {% render_field form.twitter_handle type="text" placeholder="cool_dude" class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:border-gray-900 focus:outline-none focus:ring-gray-900 sm:text-sm" %}
-                </div>
-                <div class="col-span-4 sm:col-span-1">
-                  {{ form.github_handle.errors }}
-                  <label for="{{ form.github_handle.id_for_label }}" class="block text-sm font-medium text-gray-700"> Github Handle </label>
-                  {% render_field form.github_handle type="text" placeholder="cool_dude" class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:border-gray-900 focus:outline-none focus:ring-gray-900 sm:text-sm" %}
-                </div>
-                <div class="col-span-4 sm:col-span-2">
-                  {{ form.personal_website.errors }}
-                  <label for="{{ form.personal_website.id_for_label }}" class="block text-sm font-medium text-gray-700"> Website </label>
-                  <div class="flex mt-1 rounded-md shadow-sm">
-                    {% render_field form.personal_website type="text" class="flex-1 block w-full border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" placeholder="https://www.co0l-dude.com" %}
-                  </div>
-                </div>
-                <div class="col-span-4 sm:col-span-1">
-                  {{ form.indiehackers_handle.errors }}
-                  <label for="{{ form.indiehackers_handle.id_for_label }}" class="block text-sm font-medium text-gray-700"> Indiehackers Handle </label>
-                  {% render_field form.indiehackers_handle type="text" placeholder="cool_dude" class="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:border-gray-900 focus:outline-none focus:ring-gray-900 sm:text-sm" %}
-                </div>
-                <div class="col-span-4 sm:col-span-1">
-                  <label class="block text-sm font-medium text-gray-700"> Photo </label>
-                  <div class="flex items-center mt-1">
-                    <span class="inline-block w-10 h-10 overflow-hidden bg-gray-100 rounded-full">
-                      {% include "components/profile-image.html" with size=10 %}
-                    </span>
-                    {{ form.profile_image.errors }}
-                    <label class="px-3 py-2 ml-5 text-sm font-medium leading-4 text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" for="{{ form.profile_image.id_for_label }}">
-                        Change
-                    </label>
-                    {% render_field form.profile_image class="hidden" %}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-        <div class="px-4 py-3 text-right bg-gray-50 sm:px-6">
-          <button type="submit" class="inline-flex justify-center px-4 py-2 text-sm font-medium text-white bg-gray-800 border border-transparent rounded-md shadow-sm hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2">Save</button>
-        </div>
-      </div>
-    </form>
-  </section>
-
+    </section>
 {% endblock content %}
