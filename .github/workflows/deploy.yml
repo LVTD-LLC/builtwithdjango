@@ -45,61 +45,54 @@ jobs:
             ${{ steps.image.outputs.image_name }}:latest
             ${{ steps.image.outputs.image_name }}:${{ github.sha }}
 
-      - name: Install uv for deploy script
-        uses: astral-sh/setup-uv@v6
+      - name: Build and push workers
+        uses: docker/build-push-action@v6
         with:
-          version: "0.11.16"
+          context: .
+          file: deployment/Dockerfile
+          push: true
+          build-args: |
+            APP_PROCESS_TYPE=worker
+          tags: |
+            ${{ steps.image.outputs.image_name }}:worker-latest
+            ${{ steps.image.outputs.image_name }}:worker-${{ github.sha }}
 
-      - name: Deploy server and workers to CapRover
+      - name: Deploy server to CapRover
+        uses: caprover/deploy-from-github@v1.2.0
+        with:
+          server: ${{ secrets.CAPROVER_SERVER }}
+          app: ${{ env.CAPROVER_APP_NAME }}
+          token: ${{ secrets.APP_TOKEN }}
+          image: ${{ steps.image.outputs.image_name }}:${{ github.sha }}
+
+      - name: Wait for server readiness
         shell: bash
         env:
-          CAPROVER_SERVER: ${{ secrets.CAPROVER_SERVER }}
-          CAPROVER_PASSWORD: ${{ secrets.CAPROVER_PASSWORD }}
-          IMAGE_NAME: ${{ steps.image.outputs.image_name }}:${{ github.sha }}
           SERVER_HEALTH_URL: ${{ vars.SERVER_HEALTH_URL }}
           SERVER_MIGRATION_GRACE_SECONDS: ${{ vars.SERVER_MIGRATION_GRACE_SECONDS || '60' }}
-          WORKERS_APP_PROCESS_TYPE: ${{ vars.WORKERS_APP_PROCESS_TYPE }}
         run: |
-          if [ "$WORKERS_APP_PROCESS_TYPE" != "worker" ]; then
-            echo "::error::Set the WORKERS_APP_PROCESS_TYPE repository variable to 'worker' after setting APP_PROCESS_TYPE=worker on the $CAPROVER_APP_NAME-workers CapRover app."
-            exit 1
+          if [ -z "$SERVER_HEALTH_URL" ]; then
+            echo "SERVER_HEALTH_URL is not set. Waiting ${SERVER_MIGRATION_GRACE_SECONDS}s before worker deploy."
+            sleep "$SERVER_MIGRATION_GRACE_SECONDS"
+            exit 0
           fi
-          uv run --with caprover-api==0.1.24 python - <<'PY'
-          import os
-          import time
 
-          import requests
-          from caprover_api.caprover_api import CaproverAPI
+          for attempt in {1..36}; do
+            if curl --fail --silent --show-error --max-time 10 "$SERVER_HEALTH_URL" > /dev/null; then
+              echo "Server is ready: $SERVER_HEALTH_URL"
+              exit 0
+            fi
+            echo "Waiting for server readiness at $SERVER_HEALTH_URL (attempt $attempt/36)."
+            sleep 5
+          done
 
-          def wait_for_server_ready():
-              health_url = os.environ.get("SERVER_HEALTH_URL", "").strip()
-              if not health_url:
-                  wait_seconds = int(os.environ["SERVER_MIGRATION_GRACE_SECONDS"])
-                  print(f"SERVER_HEALTH_URL is not set. Waiting {wait_seconds}s before worker deploy.")
-                  time.sleep(wait_seconds)
-                  return
+          echo "::error::Server did not become ready at $SERVER_HEALTH_URL within 180s."
+          exit 1
 
-              deadline = time.monotonic() + 180
-              last_error = None
-              while time.monotonic() < deadline:
-                  try:
-                      response = requests.get(health_url, timeout=10)
-                      if response.status_code < 400:
-                          print(f"Server is ready: {health_url} returned {response.status_code}.")
-                          return
-                      last_error = f"{response.status_code} {response.reason}"
-                  except requests.RequestException as exc:
-                      last_error = str(exc)
-
-                  print(f"Waiting for server readiness at {health_url}: {last_error}")
-                  time.sleep(5)
-
-              raise RuntimeError(f"Server did not become ready at {health_url}: {last_error}")
-
-          cap = CaproverAPI(os.environ["CAPROVER_SERVER"], os.environ["CAPROVER_PASSWORD"])
-          image = os.environ["IMAGE_NAME"]
-          app = os.environ["CAPROVER_APP_NAME"]
-          cap.deploy_app(app, image_name=image)
-          wait_for_server_ready()
-          cap.deploy_app(f"{app}-workers", image_name=image)
-          PY
+      - name: Deploy workers to CapRover
+        uses: caprover/deploy-from-github@v1.2.0
+        with:
+          server: ${{ secrets.CAPROVER_SERVER }}
+          app: ${{ env.CAPROVER_APP_NAME }}-workers
+          token: ${{ secrets.WORKERS_APP_TOKEN }}
+          image: ${{ steps.image.outputs.image_name }}:worker-${{ github.sha }}
