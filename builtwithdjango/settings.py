@@ -576,7 +576,8 @@ HEALTHCHECKS_HOST = "https://healthchecks.cr.lvtd.dev/ping"
 JINA_READER_API_KEY = env("JINA_READER_API_KEY")
 JINA_READER_BASE_URL = "https://r.jina.ai"
 
-GEMINI_API_KEY = env("GEMINI_API_KEY")
+OPENROUTER_API_KEY = env("OPENROUTER_API_KEY")
+PYDANTIC_AI_MODEL = env("PYDANTIC_AI_MODEL", default="openrouter:deepseek/deepseek-v4-flash")
 
 TWITTER_USERNAME = env("TWITTER_USERNAME")
 TWITTER_PASSWORD = env("TWITTER_PASSWORD")
