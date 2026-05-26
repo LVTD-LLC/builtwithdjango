@@ -32,7 +32,7 @@
       </div>
       <a href="{% url 'submit_project' %}" class="bw-button bw-button-accent">Submit your project</a>
     </div>
-    <div class="bw-project-grid mt-8">
+    <div class="bw-project-grid mt-8 lg:grid-cols-3">
       {% for project in projects %}
         {% include "components/project-card.html" with site=project %}
       {% empty %}
