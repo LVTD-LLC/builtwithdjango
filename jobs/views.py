@@ -10,7 +10,7 @@ from django.views.generic import CreateView, DetailView, ListView, TemplateView
 from django_q.tasks import async_task
 from djstripe import models, settings as djstripe_settings
 
-from builtwithdjango.analytics import capture, email_domain, stable_hash
+from builtwithdjango.analytics import capture, capture_checkout_return, email_domain, stable_hash
 from newsletter.views import NewsletterSignupForm
 
 from .forms import PostJob
@@ -52,6 +52,7 @@ class JobDetailView(DetailView):
 
     def get(self, request, *args, **kwargs):
         response = super().get(request, *args, **kwargs)
+        capture_checkout_return(request, "sponsored_job")
         capture(
             request,
             "job viewed",
@@ -139,6 +140,10 @@ class JobCreateView(CreateView):
 
 class ThankYouView(TemplateView):
     template_name = "jobs/post-job-thank-you.html"
+
+    def get(self, request, *args, **kwargs):
+        capture_checkout_return(request, "job")
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

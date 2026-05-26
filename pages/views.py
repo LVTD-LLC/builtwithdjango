@@ -15,7 +15,7 @@ from django.views.generic import CreateView, RedirectView, TemplateView, UpdateV
 from django_q.tasks import async_task
 
 from blog.models import Post
-from builtwithdjango.analytics import capture, email_domain, stable_hash
+from builtwithdjango.analytics import capture, capture_checkout_return, email_domain, stable_hash
 from jobs.models import Job
 from jobs.tasks import get_latest_jobs_from_tj_alerts, send_sponsorship_request_email
 from newsletter.tasks import send_buttondown_newsletter
@@ -31,6 +31,10 @@ User = get_user_model()
 
 class HomeView(TemplateView):
     template_name = "pages/home.html"
+
+    def get(self, request, *args, **kwargs):
+        capture_checkout_return(request, "job")
+        return super().get(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
