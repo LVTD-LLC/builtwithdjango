@@ -217,6 +217,25 @@ class StripeWebhookTests(TestCase):
         self.assertEqual(response.status_code, 400)
         construct_event.assert_not_called()
 
+    @override_settings(STRIPE_SECRET_KEY="", STRIPE_WEBHOOK_SECRET="whsec_test")
+    def test_stripe_webhook_verifies_signature_without_api_key(self):
+        event = SimpleNamespace(id="evt_unhandled", type="customer.created", data={"object": {}})
+
+        with (
+            patch("users.webhooks.stripe.Webhook.construct_event", return_value=event) as construct_event,
+            patch("users.webhooks.handle_stripe_event") as handle_event,
+        ):
+            response = self.client.post(
+                reverse("stripe-webhook"),
+                data=b"{}",
+                content_type="application/json",
+                HTTP_STRIPE_SIGNATURE="sig_test",
+            )
+
+        self.assertEqual(response.status_code, 200)
+        construct_event.assert_called_once()
+        handle_event.assert_called_once_with(event)
+
     def test_checkout_session_completed_activates_django_devs_subscription(self):
         user = get_user_model().objects.create_user(username="devs-user", email="devs@example.com")
         event = stripe_event(

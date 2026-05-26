@@ -16,7 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from builtwithdjango.analytics import capture_event, get_user_properties
-from builtwithdjango.stripe_client import configure_stripe, get_stripe_price_id
+from builtwithdjango.stripe_client import get_stripe_price_id
 from builtwithdjango.utils import get_builtwithdjango_logger
 from users.models import CustomUser
 
@@ -26,8 +26,6 @@ logger = get_builtwithdjango_logger(__name__)
 @csrf_exempt
 @require_POST
 def stripe_webhook(request, webhook_uuid=None):
-    configure_stripe()
-
     if not settings.STRIPE_WEBHOOK_SECRET:
         logger.error("STRIPE_WEBHOOK_SECRET is not configured")
         return HttpResponse(status=400)
