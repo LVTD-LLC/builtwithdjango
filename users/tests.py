@@ -4,6 +4,7 @@ from unittest.mock import patch
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase, override_settings
+from django.urls import reverse
 
 from builtwithdjango.stripe_client import get_or_create_stripe_customer_id, get_stripe_price_id
 from jobs.models import Job
@@ -279,3 +280,40 @@ class StripeWebhookTests(TestCase):
 
         user.refresh_from_db()
         self.assertTrue(user.has_active_django_devs_subscription)
+
+
+class ProfileUpdateTests(TestCase):
+    def test_profile_update_continues_when_stripe_customer_sync_is_unconfigured(self):
+        user = get_user_model().objects.create_user(
+            username="profile-user",
+            email="profile@example.com",
+            password="test-password",
+        )
+        self.client.force_login(user)
+
+        with (
+            patch(
+                "users.views.get_or_create_stripe_customer_id",
+                side_effect=ImproperlyConfigured("missing stripe key"),
+            ),
+            patch("users.views.capture"),
+        ):
+            response = self.client.post(
+                reverse("update-profile"),
+                {
+                    "first_name": "Updated",
+                    "last_name": "Profile",
+                    "personal_website": "https://example.com",
+                    "referred_by": "",
+                    "twitter_handle": "",
+                    "github_handle": "",
+                    "indiehackers_handle": "",
+                    "email": user.email,
+                    "make_public": "on",
+                },
+            )
+
+        self.assertEqual(response.status_code, 302)
+        user.refresh_from_db()
+        self.assertEqual(user.first_name, "Updated")
+        self.assertEqual(user.last_name, "Profile")
