@@ -81,7 +81,8 @@ def get_latest_jobs_from_tj_alerts():
 
     params = {"technologies": "Django"}
 
-    response = requests.get(url, params=params, headers=headers)
+    response = requests.get(url, params=params, headers=headers, timeout=30)
+    response.raise_for_status()
     data = response.json()
     jobs = data["jobs"]
 
@@ -136,7 +137,7 @@ def get_latest_jobs_from_tj_alerts():
                 new_job.company_logo = f"image/upload/v{image_response['version']}/{image_response['public_id']}"
                 new_job.approved = True
             except Exception as e:
-                logger.error(f"Couldn't get company_logo from Google favicon for {domain_name}")
+                logger.error("company_logo_upload_failed", domain_name=domain_name, error=str(e))
 
         new_job.save()
 

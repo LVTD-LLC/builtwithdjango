@@ -1,7 +1,5 @@
 import requests
-import structlog
 from django.conf import settings
-from django.utils import timezone
 
 from builtwithdjango.utils import get_builtwithdjango_logger
 from newsletter.utils import generate_buttondown_newsletter_subject, prepare_newsletter
@@ -27,6 +25,7 @@ def add_email_to_buttondown(email, tag, ip_address=None):
         f"https://api.buttondown.email/v1/subscribers",
         headers={"Authorization": f"Token {settings.BUTTONDOWN_API_TOKEN}", "X-API-Version": "2025-06-01"},
         json=data,
+        timeout=30,
     )
 
     try:
@@ -69,7 +68,8 @@ def send_buttondown_newsletter(days_back: int = 7):
     headers = {"Authorization": f"Token {settings.BUTTONDOWN_API_TOKEN}"}
     data = {"subject": subject, "body": body, "status": "draft"}
 
-    r = requests.post(url, headers=headers, json=data)
+    r = requests.post(url, headers=headers, json=data, timeout=30)
+    r.raise_for_status()
 
     logger.info("Newsletter draft created successfully", subject=subject, days_back=days_back)
     return "Success"

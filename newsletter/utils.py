@@ -64,7 +64,7 @@ def get_intro_block():
     day_of_week = timezone.now().strftime("%A")
     return f"""Hey, Happy {day_of_week}!
 
-> ***Why are you getting this***: \*You signed up to receive this newsletter on [Built with Django](https://builtwithdjango.com). I promised to send you the latest projects and jobs on the site as well as any other interesting Django content I encountered during the month. *If you don't want to receive this newsletter, feel free to* [*unsubscribe*]({{{{ unsubscribe_url }}}}) *anytime.*
+> ***Why are you getting this***: \\*You signed up to receive this newsletter on [Built with Django](https://builtwithdjango.com). I promised to send you the latest projects and jobs on the site as well as any other interesting Django content I encountered during the month. *If you don't want to receive this newsletter, feel free to* [*unsubscribe*]({{{{ unsubscribe_url }}}}) *anytime.*
     """
 
 
@@ -94,12 +94,18 @@ def get_projects_block(days_back: int = 7):
 
     for project in projects:
         if project.maker:
-            maker = f"by [{project.maker.first_name} {project.maker.last_name}](https://builtwithdjango.com{project.maker.get_absolute_url}):"
+            maker = (
+                f"[{project.maker.first_name} {project.maker.last_name}]"
+                f"(https://builtwithdjango.com{project.maker.get_absolute_url()}):"
+            )
         else:
             maker = ""
 
         maker_part = f" by {maker}" if maker else ""
-        block += f"- [{project.title}](https://builtwithdjango.com{project.get_absolute_url}){maker_part} - {project.short_description}\n"
+        block += (
+            f"- [{project.title}](https://builtwithdjango.com{project.get_absolute_url()})"
+            f"{maker_part} - {project.short_description}\n"
+        )
 
     return block
 
@@ -118,7 +124,8 @@ def get_jobs_block(days_back: int = 7):
     for job in jobs:
         stars = "⭐⭐⭐" if getattr(job, "paid", False) else ""
         block += (
-            f"- {stars} [{job.title} at {job.company_name}](https://builtwithdjango.com{job.get_absolute_url}){stars}\n"
+            f"- {stars} [{job.title} at {job.company_name}]"
+            f"(https://builtwithdjango.com{job.get_absolute_url()}){stars}\n"
         )
 
     return block

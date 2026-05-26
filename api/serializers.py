@@ -8,12 +8,14 @@ class LikeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
         fields = ("author", "project", "like", "id")
+        read_only_fields = ("author", "id")
 
 
 class LikeSerializerNoId(serializers.ModelSerializer):
     class Meta:
         model = Like
         fields = ("author", "project", "like")
+        read_only_fields = ("author", "project")
 
 
 class TagSerializer(serializers.ModelSerializer):
