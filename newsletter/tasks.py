@@ -1,6 +1,7 @@
 import requests
 from django.conf import settings
 
+from builtwithdjango.sentry_utils import sentry_count, sentry_task_transaction
 from builtwithdjango.utils import get_builtwithdjango_logger
 from newsletter.utils import generate_buttondown_newsletter_subject, prepare_newsletter
 
@@ -58,18 +59,25 @@ def send_buttondown_newsletter(days_back: int = 7):
     Args:
         days_back: Number of days to look back for content. Defaults to 7.
     """
-    logger.info("Preparing newsletter draft with content from the last %d days", days_back)
+    sentry_count("newsletter.draft.started")
+    with sentry_task_transaction("newsletter.tasks.send_buttondown_newsletter", attributes={"days_back": days_back}):
+        try:
+            logger.info("Preparing newsletter draft with content from the last %d days", days_back)
 
-    # Prepare newsletter with content from the specified number of days
-    body = prepare_newsletter(days_back=days_back)
-    subject = generate_buttondown_newsletter_subject(body)
+            # Prepare newsletter with content from the specified number of days
+            body = prepare_newsletter(days_back=days_back)
+            subject = generate_buttondown_newsletter_subject(body)
 
-    url = "https://api.buttondown.com/v1/emails"
-    headers = {"Authorization": f"Token {settings.BUTTONDOWN_API_TOKEN}"}
-    data = {"subject": subject, "body": body, "status": "draft"}
+            url = "https://api.buttondown.com/v1/emails"
+            headers = {"Authorization": f"Token {settings.BUTTONDOWN_API_TOKEN}"}
+            data = {"subject": subject, "body": body, "status": "draft"}
 
-    r = requests.post(url, headers=headers, json=data, timeout=30)
-    r.raise_for_status()
+            r = requests.post(url, headers=headers, json=data, timeout=30)
+            r.raise_for_status()
 
-    logger.info("Newsletter draft created successfully", subject=subject, days_back=days_back)
-    return "Success"
+            logger.info("Newsletter draft created successfully", subject=subject, days_back=days_back)
+            sentry_count("newsletter.draft.completed", attributes={"outcome": "success"})
+            return "Success"
+        except Exception:
+            sentry_count("newsletter.draft.completed", attributes={"outcome": "failure"})
+            raise
