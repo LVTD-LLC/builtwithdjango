@@ -4,6 +4,8 @@ import cloudinary.uploader
 import requests
 from django.conf import settings
 from django.core.mail import send_mail
+from django.urls import reverse
+from django_q.tasks import async_task
 
 from builtwithdjango.sentry_utils import sentry_count, sentry_distribution, sentry_task_transaction
 from builtwithdjango.utils import get_builtwithdjango_logger
@@ -27,33 +29,61 @@ def notify_of_new_job(instance):
     )
 
 
-def send_sponsorship_request_email(job_instance):
+def queue_sponsorship_request_email(job_instance):
     """
-    Send an email to the job poster asking if they want to sponsor the job posting.
+    Queue an email asking the job owner if they want to promote the job.
     """
-    if not job_instance.email:
+    email = (job_instance.email or "").strip()
+    if not email:
+        logger.info(f"No email found for job {job_instance.id}, skipping sponsorship request")
+        return None
+
+    return async_task(
+        send_sponsorship_request_email,
+        job_instance.id,
+        task_name=f"send_sponsorship_email_job_{job_instance.id}",
+    )
+
+
+def send_sponsorship_request_email(job_id):
+    """
+    Send an email to the job poster asking if they want to promote the job posting.
+    """
+    try:
+        job_instance = Job.objects.get(pk=job_id)
+    except Job.DoesNotExist:
+        logger.warning(f"Job {job_id} does not exist, skipping sponsorship request")
+        return False
+
+    email = (job_instance.email or "").strip()
+    if not email:
         logger.info(f"No email found for job {job_instance.id}, skipping sponsorship request")
         return False
 
-    subject = f"Sponsor your Django job on Built with Django?"
+    subject = "Promote your Django job on Built with Django?"
 
     # Use SITE_URL from settings (works for local dev and production)
-    site_url = settings.SITE_URL
+    site_url = settings.SITE_URL.rstrip("/")
     job_url = f"{site_url}{job_instance.get_absolute_url()}"
-    sponsor_url = f"{site_url}/jobs/sponsor/{job_instance.id}/"
-    sponsor_options_url = f"{site_url}/sponsor/"
+    sponsor_url = f"{site_url}{reverse('sponsor_job_checkout', kwargs={'pk': job_instance.id})}"
+    sponsor_options_url = f"{site_url}{reverse('advertize')}"
 
     message = f"""Hey there,
 
-I just found your job on HackerNews and added it to Built with Django Job Board ({job_url}).
+I added your Django job to the Built with Django job board:
 
-Emailing you to ask if you want to sponsor that posting.
+{job_instance.title}
+{job_url}
 
-This would help you get a wider reach and help support Built with Django.
+Would you like to promote this job opening?
 
-Thanks for considering. If you are interested here is the link to purchase: {sponsor_url}
+Promoted jobs are highlighted on the job board and shared in the Built with Django newsletter.
 
-Here is the link to my other sponsoring options: {sponsor_options_url}
+You can promote this job here:
+{sponsor_url}
+
+You can also see the other sponsorship options here:
+{sponsor_options_url}
 
 Best,
 Rasul"""
@@ -62,11 +92,11 @@ Rasul"""
         send_mail(
             subject,
             message,
-            "Built with Django <rasul@builtwithdjango.com>",
-            [job_instance.email],
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
             fail_silently=False,
         )
-        logger.info(f"Sponsorship request email sent successfully for job {job_instance.id} to {job_instance.email}")
+        logger.info(f"Sponsorship request email sent successfully for job {job_instance.id} to {email}")
         return True
     except Exception as e:
         logger.error(f"Failed to send sponsorship request email for job {job_instance.id}: {str(e)}")
@@ -148,7 +178,7 @@ def get_latest_jobs_from_tj_alerts():
                 new_job.save()
 
                 # Send sponsorship request email if job has an email address
-                # send_sponsorship_request_email(new_job)
+                queue_sponsorship_request_email(new_job)
 
                 count += 1
 
