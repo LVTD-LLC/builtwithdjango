@@ -31,9 +31,17 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Checkout Claude Code Action
+        uses: actions/checkout@v4
+        with:
+          repository: anthropics/claude-code-action
+          ref: v1
+          path: .github/actions/claude-code-action
+          persist-credentials: false
+
       - name: Run Claude Code Review
         id: claude-review
-        uses: anthropics/claude-code-action@v1
+        uses: ./.github/actions/claude-code-action
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
