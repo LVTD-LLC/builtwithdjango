@@ -72,18 +72,23 @@ class AdminNotificationTests(SimpleTestCase):
     @override_settings(
         APPRISE_API_URL="https://apprise.example.com",
         APPRISE_CONFIG_KEY="builtwithdjango",
+        APPRISE_BASIC_AUTH_USER="",
+        APPRISE_BASIC_AUTH_PASSWORD="",
+        APPRISE_NOTIFICATION_FORMAT="markdown",
+        APPRISE_REQUEST_TIMEOUT=10,
         ADMIN_NOTIFICATION_EMAIL_FALLBACK=True,
         ADMIN_NOTIFICATION_EMAIL_RECIPIENTS=["Built with Django <rasul@builtwithdjango.com>"],
         DEFAULT_FROM_EMAIL="Built with Django <rasul@builtwithdjango.com>",
     )
     @patch("builtwithdjango.notifications.send_mail")
-    @patch("builtwithdjango.notifications.send_apprise_notification")
-    def test_send_admin_notification_falls_back_to_email_when_apprise_fails(self, send_apprise, send_mail):
-        send_apprise.side_effect = AppriseNotificationError("boom")
+    @patch("builtwithdjango.notifications.requests.post")
+    def test_send_admin_notification_falls_back_to_email_when_apprise_request_fails(self, post, send_mail):
+        post.side_effect = requests.RequestException("boom")
 
         result = send_admin_notification("Subject", "Body")
 
         self.assertEqual(result, "email")
+        post.assert_called_once()
         send_mail.assert_called_once_with(
             "Subject",
             "Body",
