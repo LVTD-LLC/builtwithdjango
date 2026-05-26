@@ -54,3 +54,10 @@ class CustomUser(AbstractUser):
 
     class Meta:
         db_table = "auth_user"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["stripe_customer_id"],
+                condition=~models.Q(stripe_customer_id=""),
+                name="unique_nonempty_stripe_customer_id",
+            )
+        ]

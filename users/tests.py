@@ -5,7 +5,7 @@ from unittest.mock import patch
 import stripe
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
-from django.db import connection
+from django.db import IntegrityError, connection, transaction
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
@@ -109,6 +109,32 @@ class StripeCustomerTests(TestCase):
 
         self.assertEqual(customer_id, "cus_existing")
         create_customer.assert_not_called()
+
+    def test_nonempty_stripe_customer_id_must_be_unique(self):
+        get_user_model().objects.create_user(
+            username="first-stripe-customer",
+            email="first-stripe-customer@example.com",
+            stripe_customer_id="cus_duplicate",
+        )
+
+        with self.assertRaises(IntegrityError), transaction.atomic():
+            get_user_model().objects.create_user(
+                username="second-stripe-customer",
+                email="second-stripe-customer@example.com",
+                stripe_customer_id="cus_duplicate",
+            )
+
+    def test_blank_stripe_customer_id_can_be_reused(self):
+        get_user_model().objects.create_user(
+            username="first-blank-stripe-customer",
+            email="first-blank-stripe-customer@example.com",
+        )
+        get_user_model().objects.create_user(
+            username="second-blank-stripe-customer",
+            email="second-blank-stripe-customer@example.com",
+        )
+
+        self.assertEqual(get_user_model().objects.filter(stripe_customer_id="").count(), 2)
 
     @override_settings(STRIPE_SECRET_KEY="sk_test_123", STRIPE_JOB_PRICE_ID="price_configured_job")
     def test_get_stripe_price_id_uses_configured_price_id(self):
