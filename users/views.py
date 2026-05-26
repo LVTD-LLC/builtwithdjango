@@ -7,7 +7,7 @@ from django.urls import reverse_lazy
 from django.views.generic import TemplateView, UpdateView
 from djstripe import models
 
-from builtwithdjango.analytics import capture
+from builtwithdjango.analytics import capture, capture_checkout_return
 
 from .forms import CustomUserUpdateForm
 from .models import CustomUser
@@ -28,6 +28,10 @@ class ProfileUpdateForm(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
     def get_object(self, queryset=None):
         return self.request.user
+
+    def get(self, request, *args, **kwargs):
+        capture_checkout_return(request, "django_developers")
+        return super().get(request, *args, **kwargs)
 
     def form_valid(self, form):
         models.Customer.get_or_create(subscriber=self.request.user)

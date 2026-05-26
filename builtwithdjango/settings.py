@@ -501,11 +501,15 @@ if SENTRY_DSN and ENVIRONMENT == "prod":
         include_local_variables=True,
     )
 
-POSTHOG_API_KEY = env("POSTHOG_API_KEY", default="")
+BUILTWITHDJANGO_POSTHOG_PROJECT_API_KEY = "phc_Xvm3S1MGcMQXMHo2VJZabDhNJwmwbyhLedddpIU83Mo"
+POSTHOG_API_KEY = env(
+    "POSTHOG_API_KEY",
+    default=BUILTWITHDJANGO_POSTHOG_PROJECT_API_KEY if ENVIRONMENT == "prod" else "",
+)
 POSTHOG_HOST = env("POSTHOG_HOST", default="https://us.i.posthog.com")
 POSTHOG_UI_HOST = env("POSTHOG_UI_HOST", default="https://us.posthog.com")
 POSTHOG_PERSONAL_API_KEY = env("POSTHOG_PERSONAL_API_KEY", default="")
-POSTHOG_ENABLED = bool(POSTHOG_API_KEY) and env.bool("POSTHOG_ENABLED", default=False)
+POSTHOG_ENABLED = bool(POSTHOG_API_KEY) and env.bool("POSTHOG_ENABLED", default=ENVIRONMENT == "prod")
 POSTHOG_JS_DEFAULTS = "2026-01-30"
 
 posthog.api_key = POSTHOG_API_KEY
