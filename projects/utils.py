@@ -24,8 +24,8 @@ async def create_tweet(project_id):
         raise ValueError(f"Project with id {project_id} does not exist.")
 
     agent = Agent(
-        "google:gemini-2.5-flash-preview-04-17",
-        system_prompt="""
+        settings.PYDANTIC_AI_MODEL,
+        instructions="""
         You are an expert in crafting engaging and concise tweets for new software projects.
         The tweet should highlight the project's title and a very brief description.
         It must include a link to the project on builtwithdjango.com.
@@ -37,7 +37,7 @@ async def create_tweet(project_id):
         deps_type=ProjectContext,
     )
 
-    @agent.system_prompt
+    @agent.instructions
     def add_project_context(ctx: RunContext[ProjectContext]) -> str:
         return (
             "Project context:"
@@ -52,7 +52,7 @@ async def create_tweet(project_id):
             f"Pain Points: {ctx.deps.pain_points}"
         )
 
-    @agent.system_prompt
+    @agent.instructions
     def previous_examples() -> str:
         return """Below are some examples of tweets for other projects I did in the past.
         You can use them as a template to create a tweet for the project you are given.
@@ -104,7 +104,7 @@ async def create_tweet(project_id):
         ---
         """
 
-    @agent.system_prompt
+    @agent.instructions
     def use_twitter_handle(ctx: RunContext[ProjectContext]) -> str:
         return f"Only use the Twitter handle of the project owner: {ctx.deps.twitter_url}"
 

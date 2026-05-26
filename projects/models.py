@@ -143,7 +143,7 @@ class Project(models.Model):
 
     def analyze_content(self):
         """
-        Comprehensive analysis of the project's content using PydanticAI and Google Gemini.
+        Comprehensive analysis of the project's content using Pydantic AI.
         Returns True if successful, False otherwise.
         """
 
@@ -182,8 +182,8 @@ class Project(models.Model):
             )
 
             agent = Agent(
-                "gemini-2.0-flash",
-                system_prompt="""
+                settings.PYDANTIC_AI_MODEL,
+                instructions="""
                 You are an expert in analyzing web applications and digital projects.
                 Analyze the provided content comprehensively, focusing on:
                 1. Understanding who it's built for

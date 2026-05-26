@@ -4,7 +4,7 @@ from typing import Any, Dict, List
 import requests
 from django.conf import settings
 from django.utils import timezone
-from google import genai
+from pydantic_ai import Agent
 
 from builtwithdjango.utils import get_builtwithdjango_logger
 from jobs.models import Job
@@ -222,60 +222,60 @@ def prepare_newsletter(days_back: int = 7):
 
 
 def generate_buttondown_newsletter_subject(body: str):
-    gemini_client = genai.Client(api_key=settings.GEMINI_API_KEY)
+    """
+    Generates a newsletter subject line using Pydantic AI based on the email body.
+    """
+    agent = Agent(
+        settings.PYDANTIC_AI_MODEL,
+        instructions="""
+        You are an expert copywriter specializing in email subject lines.
+        Your task is to generate a killer subject line for a newsletter.
 
-    """
-    Generates a newsletter subject line using the Gemini API based on the email body.
-    """
+        The subject line must do two things:
+        1. Hint at a benefit. For example, "How to get your first 10 sales (without a big list)" – clear benefit and it removes a mental obstacle.
+        2. Create curiosity. For example, "THIS almost killed my launch" – What's "this"? What happened? Instant curiosity.
+
+        Consider these 7 email subject line styles that consistently deliver higher open rates:
+        1. Curiosity: "THIS changed everything for my business."
+        2. Pain: "Still can't convert traffic into buyers?"
+        3. Benefit: "How to 2X your leads in 30 days"
+        4. Story: "I accidentally ordered d*ck cheese" (yes, deliverability took a hit. but replies went crazy.)
+        5. Question: "Do you make these content mistakes?"
+        6. Contrarian: "Why storytelling WON'T grow your brand (and what will)"
+        7. Proof: "How I grew to 70,000 followers in one year"
+
+        Use these to match your email type:
+        - Sending a story? Use a story subject.
+        - Giving advice? Use benefit or question.
+        - Writing to sell? Use pain or proof.
+
+        Mix them up. Shuffle them often. They never go stale.
+
+        Here's what NOT to do:
+        - Don't write "Newsletter #3" (instant death)
+        - Don't ask boring yes/no questions that can be answered with a simple yes/no.
+        - Don't try to be too clever (you are not Hemingway or ChatGPT).
+        - Don't use bold or italic text.
+        - Don't use markdown, just plain text.
+        - Don't use links.
+        - Don't use images.
+        - Don't use videos.
+        - Don't use hashtags.
+        - Do use emojis where appropriate, but don't overdo it.
+
+        Only return the subject line, nothing else.
+        """,
+    )
+
     prompt = f"""
-    You are an expert copywriter specializing in email subject lines.
-    Your task is to generate a killer subject line for a newsletter.
-
-    The subject line must do two things:
-    1. Hint at a benefit. For example, "How to get your first 10 sales (without a big list)" – clear benefit and it removes a mental obstacle.
-    2. Create curiosity. For example, "THIS almost killed my launch" – What's "this"? What happened? Instant curiosity.
-
-    Consider these 7 email subject line styles that consistently deliver higher open rates:
-    1. Curiosity: "THIS changed everything for my business."
-    2. Pain: "Still can't convert traffic into buyers?"
-    3. Benefit: "How to 2X your leads in 30 days"
-    4. Story: "I accidentally ordered d*ck cheese" (yes, deliverability took a hit. but replies went crazy.)
-    5. Question: "Do you make these content mistakes?"
-    6. Contrarian: "Why storytelling WON'T grow your brand (and what will)"
-    7. Proof: "How I grew to 70,000 followers in one year"
-
-    Use these to match your email type:
-    - Sending a story? Use a story subject.
-    - Giving advice? Use benefit or question.
-    - Writing to sell? Use pain or proof.
-
-    Mix them up. Shuffle them often. They never go stale.
-
-    Here's what NOT to do:
-    - Don't write "Newsletter #3" (instant death)
-    - Don't ask boring yes/no questions that can be answered with a simple yes/no.
-    - Don't try to be too clever (you are not Hemingway or ChatGPT).
-    - Don't use bold or italic text.
-    - Don't use markdown, just plain text.
-    - Don't use links.
-    - Don't use images.
-    - Don't use videos.
-    - Don't use hashtags.
-    - Do use emojis where appropriate, but don't overdo it.
-
     The newsletter body is as follows:
     ---
     {body}
     ---
 
     Generate a single, compelling subject line based on the content and guidelines above.
-    Only return the subject line, nothing else.
-    """  # noqa: E501
+    """
 
-    response = gemini_client.models.generate_content(
-        model="gemini-2.5-pro-preview-05-06",  # Using model from user's example
-        contents=prompt,
-    )
-    subject = getattr(response, "text", None)
+    result = agent.run_sync(prompt)
 
-    return subject.strip()
+    return result.output.strip()
