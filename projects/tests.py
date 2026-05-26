@@ -1,4 +1,5 @@
 import importlib
+from contextlib import nullcontext
 from datetime import timedelta
 from types import SimpleNamespace
 from unittest.mock import Mock, patch
@@ -9,7 +10,7 @@ from django.test import RequestFactory, TestCase
 from django.utils import timezone
 
 from .models import Like, Project, get_content_analysis_agent
-from .tasks import save_screenshot
+from .tasks import analyze_project, fetch_page_content, save_screenshot
 from .views import ProjectListView
 
 
@@ -95,6 +96,7 @@ class ProjectTestCase(TestCase):
         self.assertEqual(project.content_language, "English")
         self.assertTrue(project.published)
 
+
 class ProjectModelServiceTests(TestCase):
     def test_check_project_is_active_updates_active_flag_from_http_status(self):
         project = Project.objects.create(
@@ -148,6 +150,44 @@ class ProjectModelServiceTests(TestCase):
         self.assertEqual(project.page_content_markdown, "# Readable")
         self.assertEqual(project.page_content_html, "<html>Project</html>")
         self.assertIsNotNone(project.date_scraped)
+
+
+class ProjectTaskObservabilityTests(TestCase):
+    def test_fetch_page_content_counts_unexpected_failure(self):
+        project = Project.objects.create(
+            title="Fetch Task Project",
+            url="https://fetch-task.example.com",
+            short_description="A project.",
+        )
+
+        with (
+            patch.object(Project, "fetch_page_content", side_effect=RuntimeError("fetch failed")),
+            patch("projects.tasks.sentry_count") as sentry_count,
+            patch("projects.tasks.sentry_task_transaction", return_value=nullcontext()),
+        ):
+            with self.assertRaisesMessage(RuntimeError, "fetch failed"):
+                fetch_page_content(project.id)
+
+        sentry_count.assert_any_call("projects.content_fetch.started")
+        sentry_count.assert_any_call("projects.content_fetch.completed", attributes={"outcome": "failure"})
+
+    def test_analyze_project_counts_unexpected_failure(self):
+        project = Project.objects.create(
+            title="Analysis Task Project",
+            url="https://analysis-task.example.com",
+            short_description="A project.",
+        )
+
+        with (
+            patch.object(Project, "analyze_content", side_effect=RuntimeError("analysis failed")),
+            patch("projects.tasks.sentry_count") as sentry_count,
+            patch("projects.tasks.sentry_task_transaction", return_value=nullcontext()),
+        ):
+            with self.assertRaisesMessage(RuntimeError, "analysis failed"):
+                analyze_project(project.id)
+
+        sentry_count.assert_any_call("projects.content_analysis.started")
+        sentry_count.assert_any_call("projects.content_analysis.completed", attributes={"outcome": "failure"})
 
 
 class ProjectListViewTests(TestCase):

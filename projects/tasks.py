@@ -96,6 +96,9 @@ def fetch_page_content(project_id):
             sentry_count("projects.content_fetch.completed", attributes={"outcome": "missing_project"})
             logger.error(f"Project with ID {project_id} not found")
             return False
+        except Exception:
+            sentry_count("projects.content_fetch.completed", attributes={"outcome": "failure"})
+            raise
 
 
 def analyze_project(project_id):
@@ -120,3 +123,6 @@ def analyze_project(project_id):
             sentry_count("projects.content_analysis.completed", attributes={"outcome": "missing_project"})
             logger.error(f"Project with ID {project_id} not found")
             return False
+        except Exception:
+            sentry_count("projects.content_analysis.completed", attributes={"outcome": "failure"})
+            raise
