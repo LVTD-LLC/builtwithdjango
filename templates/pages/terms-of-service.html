@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block meta %}
-    <title>Built with Django - Terms of Service</title>
+    {% include "components/seo_meta.html" with title="Terms of Service | Built with Django" description="Terms and conditions for using Built with Django." canonical_path="/terms/" robots="noindex,follow" twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 
 {% block content %}

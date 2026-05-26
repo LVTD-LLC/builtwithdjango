@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
 {% load markdown_extras %}
+{% block meta %}
+    {% include "components/seo_meta.html" with title="Edit Maker Profile | Built with Django" description="Edit a Built with Django maker profile." robots="noindex,nofollow" twitter_card="summary" image_alt="Built with Django logo" %}
+{% endblock meta %}
 {% block content %}
     {% if user == object.user %}
         <div class="max-w-5xl mx-auto my-10">

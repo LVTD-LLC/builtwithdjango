@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block meta %}
-    <title>Admin Panel - Built with Django</title>
+    {% include "components/seo_meta.html" with title="Admin Panel | Built with Django" description="Built with Django admin panel." canonical_path="/admin-panel/" robots="noindex,nofollow" twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 
 {% block content %}

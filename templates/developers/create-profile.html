@@ -1,4 +1,7 @@
 {% extends "base.html" %}
+{% block meta %}
+    {% include "components/seo_meta.html" with title="Edit Developer Profile | Built with Django" description="Edit your Built with Django developer profile." robots="noindex,nofollow" twitter_card="summary" image_alt="Built with Django logo" %}
+{% endblock meta %}
 {% block content %}
     <form action method="post">
         {% csrf_token %}

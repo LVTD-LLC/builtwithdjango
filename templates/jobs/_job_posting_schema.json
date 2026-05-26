@@ -1,0 +1,29 @@
+{
+  "@context": "https://schema.org",
+  "@type": "JobPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{% canonical_url object.get_absolute_url %}"
+  },
+  "title": {{ object.title|json_ld }},
+  "name": {{ object.title|json_ld }},
+  "description": {% if object.description %}{{ object.description|seo_text:5000|json_ld }}{% else %}{{ company_name|add:" is looking for a "|add:object.title|json_ld }}{% endif %},
+  "datePosted": "{{ object.created_datetime|date:'c' }}",
+  "employmentType": "FULL_TIME",
+  "url": {{ object.listing_url|json_ld }},
+  "directApply": true,
+  {% if object.remote %}
+  "jobLocationType": "TELECOMMUTE",
+  {% else %}
+  "jobLocation": {
+    "@type": "Place",
+    "address": {{ object.location|json_ld }}
+  },
+  {% endif %}
+  "hiringOrganization": {
+    "@type": "Organization",
+    "name": {{ company_name|json_ld }}{% if company_url %},
+    "sameAs": {{ company_url|json_ld }}{% endif %}{% if company_logo_url %},
+    "logo": "{% absolute_url company_logo_url %}"{% endif %}
+  }
+}

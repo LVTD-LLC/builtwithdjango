@@ -3,19 +3,7 @@
 {% load widget_tweaks %}
 
 {% block meta %}
-    <title>Django Jobs | Built with Django</title>
-    <meta name="description" content="Django jobs for developers who want to work with Django." />
-    <link rel="canonical" href="https://{{ request.get_host }}/jobs/" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:creator" content="@rasulkireev" />
-    <meta name="twitter:site" content="@builtwithdjango" />
-    <meta name="twitter:title" content="Django Jobs | Built with Django" />
-    <meta name="twitter:description" content="Django jobs for developers who want to work with Django." />
-    <meta name="twitter:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
-    <meta property="og:title" content="Django Jobs | Built with Django" />
-    <meta property="og:url" content="https://{{ request.get_host }}/jobs/" />
-    <meta property="og:description" content="Django jobs for developers who want to work with Django." />
-    <meta property="og:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+    {% include "components/seo_meta.html" with title="Django Jobs | Built with Django" description="Django jobs for developers who want to work with Django." canonical_path="/jobs/" twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 
 {% block content %}
@@ -60,17 +48,16 @@
     <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebSite",
+    "@type": "CollectionPage",
     "name": "Django Jobs",
     "about": "Job Board",
     "description": "Django jobs for developers who want to work with Django.",
     "abstract": "Django jobs for developers who want to work with Django.",
-    "thumbnailUrl": "https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
-    "url": "https://{{ request.get_host }}/jobs/",
+    "thumbnailUrl": "{% absolute_url '/static/vendors/images/logo.png' %}",
+    "url": "{% canonical_url '/jobs/' %}",
     "author": {
       "@type": "Person",
-      "givenName": "Rasul",
-      "familyName": "Kireev",
+      "name": "Rasul Kireev",
       "url": "https://rasulkireev.com/"
     }
   }

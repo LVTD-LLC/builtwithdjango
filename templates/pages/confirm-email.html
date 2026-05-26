@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
+{% block meta %}
+    {% include "components/seo_meta.html" with title="Confirm NFT Email | Built with Django" description="Confirm your Cistercian Date Club request email." robots="noindex,nofollow" twitter_card="summary" image_alt="Built with Django logo" %}
+{% endblock meta %}
 {% block content %}
     <div class="my-10">
         {% if messages %}

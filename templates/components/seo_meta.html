@@ -1,0 +1,23 @@
+{% load static %}
+{% static "vendors/images/logo.png" as default_share_image %}
+{% firstof image og_image default_share_image as share_image %}
+{% canonical_url canonical_path as canonical %}
+{% absolute_url share_image as share_image_url %}
+<title>{{ title|seo_text:70 }}</title>
+{% if description %}<meta name="description" content="{{ description|seo_text:300 }}" />{% endif %}
+{% if robots %}<meta name="robots" content="{{ robots }}" />{% endif %}
+<link rel="canonical" href="{{ canonical }}" />
+<meta property="og:site_name" content="Built with Django" />
+<meta property="og:type" content="{{ og_type|default:'website' }}" />
+<meta property="og:title" content="{{ title|seo_text:95 }}" />
+<meta property="og:url" content="{{ canonical }}" />
+{% if description %}<meta property="og:description" content="{{ description|seo_text:300 }}" />{% endif %}
+<meta property="og:image" content="{{ share_image_url }}" />
+{% if image_alt %}<meta property="og:image:alt" content="{{ image_alt|seo_text:120 }}" />{% endif %}
+<meta name="twitter:card" content="{{ twitter_card|default:'summary_large_image' }}" />
+<meta name="twitter:creator" content="{{ twitter_creator|default:'@rasulkireev' }}" />
+<meta name="twitter:site" content="{{ twitter_site|default:'@builtwithdjango' }}" />
+<meta name="twitter:title" content="{{ title|seo_text:95 }}" />
+{% if description %}<meta name="twitter:description" content="{{ description|seo_text:300 }}" />{% endif %}
+<meta name="twitter:image" content="{{ share_image_url }}" />
+{% if image_alt %}<meta name="twitter:image:alt" content="{{ image_alt|seo_text:120 }}" />{% endif %}

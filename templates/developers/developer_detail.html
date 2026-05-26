@@ -4,19 +4,21 @@
 {% load humanize %}
 
 {% block meta %}
-    <title>{{ object.title }}</title>
-    <meta name="description" content="{{ object.description }}"/>
-    <link rel="canonical" href="https://{{ request.get_host }}/developers/{{ object.id }}" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:creator" content="@rasulkireev" />
-    <meta name="twitter:site" content="@builtwithdjango" />
-    <meta name="twitter:title" content="{{ object.title }}" />
-    <meta name="twitter:description" content="{{ object.description }}"/>
-    <meta name="twitter:image" content="https://res.cloudinary.com/built-with-django/{{ object.user.profile_image }}" />
-    <meta property="og:title" content="{{ object.title }}" />
-    <meta property="og:url" content="https://{{ request.get_host }}/developers/{{ object.id }}" />
-    <meta property="og:description" content="{{ object.description }}"/>
-    <meta property="og:image" content="https://res.cloudinary.com/built-with-django/{{ object.user.profile_image }}" />
+    {% if object.user.profile_image %}
+      {% with developer_image="https://res.cloudinary.com/built-with-django/"|add:object.user.profile_image %}
+        {% if object.looking_for_a_job %}
+          {% include "components/seo_meta.html" with title=object.title description=object.description canonical_path=object.get_absolute_url image=developer_image twitter_card="summary" image_alt=object.title %}
+        {% else %}
+          {% include "components/seo_meta.html" with title=object.title description=object.description canonical_path=object.get_absolute_url image=developer_image twitter_card="summary" robots="noindex,follow" image_alt=object.title %}
+        {% endif %}
+      {% endwith %}
+    {% else %}
+      {% if object.looking_for_a_job %}
+        {% include "components/seo_meta.html" with title=object.title description=object.description canonical_path=object.get_absolute_url twitter_card="summary" image_alt="Built with Django logo" %}
+      {% else %}
+        {% include "components/seo_meta.html" with title=object.title description=object.description canonical_path=object.get_absolute_url twitter_card="summary" robots="noindex,follow" image_alt="Built with Django logo" %}
+      {% endif %}
+    {% endif %}
 {% endblock meta %}
 
 {% block content %}
@@ -125,14 +127,11 @@
 {% endblock content %}
 
 {% block schema %}
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "{{ object.title }}",
-    "description": "{{ object.description }}",
-    "thumbnailUrl": "https://res.cloudinary.com/built-with-django/{{ object.user.profile_image }}",
-    "url": "https://{{ request.get_host }}/developers/{{ object.id }}"
-  }
-  </script>
+  {% if object.user.profile_image %}
+    {% with developer_image="https://res.cloudinary.com/built-with-django/"|add:object.user.profile_image %}
+      {% include "developers/_developer_schema.json" with developer_image=developer_image %}
+    {% endwith %}
+  {% else %}
+    {% include "developers/_developer_schema.json" %}
+  {% endif %}
 {% endblock schema %}

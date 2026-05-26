@@ -2,7 +2,7 @@
 {% load static %}
 {% load widget_tweaks %}
 {% block meta %}
-    <title>Built with Django | Update Profile</title>
+    {% include "components/seo_meta.html" with title="Update Profile | Built with Django" description="Update your Built with Django profile." canonical_path="/users/update/" robots="noindex,nofollow" twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 {% block content %}
     <section class="py-8 sm:py-10 lg:py-12"

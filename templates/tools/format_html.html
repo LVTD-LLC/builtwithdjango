@@ -2,19 +2,7 @@
 {% load static %}
 
 {% block meta %}
-    <title>Django HTML Tempalte Formatter</title>
-    <meta name="description" content="Make your Django templates pretty in seconds."/>
-    <link rel="canonical" href="https://{{ request.get_host }}/tools/format-html/" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:creator" content="@rasulkireev" />
-    <meta name="twitter:site" content="@builtwithdjango" />
-    <meta name="twitter:title" content="Django HTML Tempalte Formatter" />
-    <meta name="twitter:description" content="Make your Django templates pretty in seconds."/>
-    <meta name="twitter:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
-    <meta property="og:title" content="Django HTML Tempalte Formatter" />
-    <meta property="og:url" content="https://{{ request.get_host }}/tools/format-html/" />
-    <meta property="og:description" content="Make your Django templates pretty in seconds."/>
-    <meta property="og:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+    {% include "components/seo_meta.html" with title="Django HTML Template Formatter | Built with Django" description="Format Django templates in seconds." canonical_path="/tools/format-html/" twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 
 {% block content %}
@@ -67,20 +55,19 @@
     {
         "@context": "https://schema.org",
         "@type": "WebPage",
-        "name": "Django HTML Tempalte Formatter",
-        "description": "Make your Django templates pretty in seconds.",
-        "abstract": "Make your Django templates pretty in seconds.",
-        "thumbnailUrl": "https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
-        "url": "https://{{ request.get_host }}/tools/format-html/",
+        "name": "Django HTML Template Formatter | Built with Django",
+        "description": "Format Django templates in seconds.",
+        "abstract": "Format Django templates in seconds.",
+        "thumbnailUrl": "{% absolute_url '/static/vendors/images/logo.png' %}",
+        "url": "{% canonical_url '/tools/format-html/' %}",
         "author": {
             "@type": "Person",
-            "givenName": "Rasul",
-            "familyName": "Kireev",
+            "name": "Rasul Kireev",
             "url": "https://rasulkireev.com/"
         },
         "mainEntity": {
             "@type": "WebApplication",
-            "name": "Django Secret Key Generator",
+            "name": "Django HTML Template Formatter",
             "applicationCategory": "DeveloperApplication",
             "operatingSystem": "All"
         }

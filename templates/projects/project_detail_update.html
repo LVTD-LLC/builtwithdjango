@@ -2,6 +2,9 @@
 {% load static %}
 {% load widget_tweaks %}
 {% load markdown_extras %}
+{% block meta %}
+    {% include "components/seo_meta.html" with title="Edit Project | Built with Django" description="Edit a project in the Built with Django directory." robots="noindex,nofollow" twitter_card="summary" image_alt="Built with Django logo" %}
+{% endblock meta %}
 {% block content %}
     {% if user == object.maker.user or user == object.logged_in_maker %}
         <div class="max-w-5xl mx-auto my-10">

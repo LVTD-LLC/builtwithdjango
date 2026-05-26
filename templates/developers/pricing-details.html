@@ -3,19 +3,7 @@
 {% load widget_tweaks %}
 
 {% block meta %}
-    <title>Django Developers - Pricing</title>
-    <meta name="description" content="Subscription Pricing Details for Django Developers"/>
-    <link rel="canonical" href="https://{{ request.get_host }}/developers/pricing" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:creator" content="@rasulkireev" />
-    <meta name="twitter:site" content="@builtwithdjango" />
-    <meta name="twitter:title" content="Django Developers - Pricing" />
-    <meta name="twitter:description" content="Connect with hundreds of Django developers looking for their next job."/>
-    <meta name="twitter:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
-    <meta property="og:title" content="Django Developers - Pricing" />
-    <meta property="og:url" content="https://{{ request.get_host }}/developers/pricing" />
-    <meta property="og:description" content="Connect with hundreds of Django developers looking for their next job."/>
-    <meta property="og:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+    {% include "components/seo_meta.html" with title="Django Developers - Pricing" description="Manage your Django developer profile subscription." canonical_path="/developers/pricing" robots="noindex,nofollow" twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 
 {% block content %}
@@ -116,17 +104,15 @@
     <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebSite",
+    "@type": "WebPage",
     "name": "Django Developers - Pricing",
     "about": "Reverse Job Board",
-    "description": "Connect with hundreds of Django developers looking for their next job.",
-    "abstract": "Connect with hundreds of Django developers looking for their next job.",
-    "thumbnailUrl": "https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
-    "url": "https://{{ request.get_host }}/developers/pricing",
+    "description": "Manage your Django developer profile subscription.",
+    "thumbnailUrl": "{% absolute_url '/static/vendors/images/logo.png' %}",
+    "url": "{% canonical_url '/developers/pricing' %}",
     "author": {
       "@type": "Person",
-      "givenName": "Rasul",
-      "familyName": "Kireev",
+      "name": "Rasul Kireev",
       "url": "https://rasulkireev.com/"
     }
   }

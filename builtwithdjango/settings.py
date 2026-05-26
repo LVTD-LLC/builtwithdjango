@@ -269,6 +269,7 @@ TEMPLATES = [
         "OPTIONS": {
             "builtins": [
                 "django_component.templatetags",
+                "pages.templatetags.seo",
             ],
             "context_processors": [
                 "django.template.context_processors.debug",

@@ -1,4 +1,5 @@
 from datetime import timedelta
+from urllib.parse import urlencode
 
 from allauth.account.models import EmailAddress
 from django.conf import settings
@@ -42,7 +43,7 @@ class HomeView(TemplateView):
         context["projects"] = Project.objects.filter(published=True, active=True).order_by("-sponsored", "-date_added")[
             :6
         ]
-        context["guides"] = Post.objects.filter(type="TUTORIAL")[:6]
+        context["guides"] = Post.objects.filter(type=Post.TUTORIAL, status=Post.PUBLISHED)[:6]
         context["podcast_episodes"] = Episode.objects.all()[:3]
         filter_date = timezone.now() - timedelta(days=60)
         context["jobs"] = Job.objects.filter(approved=True, created_datetime__gte=filter_date).order_by(
@@ -52,16 +53,16 @@ class HomeView(TemplateView):
         title = "Built with Django"
         description = "Learn to bring your project and business ideas to life with Django. Get inspired by others."
         logo_url = self.request.build_absolute_uri(static("vendors/images/logo.png"))
-        og_image_url = (
-            f"https://osig.app/g?"
-            f"site=x&"
-            f"title={title}&"
-            f"subtitle={description}&"
-            f"image_url={logo_url}&"
-            f"font=markerfelt&"
-            f"style=logo&"
-            f"key=dQrmHqDSY5"
-        )
+        og_image_params = {
+            "site": "x",
+            "title": title,
+            "subtitle": description,
+            "image_url": logo_url,
+            "font": "markerfelt",
+            "style": "logo",
+            "key": "dQrmHqDSY5",
+        }
+        og_image_url = f"https://osig.app/g?{urlencode(og_image_params)}"
         context["og_image"] = og_image_url
 
         return context

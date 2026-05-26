@@ -4,18 +4,7 @@
 {% load widget_tweaks %}
 
 {% block meta %}
-    <title>Submit a Django Project | Built with Django</title>
-    <meta name="description" content="Submit a project to the Built with Django directory." />
-    <link rel="canonical" href="https://{{ request.get_host }}/projects/new/" />
-    <meta property="og:title" content="Submit a Django Project | Built with Django" />
-    <meta property="og:url" content="https://{{ request.get_host }}/projects/new/" />
-    <meta property="og:description" content="Submit a project to the Built with Django directory." />
-    <meta property="og:image" content="{% static 'vendors/images/logo.png' %}" />
-    <meta name="twitter:creator" content="@rasulkireev" />
-    <meta name="twitter:site" content="@builtwithdjango" />
-    <meta name="twitter:title" content="Submit a Django Project | Built with Django" />
-    <meta name="twitter:description" content="Submit a project to the Built with Django directory." />
-    <meta name="twitter:image" content="{% static 'vendors/images/logo.png' %}" />
+    {% include "components/seo_meta.html" with title="Submit a Django Project | Built with Django" description="Submit a project to the Built with Django directory." canonical_path="/projects/new/" twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 
 {% block content %}

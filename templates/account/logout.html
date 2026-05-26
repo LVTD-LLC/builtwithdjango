@@ -1,5 +1,7 @@
 {% extends "base.html" %}
-{% block title %}Sign Out{% endblock title %}
+{% block meta %}
+    {% include "components/seo_meta.html" with title="Sign Out | Built with Django" description="Sign out of Built with Django." canonical_path="/users/logout/" robots="noindex,nofollow" twitter_card="summary" image_alt="Built with Django logo" %}
+{% endblock meta %}
 {% block content %}
     <div class="mx-auto my-4 prose md:my-10 lg:prose-lg">
         <h1 class="text-center">Please confirm Sign Out</h1>

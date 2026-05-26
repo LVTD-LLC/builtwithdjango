@@ -1,18 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 {% block meta %}
-    <title>Built with Django | Makers</title>
-    <meta name="description" content="Coolest Django makers!" />
-    <link rel="canonical" href="https://{{ request.get_host }}/projects/makers/" />
-    <meta property="og:title" content="Coolest Django Makers!" />
-    <meta property="og:url" content="https://{{ request.get_host }}/projects/makers/" />
-    <meta property="og:description" content="Coolest Django makers!" />
-    <meta property="og:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
-    <meta name="twitter:creator" content="@rasulkireev" />
-    <meta name="twitter:site" content="@rasulkireev" />
-    <meta name="twitter:title" content="Coolest Django Makers!" />
-    <meta name="twitter:description" content="Coolest Django makers!" />
-    <meta name="twitter:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+    {% include "components/seo_meta.html" with title="Django Makers | Built with Django" description="Meet the makers behind projects built with Django." canonical_path="/makers/" twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 {% block content %}
     <div class="overflow-hidden my-4 bg-white rounded-lg shadow">
@@ -157,15 +146,14 @@
     <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "Built with Django | Makers",
-    "description": "Coolest Django makers!",
-    "thumbnailUrl": "https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
-    "url": "https://{{ request.get_host }}",
+    "@type": "CollectionPage",
+    "name": "Django Makers | Built with Django",
+    "description": "Meet the makers behind projects built with Django.",
+    "thumbnailUrl": "{% absolute_url '/static/vendors/images/logo.png' %}",
+    "url": "{% canonical_url '/makers/' %}",
     "author": {
       "@type": "Person",
-      "givenName": "Rasul",
-      "familyName": "Kireev",
+      "name": "Rasul Kireev",
       "url": "https://rasulkireev.com/"
     }
   }

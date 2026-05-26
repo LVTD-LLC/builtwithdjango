@@ -3,19 +3,8 @@
 {% load markdown_extras %}
 
 {% block meta %}
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:creator" content="@rasulkireev" />
-    <meta name="twitter:site" content="@builtwithdjango" />
-    <title>{{ object.title }}</title>
-    <meta name="description" content="{{ object.details }}" />
-    <link rel="canonical" href="https://{{ request.get_host }}/podcast/{{ object.slug }}" />
-    <meta property="og:title" content="{{ object.title }}" />
-    <meta property="og:url" content="https://{{ request.get_host }}/podcast/{{ object.slug }}" />
-    <meta property="og:description" content="{{ object.details }}" />
-    <meta property="og:image" content="https://{{ request.get_host }}{{ object.thumbnail.url }}" />
-    <meta name="twitter:title" content="{{ object.title }}" />
-    <meta name="twitter:description" content="{{ object.details }}" />
-    <meta name="twitter:image" content="https://{{ request.get_host }}{{ object.thumbnail.url }}" />
+    {% absolute_url object.thumbnail.url as episode_image %}
+    {% include "components/seo_meta.html" with title=object.title description=object.details canonical_path=object.get_absolute_url image=episode_image og_type="article" image_alt=object.title %}
 {% endblock meta %}
 
 {% block content %}
@@ -64,28 +53,28 @@
 {% endblock content %}
 
 {% block schema %}
+    {% absolute_url object.thumbnail.url as episode_image %}
     <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "PodcastEpisode",
-  "name":"{{ object.title }}",
+  "name": {{ object.title|json_ld }},
   "episodeNumber": {{ object.pk }},
-  "thumbnailUrl": "https://{{ request.get_host }}{% get_media_prefix %}{{ object.thumbnail }}",
+  "thumbnailUrl": {{ episode_image|json_ld }},
   "author": {
     "@type": "Person",
-    "givenName": "Rasul",
-    "familyName": "Kireev",
+    "name": "Rasul Kireev",
     "url": "https://rasulkireev.com/"
   },
-  "url": "https://{{ request.get_host }}/podcast/{{ object.slug }}",
+  "url": "{% canonical_url object.get_absolute_url %}",
   "partOfSeries": {
     "@type": "PodcastSeries",
     "name": "Built with Django Podcast",
-    "url": "https://{{ request.get_host }}/podcast/"
+    "url": "{% canonical_url '/podcast/' %}"
   },
-  "description": "{{ object.details }}",
-  "abstract": "{{ object.details }}",
-  "datePublished": "{{ object.created_datetime }}"
+  "description": {{ object.details|json_ld }},
+  "abstract": {{ object.details|json_ld }},
+  "datePublished": "{{ object.created_datetime|date:'c' }}"
 }
     </script>
 {% endblock schema %}

@@ -8,22 +8,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <link rel="apple-touch-icon" href="{% static 'vendors/favicon/logo.png' %}" />
     <link rel="icon" type="image/png" sizes="16x16 32x32 500x500" href="{% static 'vendors/favicon/logo.png' %}" />
-    <meta property="og:type" content="website" />
 
     {% block meta %}
-      <title>Built with Django</title>
-      <meta name="description" content="Collection of cool projects people built with Django" />
-      <link rel="canonical" href="https://{{ request.get_host }}" />
-      <meta property="og:title" content="Built with Django" />
-      <meta property="og:url" content="https://{{ request.get_host }}" />
-      <meta property="og:description" content="Collection of cool projects people built with Django" />
-      <meta property="og:image" content="{{ og_image }}" />
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:creator" content="@rasulkireev" />
-      <meta name="twitter:site" content="@builtwithdjango" />
-      <meta name="twitter:title" content="Built with Django" />
-      <meta name="twitter:description" content="Collection of cool projects people built with Django" />
-      <meta name="twitter:image" content="{{ og_image }}" />
+      {% include "components/seo_meta.html" with title="Built with Django" description="See what people are shipping with Django, learn from practical guides, find Django work, and discover useful community resources." canonical_path="/" image=og_image image_alt="Built with Django logo" %}
     {% endblock meta %}
 
     <link rel="stylesheet" href="https://maxst.icons8.com/vue-static/landings/line-awesome/line-awesome/1.3.0/css/line-awesome.min.css" />
@@ -655,20 +642,39 @@
     {% include "components/bottom-right-corner-ad.html" %}
 
     {% block schema %}
+      {% canonical_url "/" as site_url %}
+      {% static "vendors/images/logo.png" as logo_path %}
+      {% absolute_url logo_path as logo_url %}
       <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "Projects Built with Django",
-        "description": "Collection of cool projects people built with Django",
-        "thumbnailUrl": "{{ og_image }}",
-        "url": "https://{{ request.get_host }}",
-        "author": {
-          "@type": "Person",
-          "givenName": "Rasul",
-          "familyName": "Kireev",
-          "url": "https://rasulkireev.com/"
-        }
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "{{ site_url }}#website",
+            "name": "Built with Django",
+            "description": "See what people are shipping with Django, learn from practical guides, find Django work, and discover useful community resources.",
+            "url": "{{ site_url }}",
+            "publisher": {
+              "@id": "{{ site_url }}#organization"
+            }
+          },
+          {
+            "@type": "Organization",
+            "@id": "{{ site_url }}#organization",
+            "name": "Built with Django",
+            "url": "{{ site_url }}",
+            "logo": {
+              "@type": "ImageObject",
+              "url": "{{ logo_url }}"
+            },
+            "founder": {
+              "@type": "Person",
+              "name": "Rasul Kireev",
+              "url": "https://rasulkireev.com/"
+            }
+          }
+        ]
       }
       </script>
     {% endblock schema %}

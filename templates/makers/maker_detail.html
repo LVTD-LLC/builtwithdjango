@@ -3,23 +3,22 @@
 {% load markdown_extras %}
 
 {% block meta %}
-    <title>Built with Django | {{ object.first_name }} {{ object.last_name }}</title>
-    <meta name="description" content="{{ object.first_name }} {{ object.last_name }} builds with Django" />
-    <link rel="canonical" href="https://{{ request.get_host }}/makers/{{ object.slug }}" />
-    <meta property="og:title" content="{{ object.first_name }} {{ object.last_name }} builds with Django" />
-    <meta property="og:url" content="https://{{ request.get_host }}/makers/{{ object.slug }}" />
-    <meta property="og:description" content="{{ object.first_name }} {{ object.last_name }} builds with Django" />
-    <meta property="og:image" content="{% get_media_prefix %}{{ object.maker_profile_image }}" />
-    {% if object.twitter_handle %}
-        <meta name="twitter:creator" content="@{{ object.twitter_handle }}" />
-        <meta name="twitter:site" content="@{{ object.twitter_handle }}" />
-    {% else %}
-        <meta name="twitter:creator" content="@rasulkireev" />
-        <meta name="twitter:site" content="@rasulkireev" />
-    {% endif %}
-    <meta name="twitter:title" content="{{ object.first_name }} {{ object.last_name }} builds with Django" />
-    <meta name="twitter:description" content="{{ object.first_name }} {{ object.last_name }} builds with Django" />
-    <meta name="twitter:image" content="{% get_media_prefix %}{{ object.maker_profile_image }}" />
+    {% with maker_name=object.first_name|add:" "|add:object.last_name %}
+      {% with page_title=maker_name|add:" | Built with Django" page_description=maker_name|add:" builds with Django." %}
+        {% if object.maker_profile_image %}
+          {% absolute_url object.maker_profile_image.url as maker_image %}
+          {% if object.twitter_handle %}
+            {% with maker_twitter="@"|add:object.twitter_handle %}
+              {% include "components/seo_meta.html" with title=page_title description=page_description canonical_path=object.get_absolute_url image=maker_image twitter_creator=maker_twitter twitter_site="@builtwithdjango" twitter_card="summary" image_alt=maker_name %}
+            {% endwith %}
+          {% else %}
+            {% include "components/seo_meta.html" with title=page_title description=page_description canonical_path=object.get_absolute_url image=maker_image twitter_card="summary" image_alt=maker_name %}
+          {% endif %}
+        {% else %}
+          {% include "components/seo_meta.html" with title=page_title description=page_description canonical_path=object.get_absolute_url twitter_card="summary" image_alt="Built with Django logo" %}
+        {% endif %}
+      {% endwith %}
+    {% endwith %}
 {% endblock meta %}
 
 {% block content %}
@@ -135,20 +134,21 @@
 {% endblock content %}
 
 {% block schema %}
+    {% with maker_name=object.first_name|add:" "|add:object.last_name %}
     <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "Built with Django | {{ object.first_name }} {{ object.last_name }}",
-    "description": "{{ object.first_name }} {{ object.last_name }} builds with Django",
-    "thumbnailUrl": "{% get_media_prefix %}{{ object.maker_profile_image }}",
-    "url": "https://{{ request.get_host }}/makers/{{ object.slug }}",
-    "author": {
-      "@type": "Person",
-      "givenName": "Rasul",
-      "familyName": "Kireev",
-      "url": "https://rasulkireev.com/"
-    }
+    "@type": "Person",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "{% canonical_url object.get_absolute_url %}"
+    },
+    "name": {{ maker_name|json_ld }},
+    "description": {{ maker_name|add:" builds with Django."|json_ld }},
+    "url": "{% canonical_url object.get_absolute_url %}"{% if object.maker_profile_image %},
+    "image": "{% absolute_url object.maker_profile_image.url %}"{% endif %}{% if object.personal_website %},
+    "sameAs": {{ object.personal_website|json_ld }}{% endif %}
   }
     </script>
+    {% endwith %}
 {% endblock schema %}

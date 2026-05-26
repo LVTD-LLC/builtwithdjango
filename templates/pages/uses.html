@@ -2,23 +2,7 @@
 {% load webpack_loader static %}
 
 {% block meta %}
-    <title>Technologies We Use | Built with Django</title>
-    <meta name="description" content="Technologies and Tools Used by Built with Django" />
-    <meta name="keywords" content="Built with Django, Technology Stack, Web Development" />
-    <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://{{ request.get_host }}/uses" />
-    <meta property="og:type" content="article" />
-    <meta property="og:title" content="Technologies We Use | Built with Django" />
-    <meta property="og:url" content="https://{{ request.get_host }}/uses" />
-    <meta property="og:description" content="Technologies and Tools Used by Built with Django" />
-    <meta property="og:locale" content="en_US" />
-    <meta property="og:image" content="https://osig.app/g?site=meta&style=logo&font=markerfelt&title=Built with Django&subtitle=Tech we use&image_url=https://osig.app/g?site=x&style=logo&font=markerfelt&title=Built with Django&subtitle=Tech we use!&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:creator" content="@rasulkireev" />
-    <meta name="twitter:site" content="@rasulkireev" />
-    <meta name="twitter:title" content="Technologies We Use | Built with Django" />
-    <meta name="twitter:description" content="Technologies and Tools Used by Built with Django" />
-    <meta name="twitter:image" content="https://osig.app/g?site=x&style=logo&font=markerfelt&title=Built with Django&subtitle=Tech we use&image_url=https://osig.app/g?site=x&style=logo&font=markerfelt&title=Built with Django&subtitle=Tech we use!&image_url=https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+    {% include "components/seo_meta.html" with title="Technologies We Use | Built with Django" description="Technologies and tools used to run Built with Django." canonical_path="/uses" og_type="article" image_alt="Built with Django logo" %}
 {% endblock meta %}
 
 {% block content %}
@@ -31,7 +15,7 @@
         </p>
         <ul>
             <li><strong><a href="https://osig.app/" target="_blank">OSIG</a>:</strong> For pretty OG images.</li>
-            <li><strong><a href="https://statushen/com/" target="_blank">Statushen</a>:</strong> For a Status Page.</li>
+            <li><strong><a href="https://statushen.com/" target="_blank">Statushen</a>:</strong> For a Status Page.</li>
             <li><strong><a href="https://sentry.io/" target="_blank">Sentry</a>:</strong> For error tracking and performance monitoring, ensuring a smooth user experience.</li>
             <li><strong><a href="https://hetzner.cloud/?ref=Ju1ttKSG0Fn7" target="_blank">Hetzner</a>:</strong> Our cloud infrastructure provider, hosting our servers and services.</li>
             <li><strong><a href="https://buttondown.email/refer/rasulkireev" target="_blank">Buttondown</a>:</strong> for the newsletter.</li>

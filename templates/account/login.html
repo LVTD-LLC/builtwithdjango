@@ -2,9 +2,9 @@
 {% load socialaccount %}
 {% load widget_tweaks %}
 
-{% block title %}
-    Log In
-{% endblock title %}
+{% block meta %}
+    {% include "components/seo_meta.html" with title="Log In | Built with Django" description="Log in to Built with Django." canonical_path="/users/login/" robots="noindex,nofollow" twitter_card="summary" image_alt="Built with Django logo" %}
+{% endblock meta %}
 
 {% block content %}
     <div class="flex justify-center items-center px-4 py-12 my-4 sm:px-6 lg:px-8">

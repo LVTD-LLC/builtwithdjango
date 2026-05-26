@@ -2,21 +2,7 @@
 {% load static %}
 
 {% block meta %}
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:creator" content="@rasulkireev" />
-    <meta name="twitter:site" content="@builtwithdjango" />
-    <title>Built with Django | Podcast</title>
-    <meta name="description"
-          content="Built with Django Podcast is a way to catch up with practical stories and patterns from the Django community."/>
-    <link rel="canonical" href="https://{{ request.get_host }}/podcast/" />
-    <meta property="og:title" content="Built with Django | Podcast" />
-    <meta property="og:url" content="https://{{ request.get_host }}/podcast/" />
-    <meta property="og:description"
-          content="Built with Django Podcast is a way to catch up with practical stories and patterns from the Django community."/>
-    <meta name="twitter:title" content="Built with Django | Podcast" />
-    <meta name="twitter:description"
-          content="Built with Django Podcast is a way to catch up with practical stories and patterns from the Django community."/>
-    <meta name="twitter:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+    {% include "components/seo_meta.html" with title="Built with Django Podcast" description="Practical stories and patterns from the Django community." canonical_path="/podcast/" image_alt="Built with Django logo" %}
 {% endblock meta %}
 
 {% block content %}
@@ -61,18 +47,16 @@
     "name": "Built with Django Podcast",
     "description": "Built with Django Podcast is a way to catch up with practical stories and patterns from the Django community.",
     "abstract": "Built with Django Podcast is a way to catch up with practical stories and patterns from the Django community.",
-    "image": "https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
-    "url": "https://{{ request.get_host }}/podcast/",
+    "image": "{% absolute_url '/static/vendors/images/logo.png' %}",
+    "url": "{% canonical_url '/podcast/' %}",
     "author": {
       "@type": "Person",
-      "givenName": "Rasul",
-      "familyName": "Kireev",
+      "name": "Rasul Kireev",
       "url": "https://rasulkireev.com/"
     },
     "actor": {
       "@type": "Person",
-      "givenName": "Rasul",
-      "familyName": "Kireev",
+      "name": "Rasul Kireev",
       "url": "https://rasulkireev.com/"
     },
     "webFeed": "https://feeds.transistor.fm/the-built-with-django-podcast"

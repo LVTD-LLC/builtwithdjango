@@ -2,6 +2,10 @@
 {% load static %}
 {% load widget_tweaks %}
 
+{% block meta %}
+    {% include "components/seo_meta.html" with title="Inactive Django Projects | Built with Django" description="Inactive Django projects in the Built with Django directory." robots="noindex,nofollow" %}
+{% endblock meta %}
+
 {% block content %}
     <div class="px-6 py-20 bg-white sm:py-24 lg:px-8">
       <div class="mx-auto max-w-2xl text-center">
@@ -68,15 +72,14 @@
     <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebSite",
+    "@type": "CollectionPage",
     "name": "Projects Built with Django",
     "description": "Collection of cool projects people built with Django",
-    "thumbnailUrl": "https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
-    "url": "https://{{ request.get_host }}",
+    "thumbnailUrl": "{% absolute_url '/static/vendors/images/logo.png' %}",
+    "url": "{% canonical_url %}",
     "author": {
       "@type": "Person",
-      "givenName": "Rasul",
-      "familyName": "Kireev",
+      "name": "Rasul Kireev",
       "url": "https://rasulkireev.com/"
     }
   }
