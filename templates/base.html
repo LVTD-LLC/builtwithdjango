@@ -66,7 +66,7 @@
           if (!value) return false;
           try {
             var url = new URL(value, window.location.origin);
-            return url.pathname === "/api/v1/like" || url.pathname.indexOf("/api/v1/like/") === 0;
+            return url.pathname === "/api/v1/like" || url.pathname.startsWith("/api/v1/like/");
           } catch (error) {
             return false;
           }
