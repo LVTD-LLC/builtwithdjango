@@ -46,18 +46,31 @@ def get_or_create_stripe_customer_id(user):
             user.stripe_customer_id = locked_user.stripe_customer_id
             return locked_user.stripe_customer_id
 
-        customer_kwargs = {
-            "metadata": {"user_id": str(locked_user.pk)},
-        }
-        if locked_user.email:
-            customer_kwargs["email"] = locked_user.email
+        customer_kwargs = get_stripe_customer_kwargs(locked_user)
 
-        name = locked_user.get_full_name() or locked_user.username
-        if name:
-            customer_kwargs["name"] = name
+    customer = stripe.Customer.create(
+        **customer_kwargs,
+        idempotency_key=f"builtwithdjango:user:{user.pk}:stripe-customer",
+    )
 
-        customer = stripe.Customer.create(**customer_kwargs)
-        locked_user.stripe_customer_id = customer.id
-        locked_user.save(update_fields=["stripe_customer_id"])
-        user.stripe_customer_id = customer.id
-        return customer.id
+    updated = user.__class__.objects.filter(pk=user.pk, stripe_customer_id="").update(stripe_customer_id=customer.id)
+    if not updated:
+        user.refresh_from_db(fields=["stripe_customer_id"])
+        return user.stripe_customer_id
+
+    user.stripe_customer_id = customer.id
+    return customer.id
+
+
+def get_stripe_customer_kwargs(user):
+    customer_kwargs = {
+        "metadata": {"user_id": str(user.pk)},
+    }
+    if user.email:
+        customer_kwargs["email"] = user.email
+
+    name = user.get_full_name() or user.username
+    if name:
+        customer_kwargs["name"] = name
+
+    return customer_kwargs

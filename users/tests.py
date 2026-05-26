@@ -88,6 +88,7 @@ class StripeCustomerTests(TestCase):
             metadata={"user_id": str(user.pk)},
             email="stripe@example.com",
             name="Stripe User",
+            idempotency_key=f"builtwithdjango:user:{user.pk}:stripe-customer",
         )
 
     @override_settings(STRIPE_SECRET_KEY="sk_test_123")
@@ -195,6 +196,20 @@ class StripeWebhookTests(TestCase):
             has_active_django_devs_subscription=True,
         )
         event = stripe_subscription_event("customer.subscription.deleted", "price_other", customer_id="cus_devs")
+
+        self.handle_event(event)
+
+        user.refresh_from_db()
+        self.assertTrue(user.has_active_django_devs_subscription)
+
+    def test_invoice_payment_action_required_does_not_deactivate_subscription(self):
+        user = get_user_model().objects.create_user(
+            username="auth-required-devs-user",
+            email="auth-required-devs@example.com",
+            stripe_customer_id="cus_devs",
+            has_active_django_devs_subscription=True,
+        )
+        event = stripe_invoice_event("invoice.payment_action_required", "price_devs", customer_id="cus_devs")
 
         self.handle_event(event)
 

@@ -53,7 +53,6 @@ def handle_stripe_event(event):
     elif event.type in {
         "customer.subscription.deleted",
         "invoice.payment_failed",
-        "invoice.payment_action_required",
     }:
         process_django_devs_subscription_inactive(event)
     else:
@@ -252,7 +251,7 @@ def approve_paid_job(event):
         job = Job.objects.get(pk=job_id)
         job.paid = True
         job.approved = True
-        job.save()
+        job.save(update_fields=["paid", "approved"])
         capture_event(
             "job payment completed",
             distinct_id=f"job:{job.id}",
