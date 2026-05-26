@@ -452,13 +452,13 @@
         </div>
       </div>
       <div class="bw-webring-shell">
-        <div class="bw-webring-panel">
+        <div class="bw-webring-panel" role="region" aria-labelledby="bw-webring-title">
           <div class="bw-webring-copy">
-            <p class="bw-webring-label">Community ring</p>
-            <h2>A small Django neighborhood</h2>
-            <p>Built with Django is part of a small loop of independent Django sites. Follow the ring to find another corner of the community.</p>
+            <p class="bw-webring-label">Django Webring</p>
+            <h2 id="bw-webring-title">Independent Django sites, one stop away</h2>
+            <p>Follow the ring to visit a previous, random, or next member site from the Django community.</p>
           </div>
-          <div class="bw-webring-widget">
+          <div class="bw-webring-widget" role="navigation" aria-label="Django Webring navigation">
             <webring-css site="https://builtwithdjango.com"></webring-css>
           </div>
         </div>
@@ -469,9 +469,54 @@
             if (!host) return;
 
             const styleId = 'builtwithdjango-webring-restyle';
+            const normalizeContent = () => {
+              const root = host.shadowRoot;
+              if (!root) return false;
+
+              const content = root.querySelector('.django-webring__content');
+              if (!content || !content.children.length) return false;
+
+              const subheading = content.querySelector('h2');
+              if (subheading && subheading.textContent.trim() === 'The Great Django Webring') {
+                subheading.textContent = 'Choose a route';
+              }
+
+              const labels = {
+                '[Prev]': 'Previous',
+                '[Random]': 'Random',
+                '[Next]': 'Next',
+                '[Visit a member site]': 'Visit a member site',
+              };
+
+              content.querySelectorAll('a').forEach((link) => {
+                const currentLabel = link.textContent.trim();
+                if (labels[currentLabel]) {
+                  const destinationHost = (() => {
+                    try {
+                      return new URL(link.href).hostname.replace(/^www\./, '');
+                    } catch (error) {
+                      return labels[currentLabel];
+                    }
+                  })();
+                  const siteName = link.getAttribute('title') || destinationHost;
+
+                  link.textContent = labels[currentLabel];
+                  link.dataset.webringSite = siteName;
+                  link.setAttribute('aria-label', `${labels[currentLabel]} Django Webring site: ${siteName}`);
+                }
+              });
+
+              return true;
+            };
+
             const applyStyle = () => {
               if (!host.shadowRoot) return false;
-              if (host.shadowRoot.getElementById(styleId)) return true;
+              if (!host.bwdWebringObserver) {
+                host.bwdWebringObserver = new MutationObserver(normalizeContent);
+                host.bwdWebringObserver.observe(host.shadowRoot, { childList: true, subtree: true });
+              }
+              const contentReady = normalizeContent();
+              if (host.shadowRoot.getElementById(styleId)) return contentReady;
 
               const style = document.createElement('style');
               style.id = styleId;
@@ -488,7 +533,7 @@
                   background: transparent !important;
                   box-shadow: none !important;
                   padding: 0 !important;
-                  color: oklch(91% 0.025 126) !important;
+                  color: oklch(90% 0.025 126) !important;
                   font-family: inherit !important;
                   text-align: left !important;
                 }
@@ -499,46 +544,47 @@
 
                 .django-webring__content {
                   display: grid !important;
-                  gap: 0.8rem !important;
+                  gap: 0.85rem !important;
                 }
 
                 .django-webring__content h1 {
-                  margin: 0 !important;
-                  color: oklch(96% 0.025 126) !important;
-                  font-size: clamp(1.1rem, 3vw, 1.45rem) !important;
-                  font-weight: 900 !important;
-                  line-height: 1.05 !important;
+                  display: none !important;
                 }
 
                 .django-webring__content h2 {
                   margin: 0 !important;
-                  color: oklch(78% 0.12 92) !important;
-                  font-size: 0.95rem !important;
-                  font-weight: 850 !important;
-                  line-height: 1.35 !important;
+                  color: oklch(83% 0.055 126) !important;
+                  font-size: 0.82rem !important;
+                  font-weight: 900 !important;
+                  letter-spacing: 0 !important;
+                  line-height: 1.2 !important;
                 }
 
                 .django-webring__content p {
+                  display: grid !important;
+                  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                  gap: 0.55rem !important;
                   margin: 0 !important;
-                  color: oklch(78% 0.03 126) !important;
-                  font-size: 0.92rem !important;
-                  line-height: 1.55 !important;
                 }
 
                 .django-webring__content a {
                   display: inline-flex !important;
-                  min-height: 2.45rem !important;
-                  align-items: center !important;
+                  min-width: 0 !important;
+                  min-height: 3.25rem !important;
+                  flex-direction: column !important;
+                  align-items: flex-start !important;
                   justify-content: center !important;
-                  margin: 0.25rem 0.35rem 0 0 !important;
-                  border: 1px solid oklch(50% 0.06 150) !important;
+                  gap: 0.18rem !important;
+                  margin: 0 !important;
+                  border: 1px solid oklch(43% 0.05 150) !important;
                   border-radius: 8px !important;
-                  background: oklch(18% 0.035 151) !important;
-                  color: oklch(94% 0.025 126) !important;
-                  padding: 0.58rem 0.8rem !important;
-                  font-size: 0.88rem !important;
-                  font-weight: 850 !important;
-                  line-height: 1 !important;
+                  background: oklch(17% 0.032 151) !important;
+                  color: oklch(93% 0.025 126) !important;
+                  padding: 0.7rem 0.78rem !important;
+                  overflow: hidden !important;
+                  font-size: 0.86rem !important;
+                  font-weight: 900 !important;
+                  line-height: 1.05 !important;
                   text-decoration: none !important;
                   transition:
                     background-color 160ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -547,12 +593,30 @@
                     transform 160ms cubic-bezier(0.22, 1, 0.36, 1) !important;
                 }
 
+                .django-webring__content a::after {
+                  display: block !important;
+                  width: 100% !important;
+                  overflow: hidden !important;
+                  color: oklch(70% 0.025 126) !important;
+                  content: attr(data-webring-site) !important;
+                  font-size: 0.7rem !important;
+                  font-weight: 750 !important;
+                  line-height: 1.1 !important;
+                  text-overflow: ellipsis !important;
+                  white-space: nowrap !important;
+                }
+
                 .django-webring__content a:hover,
                 .django-webring__content a:focus-visible {
-                  border-color: oklch(79% 0.16 92) !important;
-                  background: oklch(78% 0.17 92) !important;
-                  color: oklch(16% 0.04 151) !important;
+                  border-color: oklch(76% 0.15 92) !important;
+                  background: oklch(23% 0.052 151) !important;
+                  color: oklch(97% 0.018 116) !important;
                   transform: translateY(-1px) !important;
+                }
+
+                .django-webring__content a:hover::after,
+                .django-webring__content a:focus-visible::after {
+                  color: oklch(83% 0.07 92) !important;
                 }
 
                 @media (max-width: 600px) {
@@ -560,14 +624,17 @@
                     gap: 0.7rem !important;
                   }
 
+                  .django-webring__content p {
+                    grid-template-columns: 1fr !important;
+                  }
+
                   .django-webring__content a {
                     width: 100% !important;
-                    margin-right: 0 !important;
                   }
                 }
               `;
               host.shadowRoot.appendChild(style);
-              return true;
+              return contentReady;
             };
 
             let attempts = 0;
