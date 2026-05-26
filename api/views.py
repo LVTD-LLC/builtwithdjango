@@ -1,8 +1,8 @@
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, viewsets
+from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 
 from blog.models import Post
@@ -18,8 +18,25 @@ class CreateLikeProjectAPIView(generics.ListCreateAPIView):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ["author", "project"]
 
-    def perform_create(self, serializer):
-        like = serializer.save()
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [AllowAny()]
+
+        return [IsAuthenticated()]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        like, created = Like.objects.update_or_create(
+            author=request.user,
+            project=serializer.validated_data["project"],
+            defaults={"like": serializer.validated_data.get("like", False)},
+        )
+        self.capture_like_change(like)
+        response_serializer = self.get_serializer(like)
+        return Response(response_serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+
+    def capture_like_change(self, like):
         capture(
             self.request,
             "project liked" if like.like else "project unliked",
@@ -37,8 +54,21 @@ class UpdateLikeProjectAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Like.objects.all()
     serializer_class = LikeSerializerNoId
 
+    def get_permissions(self):
+        if self.request.method in {"GET", "HEAD", "OPTIONS"}:
+            return [AllowAny()]
+
+        return [IsAuthenticated()]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.request.method in {"GET", "HEAD", "OPTIONS"}:
+            return queryset
+
+        return queryset.filter(author=self.request.user)
+
     def perform_update(self, serializer):
-        like = serializer.save()
+        like = serializer.save(author=self.request.user)
         capture(
             self.request,
             "project liked" if like.like else "project unliked",

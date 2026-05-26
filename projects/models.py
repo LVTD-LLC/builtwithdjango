@@ -298,5 +298,10 @@ class Like(TimeStampedModel):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="like")
     like = models.BooleanField(default=False)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["author", "project"], name="unique_like_per_author_project"),
+        ]
+
     def __str__(self):
         return f"{self.project}: {self.author} ({self.like})"

@@ -1,11 +1,10 @@
 from datetime import timedelta
 
 import stripe
-from django.shortcuts import redirect
+from django.http import HttpResponseRedirect
 from django.templatetags.static import static
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-from django.utils.html import escape
 from django.views.generic import CreateView, DetailView, ListView, TemplateView
 from django_q.tasks import async_task
 
@@ -32,10 +31,12 @@ class AllJobListView(ListView):
 class JobListView(ListView):
     model = Job
     template_name = "jobs/all_jobs.html"
-    filter_date = timezone.now() - timedelta(days=60)
-    queryset = Job.objects.filter(approved=True, created_datetime__gte=filter_date).order_by(
-        "-paid", "-created_datetime"
-    )[:30]
+
+    def get_queryset(self):
+        filter_date = timezone.now() - timedelta(days=60)
+        return Job.objects.filter(approved=True, created_datetime__gte=filter_date).order_by(
+            "-paid", "-created_datetime"
+        )[:30]
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -180,7 +181,7 @@ def create_checkout_session(request, pk):
         groups={"job": str(pk)},
     )
 
-    return redirect(checkout_session.url, code=303)
+    return HttpResponseRedirect(checkout_session.url, status=303)
 
 
 def sponsor_job_checkout_session(request, pk):
@@ -223,4 +224,4 @@ def sponsor_job_checkout_session(request, pk):
         groups={"job": str(job.id)},
     )
 
-    return redirect(checkout_session.url, code=303)
+    return HttpResponseRedirect(checkout_session.url, status=303)

@@ -17,18 +17,20 @@ def save_screenshot(project_title):
     image_url = (
         f"https://api.screenshotmachine.com?key={settings.SCREENSHOT_API_KEY}&url={project.url}&dimension=1680x876"
     )
-    response = requests.get(image_url)
 
     logger.info(f"Getting info from {image_url}.")
+    try:
+        response = requests.get(image_url, timeout=30)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        logger.error("screenshot_fetch_failed", project_id=project.id, error=str(e))
+        return False
 
-    if response.status_code == 200:
-        file = ContentFile(response.content)
-    else:
-        print(f"Error: {response.status_code} - {response.text}")
-
+    file = ContentFile(response.content)
     project.homepage_screenshot.save(f"{project.title}.png", file, save=True)
     project.published = True
     project.save()
+    return True
 
 
 def notify_of_new_project(instance):

@@ -11,7 +11,7 @@ from django.urls import reverse
 
 from builtwithdjango.stripe_client import get_or_create_stripe_customer_id, get_stripe_price_id
 from jobs.models import Job
-from users.webhooks import handle_stripe_event
+from users.webhooks import get_checkout_distinct_id, handle_stripe_event
 
 PRICE_IDS = {
     "pro": "price_pro",
@@ -158,6 +158,15 @@ class StripeWebhookTests(TestCase):
             patch("users.webhooks.transaction.on_commit", side_effect=lambda callback: callback()),
         ):
             handle_stripe_event(event)
+
+    def test_get_checkout_distinct_id_uses_metadata_for_known_checkout_types(self):
+        checkout_session = {
+            "metadata": {"pk": "10", "user_id": "20"},
+        }
+
+        self.assertEqual(get_checkout_distinct_id(checkout_session, "pro"), "10")
+        self.assertEqual(get_checkout_distinct_id(checkout_session, "django_devs"), "20")
+        self.assertEqual(get_checkout_distinct_id(checkout_session, "job"), "job:10")
 
     def test_checkout_session_completed_activates_django_devs_subscription(self):
         user = get_user_model().objects.create_user(username="devs-user", email="devs@example.com")
