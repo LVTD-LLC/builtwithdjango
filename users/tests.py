@@ -176,6 +176,11 @@ class StripeWebhookTests(TestCase):
 
         on_commit.assert_not_called()
 
+    def test_checkout_session_completed_ignores_missing_required_metadata_without_raising(self):
+        for price_id in ["price_pro", "price_devs", "price_job"]:
+            with self.subTest(price_id=price_id):
+                self.handle_event(stripe_event(price_id, metadata={}))
+
     def test_checkout_session_completed_upgrades_user_to_pro(self):
         user = get_user_model().objects.create_user(username="pro-user", email="pro@example.com")
         event = stripe_event("price_pro", metadata={"pk": str(user.pk)}, customer_id="cus_pro")

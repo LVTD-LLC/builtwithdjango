@@ -135,7 +135,11 @@ def process_pro_user_upgrade(event):
 
 
 def upgrade_user_to_pro(event):
-    user_id = event.data["object"]["metadata"]["pk"]
+    user_id = (event.data["object"].get("metadata") or {}).get("pk")
+    if not user_id:
+        logger.error("Missing pk metadata for PRO upgrade")
+        return
+
     logger.info(f"Upgrading user {user_id} to PRO subscription level")
 
     try:
@@ -170,7 +174,11 @@ def process_django_devs_subscription(event):
 
 
 def activate_django_devs_subscription(event):
-    user_id = event.data["object"]["metadata"]["user_id"]
+    user_id = (event.data["object"].get("metadata") or {}).get("user_id")
+    if not user_id:
+        logger.error("Missing user_id metadata for Django Devs subscription activation")
+        return
+
     logger.info(f"Activating Django Devs subscription for user {user_id}")
 
     try:
@@ -247,7 +255,11 @@ def process_job_board_payment(event):
     if event.type != "checkout.session.completed":
         return
 
-    job_id = event.data["object"]["metadata"]["pk"]
+    job_id = (event.data["object"].get("metadata") or {}).get("pk")
+    if not job_id:
+        logger.error("Missing pk metadata for Job Board payment")
+        return
+
     logger.info(f"Processing Job Board payment for job {job_id}")
     transaction.on_commit(partial(approve_paid_job, event))
 
@@ -255,7 +267,11 @@ def process_job_board_payment(event):
 def approve_paid_job(event):
     from jobs.models import Job
 
-    job_id = event.data["object"]["metadata"]["pk"]
+    job_id = (event.data["object"].get("metadata") or {}).get("pk")
+    if not job_id:
+        logger.error("Missing pk metadata for Job Board approval")
+        return
+
     logger.info(f"Approving paid job {job_id}")
 
     try:
