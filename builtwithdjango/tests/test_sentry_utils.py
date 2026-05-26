@@ -3,6 +3,7 @@ from unittest.mock import patch
 from django.test import SimpleTestCase
 
 from builtwithdjango.sentry_utils import sentry_span, sentry_task_transaction
+from builtwithdjango.settings import sentry_before_send_log
 
 
 class FakeSpan:
@@ -61,3 +62,24 @@ class SentryUtilsTests(SimpleTestCase):
                 pass
 
         self.assertEqual(sentry_context.span.data, {"project.id": 1})
+
+
+class SentryLogScrubbingTests(SimpleTestCase):
+    def test_scrubs_credential_tokens_without_filtering_ai_token_usage(self):
+        log = {
+            "attributes": {
+                "access_token": "secret-token",
+                "input_tokens": 25,
+                "output_tokens": 10,
+                "total_tokens": 35,
+                "user_email": "user@example.com",
+            }
+        }
+
+        result = sentry_before_send_log(log, {})
+
+        self.assertEqual(result["attributes"]["access_token"], "[Filtered]")
+        self.assertEqual(result["attributes"]["user_email"], "[Filtered]")
+        self.assertEqual(result["attributes"]["input_tokens"], 25)
+        self.assertEqual(result["attributes"]["output_tokens"], 10)
+        self.assertEqual(result["attributes"]["total_tokens"], 35)

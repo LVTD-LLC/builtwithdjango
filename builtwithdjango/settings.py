@@ -60,8 +60,10 @@ def env_log_level(name, default):
     raw_value = env(name, default="")
     if raw_value == "":
         return default
-    if isinstance(raw_value, int):
-        return raw_value
+    try:
+        return int(raw_value)
+    except (TypeError, ValueError):
+        pass
     return getattr(logging, raw_value.upper(), default)
 
 
@@ -124,6 +126,20 @@ SENTRY_SENSITIVE_LOG_ATTRIBUTE_PARTS = (
     "ip_address",
     "password",
     "secret",
+)
+SENTRY_SENSITIVE_LOG_ATTRIBUTE_NAMES = (
+    "api_token",
+    "auth_token",
+    "access_token",
+    "csrf_token",
+    "id_token",
+    "refresh_token",
+    "session_token",
+    "token",
+)
+SENTRY_SENSITIVE_LOG_ATTRIBUTE_SUFFIXES = (
+    ".token",
+    "_token",
     "token",
 )
 
@@ -164,8 +180,12 @@ def sentry_before_send_log(log, _hint):
         return log
 
     for key in list(attributes.keys()):
-        key_lower = key.lower()
-        if any(sensitive_part in key_lower for sensitive_part in SENTRY_SENSITIVE_LOG_ATTRIBUTE_PARTS):
+        normalized_key = key.lower().replace("-", "_")
+        if (
+            normalized_key in SENTRY_SENSITIVE_LOG_ATTRIBUTE_NAMES
+            or any(sensitive_part in normalized_key for sensitive_part in SENTRY_SENSITIVE_LOG_ATTRIBUTE_PARTS)
+            or any(normalized_key.endswith(suffix) for suffix in SENTRY_SENSITIVE_LOG_ATTRIBUTE_SUFFIXES)
+        ):
             attributes[key] = "[Filtered]"
 
     return log
