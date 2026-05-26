@@ -32,12 +32,9 @@ jobs:
           fetch-depth: 1
 
       - name: Checkout Claude Code Action
-        uses: actions/checkout@v4
-        with:
-          repository: anthropics/claude-code-action
-          ref: v1
-          path: .github/actions/claude-code-action
-          persist-credentials: false
+        shell: bash
+        run: |
+          git clone --depth 1 --branch v1 https://github.com/anthropics/claude-code-action.git .github/actions/claude-code-action
 
       - name: Run Claude Code Review
         id: claude-review
