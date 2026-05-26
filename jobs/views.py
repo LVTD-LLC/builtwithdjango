@@ -1,4 +1,5 @@
 from datetime import timedelta
+from urllib.parse import urlencode
 
 import stripe
 from django.http import HttpResponseRedirect
@@ -91,16 +92,16 @@ class JobDetailView(DetailView):
         except ValueError:
             image_url = self.request.build_absolute_uri(static("vendors/images/logo.png"))
 
-        og_image_url = (
-            f"https://osig.app/g?"
-            f"site=x&"
-            f"title={title}&"
-            f"subtitle={description}&"
-            f"image_url={image_url}&"
-            f"font=helvetica&"
-            f"style=logo&"
-            f"key=dQrmHqDSY5"
-        )
+        og_image_params = {
+            "site": "x",
+            "title": title,
+            "subtitle": description,
+            "image_url": image_url,
+            "font": "helvetica",
+            "style": "logo",
+            "key": "dQrmHqDSY5",
+        }
+        og_image_url = f"https://osig.app/g?{urlencode(og_image_params)}"
         context["og_image"] = og_image_url
         context["company_logo_url"] = company_logo_url
 

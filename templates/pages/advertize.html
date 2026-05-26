@@ -2,13 +2,13 @@
 {% load static %}
 
 {% block meta %}
-    <title>Advertize on Built with Django</title>
+    {% include "components/seo_meta.html" with title="Advertise on Built with Django" description="Sponsor Built with Django and reach developers, founders, and teams building with Django." canonical_path="/advertize" twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 
 {% block content %}
 
 <article class="mx-auto mt-10 prose lg:prose-xl">
-  <h1 class="text-center">Advertize on Built with Django</h1>
+  <h1 class="text-center">Advertise on Built with Django</h1>
 
   <p>Built with Django gets around 5k unique visitors a month, with around 10k pageviews per month. You can check out the stats <a href="https://plausible-v2.cr.lvtd.dev/builtwithdjango.com/" target="_blank">here</a>.</p>
 

@@ -1,18 +1,8 @@
 {% extends "base.html" %}
 {% load static %}
 {% block meta %}
-    <title>Cistercian Date Club Request</title>
-    <meta name="description" content="Request a free NFT for the Cistercian Dates Club" />
-    <link rel="canonical" href="https://{{ request.get_host }}/request-nft/" />
-    <meta property="og:title" content="Request a free NFT for the Cistercian Dates Club" />
-    <meta property="og:url" content="https://{{ request.get_host }}/request-nft/" />
-    <meta property="og:description" content="Request a free NFT for the Cistercian Dates Club" />
-    <meta property="og:image" content="{% static 'vendors/images/banner.png' %}" />
-    <meta name="twitter:creator" content="@rasulkireev" />
-    <meta name="twitter:site" content="@rasulkireev" />
-    <meta name="twitter:title" content="Request a free NFT for the Cistercian Dates Club" />
-    <meta name="twitter:description" content="Request a free NFT for the Cistercian Dates Club" />
-    <meta name="twitter:image" content="{% static 'vendors/images/banner.png' %}" />
+    {% static "vendors/images/banner.png" as nft_banner %}
+    {% include "components/seo_meta.html" with title="Cistercian Date Club Request" description="Request a free NFT for the Cistercian Dates Club." canonical_path="/request-nft/" image=nft_banner robots="noindex,follow" image_alt="Cistercian Date Club banner" %}
 {% endblock meta %}
 {% block content %}
     <div class="my-6">

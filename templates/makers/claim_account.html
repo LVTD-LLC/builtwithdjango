@@ -1,4 +1,8 @@
 {% extends "base.html" %}
+{% block meta %}
+    {% include "components/seo_meta.html" with title="Claim Maker Profile | Built with Django" description="Claim a Built with Django maker profile." robots="noindex,nofollow" twitter_card="summary" image_alt="Built with Django logo" %}
+{% endblock meta %}
+{% block content %}
 <form class="absolute top-0 right-0 p-2" method="post">
     {% csrf_token %}
     <input class="hidden" type="text" value="{{ user.email }}" />
@@ -7,3 +11,4 @@
         Claim
     </button>
 </form>
+{% endblock content %}

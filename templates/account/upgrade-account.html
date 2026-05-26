@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block meta %}
-    <title>Built with Django | Account Plans</title>
+    {% include "components/seo_meta.html" with title="Account Plans | Built with Django" description="Manage your Built with Django account plan." canonical_path="/users/upgrade/" robots="noindex,nofollow" twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 {% block content %}
     <section class="py-12 sm:py-16 lg:py-20" aria-labelledby="account-plans-title">

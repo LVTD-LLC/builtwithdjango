@@ -3,19 +3,7 @@
 {% load widget_tweaks %}
 
 {% block meta %}
-    <title>Django Jobs</title>
-    <meta name="description" content="Django jobs for people who want to work with Django."/>
-    <link rel="canonical" href="https://{{ request.get_host }}/jobs/" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:creator" content="@rasulkireev" />
-    <meta name="twitter:site" content="@builtwithdjango" />
-    <meta name="twitter:title" content="Django Jobs" />
-    <meta name="twitter:description" content="Django jobs for people who want to work with Django."/>
-    <meta name="twitter:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
-    <meta property="og:title" content="Django Jobs" />
-    <meta property="og:url" content="https://{{ request.get_host }}/jobs/" />
-    <meta property="og:description" content="Django jobs for people who want to work with Django."/>
-    <meta property="og:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+    {% include "components/seo_meta.html" with title="Django Jobs | Built with Django" description="Django jobs for people who want to work with Django." canonical_path="/jobs/all" twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 
 {% block content %}
@@ -23,7 +11,7 @@
     <div class="px-6 py-20 bg-white sm:py-24 lg:px-8">
       <div class="max-w-2xl mx-auto text-center">
         <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">Django Jobs</h1>
-        <p class="mt-6 text-lg leading-8 prose text-gray-600">Advertize your jobs to people who want to work with Django.</p>
+        <p class="mt-6 text-lg leading-8 prose text-gray-600">Advertise your jobs to people who want to work with Django.</p>
       </div>
       <div class="flex flex-wrap items-center justify-between mt-8 sm:flex-nowrap">
           <div class="mx-auto">
@@ -67,17 +55,16 @@
     <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebSite",
+    "@type": "CollectionPage",
     "name": "Django Jobs",
     "about": "Job Board",
     "description": "Django jobs for people who want to work with Django.",
     "abstract": "Django jobs for people who want to work with Django.",
-    "thumbnailUrl": "https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
-    "url": "https://{{ request.get_host }}/jobs/",
+    "thumbnailUrl": "{% absolute_url '/static/vendors/images/logo.png' %}",
+    "url": "{% canonical_url '/jobs/all' %}",
     "author": {
       "@type": "Person",
-      "givenName": "Rasul",
-      "familyName": "Kireev",
+      "name": "Rasul Kireev",
       "url": "https://rasulkireev.com/"
     }
   }

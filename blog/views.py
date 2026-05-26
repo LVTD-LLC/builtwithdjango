@@ -9,7 +9,7 @@ from .models import Post
 class PostListView(ListView):
     model = Post
     template_name = "blog/all_posts.html"
-    queryset = Post.objects.filter(type="TUTORIAL")
+    queryset = Post.objects.filter(type=Post.TUTORIAL, status=Post.PUBLISHED)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -33,6 +33,9 @@ class ArticleListView(ListView):
 class PostDetailView(DetailView):
     model = Post
     template_name = "blog/post_detail.html"
+
+    def get_queryset(self):
+        return Post.objects.filter(status=Post.PUBLISHED)
 
     def get(self, request, *args, **kwargs):
         response = super().get(request, *args, **kwargs)

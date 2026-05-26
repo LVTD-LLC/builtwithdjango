@@ -1,4 +1,7 @@
 {% extends "base.html" %}
+{% block meta %}
+    {% include "components/seo_meta.html" with title="Add Project Comment | Built with Django" description="Add a comment to a Built with Django project." robots="noindex,nofollow" twitter_card="summary" image_alt="Built with Django logo" %}
+{% endblock meta %}
 {% block content %}
     <form action method="post">
         {% csrf_token %}

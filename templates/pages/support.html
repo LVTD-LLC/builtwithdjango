@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block meta %}
-    <title>Support Built with Django</title>
+    {% include "components/seo_meta.html" with title="Support Built with Django" description="Support Built with Django through tools and services used to run the site." canonical_path="/support/" twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 
 {% block content %}

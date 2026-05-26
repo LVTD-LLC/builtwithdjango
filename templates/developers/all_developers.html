@@ -3,19 +3,7 @@
 {% load markdown_extras %}
 
 {% block meta %}
-    <title>Django Developers | Built with Django</title>
-    <meta name="description" content="Discover Django developers available for work."/>
-    <link rel="canonical" href="https://{{ request.get_host }}/developers/" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:creator" content="@rasulkireev" />
-    <meta name="twitter:site" content="@builtwithdjango" />
-    <meta name="twitter:title" content="Django Developers | Built with Django" />
-    <meta name="twitter:description" content="Discover Django developers available for work."/>
-    <meta name="twitter:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
-    <meta property="og:title" content="Django Developers | Built with Django" />
-    <meta property="og:url" content="https://{{ request.get_host }}/developers/" />
-    <meta property="og:description" content="Discover Django developers available for work."/>
-    <meta property="og:image" content="https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}" />
+    {% include "components/seo_meta.html" with title="Django Developers | Built with Django" description="Discover Django developers available for work." canonical_path="/developers/" twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 
 {% block content %}
@@ -70,17 +58,16 @@
     <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebSite",
+    "@type": "CollectionPage",
     "name": "Django Developers",
     "about": "Reverse Job Board",
     "description": "Discover Django developers available for work.",
     "abstract": "Discover Django developers available for work.",
-    "thumbnailUrl": "https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}",
-    "url": "https://{{ request.get_host }}/developers/",
+    "thumbnailUrl": "{% absolute_url '/static/vendors/images/logo.png' %}",
+    "url": "{% canonical_url '/developers/' %}",
     "author": {
       "@type": "Person",
-      "givenName": "Rasul",
-      "familyName": "Kireev",
+      "name": "Rasul Kireev",
       "url": "https://rasulkireev.com/"
     }
   }

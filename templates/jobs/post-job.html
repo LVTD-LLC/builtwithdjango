@@ -3,18 +3,7 @@
 {% load widget_tweaks %}
 
 {% block meta %}
-    <title>Post a Django Job | Built with Django</title>
-    <meta name="description" content="Post a Django job for the Built with Django community. Sponsorship payment is optional after submitting, and your job still appears on the board." />
-    <link rel="canonical" href="https://{{ request.get_host }}/jobs/new" />
-    <meta property="og:title" content="Post a Django Job | Built with Django" />
-    <meta property="og:url" content="https://{{ request.get_host }}/jobs/new" />
-    <meta property="og:description" content="Post a Django job for the Built with Django community. Sponsorship payment is optional after submitting, and your job still appears on the board." />
-    <meta property="og:image" content="{% static 'vendors/images/logo.png' %}" />
-    <meta name="twitter:creator" content="@rasulkireev" />
-    <meta name="twitter:site" content="@builtwithdjango" />
-    <meta name="twitter:title" content="Post a Django Job | Built with Django" />
-    <meta name="twitter:description" content="Post a Django job for the Built with Django community. Sponsorship payment is optional after submitting, and your job still appears on the board." />
-    <meta name="twitter:image" content="{% static 'vendors/images/logo.png' %}" />
+    {% include "components/seo_meta.html" with title="Post a Django Job | Built with Django" description="Post a Django job for the Built with Django community. Sponsorship payment is optional after submitting, and your job still appears on the board." canonical_path="/jobs/new" twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 
 {% block content %}

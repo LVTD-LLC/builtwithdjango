@@ -1,0 +1,19 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{% canonical_url object.get_absolute_url %}"
+  },
+  "name": {{ object.title|json_ld }},
+  "description": {{ object.description|json_ld }},
+  "jobTitle": {{ object.get_role_display|json_ld }},
+  "url": "{% canonical_url object.get_absolute_url %}"{% if developer_image %},
+  "image": {{ developer_image|json_ld }}{% endif %}{% if object.location %},
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": {{ object.location|json_ld }}
+  }{% endif %}
+}
+</script>

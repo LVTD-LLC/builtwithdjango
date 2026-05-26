@@ -71,6 +71,7 @@ class HomeViewTests(TestCase):
                 slug=f"guide-{index}",
                 content="Guide content",
                 type=Post.TUTORIAL,
+                status=Post.PUBLISHED,
             )
 
         request = self.factory.get("/")

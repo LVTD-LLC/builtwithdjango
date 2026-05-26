@@ -3,23 +3,16 @@
 {% load markdown_extras %}
 
 {% block meta %}
-    <meta name="twitter:card" content="summary_large_image" />
-    {% if object.maker.twitter_handle %}
-        <meta name="twitter:creator" content="@{{ object.maker.twitter_handle }}" />
-        <meta name="twitter:site" content="@{{ object.maker.twitter_handle }}" />
-    {% endif %}
-    <title>{{ object.title }} is Built with Django</title>
-    <meta name="description" content="{{ object.short_description }}" />
-    <link rel="canonical" href="https://{{ request.get_host }}/projects/{{ object.slug }}" />
-    <meta property="og:title" content="{{ object.title }}" />
-    <meta property="og:url" content="https://{{ request.get_host }}/projects/{{ object.slug }}" />
-    <meta property="og:description" content="{{ object.short_description }}" />
-    <meta property="og:image" content="https://osig.app/g?style=base&site=facebook&font=markerfelt&title={{ object.title }}&subtitle={{ object.short_description }}&eyebrow=Project&image_url={{ project_screenshot_url }}" />
-    <meta name="twitter:creator" content="@rasulkireev" />
-    <meta name="twitter:site" content="@builtwithdjango" />
-    <meta name="twitter:title" content="{{ object.title }}" />
-    <meta name="twitter:description" content="{{ object.description }}" />
-    <meta property="og:image" content="https://osig.app/g?style=base&site=x&font=markerfelt&title={{ object.title }}&subtitle={{ object.short_description }}&eyebrow=Project&image_url={{ project_screenshot_url }}" />
+    {% osig_image title=object.title subtitle=object.short_description eyebrow="Project" site="x" image_url=project_screenshot_url as project_share_image %}
+    {% with page_title=object.title|add:" is Built with Django" %}
+      {% if object.maker.twitter_handle %}
+        {% with maker_twitter="@"|add:object.maker.twitter_handle %}
+          {% include "components/seo_meta.html" with title=page_title description=object.short_description canonical_path=object.get_absolute_url image=project_share_image twitter_creator=maker_twitter twitter_site="@builtwithdjango" image_alt=object.title %}
+        {% endwith %}
+      {% else %}
+        {% include "components/seo_meta.html" with title=page_title description=object.short_description canonical_path=object.get_absolute_url image=project_share_image image_alt=object.title %}
+      {% endif %}
+    {% endwith %}
 {% endblock meta %}
 
 {% block content %}
@@ -187,21 +180,31 @@
 {% endblock content %}
 
 {% block schema %}
+    {% osig_image title=object.title subtitle=object.short_description eyebrow="Project" site="x" image_url=project_screenshot_url as project_share_image %}
     <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "CreativeWork",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{% canonical_url object.get_absolute_url %}"
+  },
+  {% if object.maker %}
   "author": {
     "@type": "Person",
-    "givenName": "{{ object.maker.first_name }}",
-    "familyName": "{{ object.maker.last_name }}",
-    "url": "{{ object.personal_website }}",
-    "image": "https://{{ request.get_host }}{% get_media_prefix %}{{ object.maker.maker_profile_image }}"
+    {% with maker_name=object.maker.first_name|add:" "|add:object.maker.last_name %}
+    "name": {{ maker_name|json_ld }}{% if object.maker.personal_website %},
+    "url": {{ object.maker.personal_website|json_ld }}{% endif %}{% if object.maker.maker_profile_image %},
+    "image": "{% absolute_url object.maker.maker_profile_image.url %}"{% endif %}
+    {% endwith %}
   },
-  "name":"{{ object.title }}",
-  "thumbnailUrl": "https://osig.app/g?style=base&site=x&font=markerfelt&title={{ object.title }}&subtitle={{ object.short_description }}&eyebrow=Project&image_url={{ project_screenshot_url }}",
-  "image": "https://osig.app/g?style=base&site=x&font=markerfelt&title={{ object.title }}&subtitle={{ object.short_description }}&eyebrow=Project&image_url={{ project_screenshot_url }}",
-  "abstract": "{{ object.short_description }}"
+  {% endif %}
+  "name": {{ object.title|json_ld }},
+  "description": {{ object.short_description|json_ld }},
+  "url": {{ object.url|json_ld }},
+  "thumbnailUrl": {{ project_share_image|json_ld }},
+  "image": {{ project_share_image|json_ld }},
+  "abstract": {{ object.short_description|json_ld }}
 }
     </script>
 {% endblock schema %}

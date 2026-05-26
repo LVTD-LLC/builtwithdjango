@@ -4,19 +4,8 @@
 {% load url_utils %}
 
 {% block meta %}
-    <title>{{ object.title }}</title>
-    <link rel="canonical" href="https://{{ request.get_host }}/blog/{{ object.slug }}" />
-    <meta name="description" content="{{ object.description }}" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:creator" content="@rasulkireev" />
-    <meta name="twitter:site" content="@builtwithdjango" />
-    <meta name="twitter:title" content="{{ object.title }}" />
-    <meta name="twitter:description" content="{{ object.description }}" />
-    <meta name="twitter:image" content="https://osig.app/g?style=base&site=x&font=markerfelt&title={{ object.title }}&subtitle={{ object.description }}&eyebrow=Article" />
-    <meta property="og:title" content="{{ object.title }}" />
-    <meta property="og:url" content="https://{{ request.get_host }}/blog/{{ object.slug }}" />
-    <meta property="og:description" content="{{ object.description }}" />
-    <meta property="og:image" content="https://osig.app/g?style=base&site=facebook&font=markerfelt&title={{ object.title }}&subtitle={{ object.description }}&eyebrow=Article" />
+    {% osig_image title=object.title subtitle=object.description eyebrow="Article" site="x" as article_image %}
+    {% include "components/seo_meta.html" with title=object.title description=object.description canonical_path=object.get_absolute_url image=article_image og_type="article" image_alt=object.title %}
 {% endblock meta %}
 
 {% block content %}
@@ -54,24 +43,35 @@
 {% endblock content %}
 
 {% block schema %}
+{% osig_image title=object.title subtitle=object.description eyebrow="Article" site="x" as article_image %}
 <script type="application/ld+json">
 {
-  "@context": "http://schema.org/",
+  "@context": "https://schema.org",
   "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{% canonical_url object.get_absolute_url %}"
+  },
   "author": {
     "@type": "Person",
     "name": "Rasul Kireev",
-    "image": "https://{{ request.get_host }}{% static 'vendors/images/logo.png' %}"
+    "url": "https://rasulkireev.com/"
   },
-  "headline": "{{ object.title }}",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Built with Django",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "{% absolute_url '/static/vendors/images/logo.png' %}"
+    }
+  },
+  "headline": {{ object.title|json_ld }},
+  "description": {{ object.description|json_ld }},
   "about": "Django",
-  "abstract": "{{ object.description }}",
-  "articleBody": "{% autoescape on %}{{ object.content|safe|replace_quotes }}{% endautoescape %}",
-  "image": "https://osig.app/g?style=base&site=x&font=markerfelt&title={{ object.title }}&subtitle={{ object.description }}&eyebrow=Article",
-  "thumbnailUrl": "https://osig.app/g?style=base&site=x&font=markerfelt&title={{ object.title }}&subtitle={{ object.description }}&eyebrow=Article",
-  "dateCreated": "{{ object.created }}",
-  "datePublished": "{{ object.created }}",
-  "dateModified": "{{ object.modified }}"
+  "image": {{ article_image|json_ld }},
+  "thumbnailUrl": {{ article_image|json_ld }},
+  "datePublished": "{{ object.created|date:'c' }}",
+  "dateModified": "{{ object.modified|date:'c' }}"
 }
 </script>
 {% endblock schema %}

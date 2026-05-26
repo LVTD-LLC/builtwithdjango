@@ -2,9 +2,9 @@
 {% load socialaccount %}
 {% load widget_tweaks %}
 
-{% block title %}
-    Sign Up
-{% endblock title %}
+{% block meta %}
+    {% include "components/seo_meta.html" with title="Sign Up | Built with Django" description="Create a Built with Django account." canonical_path="/users/signup/" robots="noindex,nofollow" twitter_card="summary" image_alt="Built with Django logo" %}
+{% endblock meta %}
 
 {% block content %}
     <div class="flex justify-center items-center px-4 py-12 my-4 sm:px-6 lg:px-8">
