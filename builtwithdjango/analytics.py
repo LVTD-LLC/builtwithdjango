@@ -38,6 +38,9 @@ def posthog_request_filter(request):
         return False
 
     path = request.path or ""
+    if _is_noisy_analytics_request_path(path):
+        return False
+
     admin_url = "/" + getattr(settings, "ADMIN_URL", "admin/").lstrip("/")
     skipped_prefixes = (
         admin_url,
@@ -51,6 +54,10 @@ def posthog_request_filter(request):
     )
 
     return not path.startswith(skipped_prefixes)
+
+
+def _is_noisy_analytics_request_path(path):
+    return path == "/api/v1/like" or path.startswith("/api/v1/like/")
 
 
 def posthog_extra_tags(request):
@@ -152,6 +159,31 @@ def capture_event(event, properties=None, distinct_id=None, groups=None):
     except Exception as exc:
         logger.warning("posthog_capture_failed", event=event, error=str(exc))
         return None
+
+
+def capture_checkout_return(request, checkout_surface):
+    session_id = _sanitize_identifier(request.GET.get("session_id"))
+    status = _sanitize_identifier(request.GET.get("status"))
+
+    if session_id:
+        capture(
+            request,
+            "checkout returned",
+            properties={
+                "checkout_surface": checkout_surface,
+                "checkout_status": "success",
+                "stripe_checkout_session_id": session_id,
+            },
+        )
+    elif status == "failed":
+        capture(
+            request,
+            "checkout canceled",
+            properties={
+                "checkout_surface": checkout_surface,
+                "checkout_status": status,
+            },
+        )
 
 
 def get_request_properties(request):

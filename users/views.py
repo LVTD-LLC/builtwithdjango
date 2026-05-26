@@ -6,7 +6,7 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, UpdateView
 
-from builtwithdjango.analytics import capture
+from builtwithdjango.analytics import capture, capture_checkout_return
 from builtwithdjango.stripe_client import get_or_create_stripe_customer_id
 
 from .forms import CustomUserUpdateForm
@@ -28,6 +28,10 @@ class ProfileUpdateForm(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
     def get_object(self, queryset=None):
         return self.request.user
+
+    def get(self, request, *args, **kwargs):
+        capture_checkout_return(request, "django_developers")
+        return super().get(request, *args, **kwargs)
 
     def form_valid(self, form):
         get_or_create_stripe_customer_id(self.request.user)

@@ -62,6 +62,16 @@
           }
         }
 
+        function bwdIsNoisyAnalyticsRequest(value) {
+          if (!value) return false;
+          try {
+            var url = new URL(value, window.location.origin);
+            return url.pathname === "/api/v1/like" || url.pathname.startsWith("/api/v1/like/");
+          } catch (error) {
+            return false;
+          }
+        }
+
         posthog.init('{{ posthog_api_key|escapejs }}', {
           api_host: '{{ posthog_api_host|escapejs }}',
           ui_host: '{{ posthog_ui_host|escapejs }}',
@@ -97,6 +107,9 @@
             maskAllInputs: true,
             maskTextSelector: ".ph-no-capture, [data-sensitive], [data-private]",
             maskCapturedNetworkRequestFn: function(request) {
+              if (request.name && bwdIsNoisyAnalyticsRequest(request.name)) {
+                return null;
+              }
               if (request.name) {
                 request.name = bwdRedactUrl(request.name);
               }

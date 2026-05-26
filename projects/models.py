@@ -195,11 +195,10 @@ class Project(models.Model):
                 For links, use the format: "Purpose - URL"
                 Be particularly vigilant in identifying spam content like unrelated certification posts.
                 """,
-                result_type=ContentAnalysis,
+                output_type=ContentAnalysis,
             )
 
-            result = agent.run_sync(
-                f"""
+            result = agent.run_sync(f"""
                 Please analyze this project comprehensively.
 
                 Project Title: {project_content.title}
@@ -212,20 +211,21 @@ class Project(models.Model):
                 {project_content.html_content}
 
                 Provide a detailed analysis covering all requested aspects.
-                """
-            )
+                """)
 
             logger.info(f"Successfully analyzed content for project: {self.title}")
 
+            analysis = result.output
+
             # Update all the fields
-            self.target_audience = result.data.target_audience
-            self.content_summary = result.data.content_summary
-            self.might_be_spam = result.data.might_be_spam
-            self.key_features = result.data.key_features
-            self.pain_points = result.data.pain_points
-            self.usage_instructions = result.data.usage_instructions
-            self.page_links = result.data.page_links
-            self.content_language = result.data.content_language
+            self.target_audience = analysis.target_audience
+            self.content_summary = analysis.content_summary
+            self.might_be_spam = analysis.might_be_spam
+            self.key_features = analysis.key_features
+            self.pain_points = analysis.pain_points
+            self.usage_instructions = analysis.usage_instructions
+            self.page_links = analysis.page_links
+            self.content_language = analysis.content_language
 
             self.save(
                 update_fields=[
@@ -240,7 +240,7 @@ class Project(models.Model):
                 ]
             )
 
-            if result.data.might_be_spam:
+            if analysis.might_be_spam:
                 self.published = False
                 self.save(update_fields=["published"])
 
