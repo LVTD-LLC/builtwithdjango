@@ -4,6 +4,7 @@ from django.core.files.base import ContentFile
 from django.core.mail import send_mail
 from django_q.tasks import async_task
 
+from builtwithdjango.sentry_utils import sentry_count, sentry_task_transaction
 from builtwithdjango.utils import get_builtwithdjango_logger
 
 from .models import Project
@@ -79,24 +80,49 @@ def fetch_page_content(project_id):
     """
     Task wrapper for fetching page content.
     """
-    try:
-        project = Project.objects.get(id=project_id)
-        success = project.fetch_page_content()
-        if success:
-            async_task(analyze_project, project.id)
-        return success
-    except Project.DoesNotExist:
-        logger.error(f"Project with ID {project_id} not found")
-        return False
+    sentry_count("projects.content_fetch.started")
+    with sentry_task_transaction("projects.tasks.fetch_page_content", attributes={"project.id": project_id}):
+        try:
+            project = Project.objects.get(id=project_id)
+            success = project.fetch_page_content()
+            sentry_count(
+                "projects.content_fetch.completed",
+                attributes={"outcome": "success" if success else "failure"},
+            )
+            if success:
+                async_task(analyze_project, project.id)
+            return success
+        except Project.DoesNotExist:
+            sentry_count("projects.content_fetch.completed", attributes={"outcome": "missing_project"})
+            logger.error(f"Project with ID {project_id} not found")
+            return False
+        except Exception:
+            sentry_count("projects.content_fetch.completed", attributes={"outcome": "failure"})
+            raise
 
 
 def analyze_project(project_id):
     """
     Task wrapper for analyzing project audience.
     """
-    try:
-        project = Project.objects.get(id=project_id)
-        return project.analyze_content()
-    except Project.DoesNotExist:
-        logger.error(f"Project with ID {project_id} not found")
-        return False
+    sentry_count("projects.content_analysis.started")
+    with sentry_task_transaction("projects.tasks.analyze_project", attributes={"project.id": project_id}):
+        try:
+            project = Project.objects.get(id=project_id)
+            success = project.analyze_content()
+            project.refresh_from_db(fields=["might_be_spam"])
+            sentry_count(
+                "projects.content_analysis.completed",
+                attributes={
+                    "outcome": "success" if success else "failure",
+                    "might_be_spam": project.might_be_spam,
+                },
+            )
+            return success
+        except Project.DoesNotExist:
+            sentry_count("projects.content_analysis.completed", attributes={"outcome": "missing_project"})
+            logger.error(f"Project with ID {project_id} not found")
+            return False
+        except Exception:
+            sentry_count("projects.content_analysis.completed", attributes={"outcome": "failure"})
+            raise

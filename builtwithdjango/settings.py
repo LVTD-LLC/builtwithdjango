@@ -21,6 +21,7 @@ import sentry_sdk
 import structlog
 from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.logging import LoggingIntegration
+from sentry_sdk.integrations.pydantic_ai import PydanticAIIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 from structlog_sentry import SentryProcessor
 
@@ -36,7 +37,8 @@ environ.Env.read_env()
 
 ENVIRONMENT = env("ENV")
 
-SENTRY_DSN = env("dsn", default="")
+SENTRY_DSN = env("SENTRY_DSN", default=env("dsn", default=""))
+SENTRY_ENABLED = bool(SENTRY_DSN) and env.bool("SENTRY_ENABLED", default=ENVIRONMENT == "prod")
 
 LOGFIRE_TOKEN = env("LOGFIRE_TOKEN", default="")
 
@@ -45,6 +47,32 @@ if LOGFIRE_TOKEN != "":
         environment=ENVIRONMENT,
         scrubbing=logfire.ScrubbingOptions(callback=scrubbing_callback),
     )
+
+
+def env_csv(name, default=None):
+    raw_value = env(name, default=None)
+    if raw_value in (None, ""):
+        return list(default or [])
+    return [item.strip() for item in raw_value.split(",") if item.strip()]
+
+
+def env_log_level(name, default):
+    raw_value = env(name, default="")
+    if raw_value == "":
+        return default
+    try:
+        return int(raw_value)
+    except (TypeError, ValueError):
+        pass
+    return getattr(logging, raw_value.upper(), default)
+
+
+def env_sample_rate(name, default):
+    raw_value = env(name, default=default)
+    if raw_value in (None, ""):
+        raw_value = default
+    return max(0.0, min(1.0, float(raw_value)))
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -61,6 +89,111 @@ SECRET_KEY = env("SECRET_KEY")
 DEBUG = env.bool("DEBUG")
 
 SITE_URL = env("SITE_URL")
+
+SENTRY_RELEASE = env("SENTRY_RELEASE", default=env("RENDER_GIT_COMMIT", default=None))
+SENTRY_DIST = env("SENTRY_DIST", default=None)
+SENTRY_SERVER_NAME = env("SENTRY_SERVER_NAME", default=env("RENDER_SERVICE_NAME", default=None))
+SENTRY_ERROR_SAMPLE_RATE = env_sample_rate("SENTRY_ERROR_SAMPLE_RATE", 1.0)
+SENTRY_TRACES_SAMPLE_RATE = env_sample_rate("SENTRY_TRACES_SAMPLE_RATE", 0.2)
+SENTRY_IMPORTANT_TRACES_SAMPLE_RATE = env_sample_rate("SENTRY_IMPORTANT_TRACES_SAMPLE_RATE", 1.0)
+SENTRY_BACKGROUND_TRACES_SAMPLE_RATE = env_sample_rate("SENTRY_BACKGROUND_TRACES_SAMPLE_RATE", 1.0)
+SENTRY_PROFILE_SESSION_SAMPLE_RATE = env_sample_rate("SENTRY_PROFILE_SESSION_SAMPLE_RATE", 0.2)
+SENTRY_ENABLE_LOGS = env.bool("SENTRY_ENABLE_LOGS", default=True)
+SENTRY_LOG_LEVEL = env_log_level("SENTRY_LOG_LEVEL", logging.WARNING)
+SENTRY_BREADCRUMB_LOG_LEVEL = env_log_level("SENTRY_BREADCRUMB_LOG_LEVEL", logging.INFO)
+SENTRY_ENABLE_METRICS = env.bool("SENTRY_ENABLE_METRICS", default=True)
+SENTRY_SEND_DEFAULT_PII = env.bool("SENTRY_SEND_DEFAULT_PII", default=False)
+SENTRY_INCLUDE_LOCAL_VARIABLES = env.bool("SENTRY_INCLUDE_LOCAL_VARIABLES", default=False)
+SENTRY_INCLUDE_AI_PROMPTS = env.bool("SENTRY_INCLUDE_AI_PROMPTS", default=False)
+SENTRY_STREAM_GEN_AI_SPANS = env.bool("SENTRY_STREAM_GEN_AI_SPANS", default=True)
+SENTRY_MAX_REQUEST_BODY_SIZE = env("SENTRY_MAX_REQUEST_BODY_SIZE", default="small")
+SENTRY_MAX_VALUE_LENGTH = env.int("SENTRY_MAX_VALUE_LENGTH", default=10000)
+SENTRY_TRACE_PROPAGATION_TARGETS = env_csv("SENTRY_TRACE_PROPAGATION_TARGETS", default=[SITE_URL])
+SENTRY_STRICT_TRACE_CONTINUATION = env.bool("SENTRY_STRICT_TRACE_CONTINUATION", default=True)
+SENTRY_IGNORED_TRANSACTION_PREFIXES = ("/static/", "/media/", "/favicon.ico", "/robots.txt")
+SENTRY_IMPORTANT_TRANSACTION_PREFIXES = ("/admin/", "/projects/", "/jobs/post/", "/newsletter/")
+SENTRY_BACKGROUND_TRANSACTION_NAMES = (
+    "projects.tasks.fetch_page_content",
+    "projects.tasks.analyze_project",
+    "newsletter.tasks.send_buttondown_newsletter",
+    "jobs.tasks.get_latest_jobs_from_tj_alerts",
+)
+SENTRY_SENSITIVE_LOG_ATTRIBUTE_PARTS = (
+    "authorization",
+    "cookie",
+    "email",
+    "ip_address",
+    "password",
+    "secret",
+)
+SENTRY_SENSITIVE_LOG_ATTRIBUTE_NAMES = (
+    "apitoken",
+    "api_token",
+    "authtoken",
+    "auth_token",
+    "accesstoken",
+    "access_token",
+    "csrf_token",
+    "idtoken",
+    "id_token",
+    "refreshtoken",
+    "refresh_token",
+    "sessiontoken",
+    "session_token",
+    "token",
+)
+SENTRY_SENSITIVE_LOG_ATTRIBUTE_SUFFIXES = (
+    ".token",
+    "_token",
+)
+
+
+def sentry_sampling_path(sampling_context):
+    environ = sampling_context.get("wsgi_environ") or {}
+    if environ.get("PATH_INFO"):
+        return environ["PATH_INFO"]
+
+    asgi_scope = sampling_context.get("asgi_scope") or {}
+    if asgi_scope.get("path"):
+        return asgi_scope["path"]
+
+    return ""
+
+
+def sentry_traces_sampler(sampling_context):
+    transaction_context = sampling_context.get("transaction_context") or {}
+    transaction_name = transaction_context.get("name") or ""
+    op = transaction_context.get("op") or ""
+    path = sentry_sampling_path(sampling_context)
+
+    if path.startswith(SENTRY_IGNORED_TRANSACTION_PREFIXES):
+        return 0.0
+
+    if op.startswith("queue.") or transaction_name in SENTRY_BACKGROUND_TRANSACTION_NAMES:
+        return SENTRY_BACKGROUND_TRACES_SAMPLE_RATE
+
+    if path.startswith(SENTRY_IMPORTANT_TRANSACTION_PREFIXES):
+        return SENTRY_IMPORTANT_TRACES_SAMPLE_RATE
+
+    return SENTRY_TRACES_SAMPLE_RATE
+
+
+def sentry_before_send_log(log, _hint):
+    attributes = log.get("attributes")
+    if not isinstance(attributes, dict):
+        return log
+
+    for key in list(attributes.keys()):
+        normalized_key = key.lower().replace("-", "_")
+        if (
+            normalized_key in SENTRY_SENSITIVE_LOG_ATTRIBUTE_NAMES
+            or any(sensitive_part in normalized_key for sensitive_part in SENTRY_SENSITIVE_LOG_ATTRIBUTE_PARTS)
+            or any(normalized_key.endswith(suffix) for suffix in SENTRY_SENSITIVE_LOG_ATTRIBUTE_SUFFIXES)
+        ):
+            attributes[key] = "[Filtered]"
+
+    return log
+
 
 # Remove the port from the SITE_URL and the https prefix (mostly for dev)
 ALLOWED_HOSTS = [SITE_URL.replace("http://", "").replace("https://", "").split(":")[0]]
@@ -445,7 +578,7 @@ structlog_processors = [
     # structlog.processors.format_exc_info,
 ]
 
-if SENTRY_DSN and ENVIRONMENT == "prod":
+if SENTRY_ENABLED:
     structlog_processors.append(
         SentryProcessor(
             event_level=logging.ERROR,
@@ -479,15 +612,19 @@ if ENVIRONMENT == "prod":
     LOGGING["loggers"]["builtwithdjango"]["level"] = env("DJANGO_LOG_LEVEL", default="INFO")
     LOGGING["loggers"]["builtwithdjango"]["handlers"].append("json_console")
 
-if SENTRY_DSN and ENVIRONMENT == "prod":
+if SENTRY_ENABLED:
     Q_CLUSTER["error_reporter"]["sentry"] = {"dsn": SENTRY_DSN}
     sentry_sdk.init(
         debug=DEBUG,
         dsn=SENTRY_DSN,
         environment=ENVIRONMENT,
-        send_default_pii=False,
-        traces_sample_rate=1,
-        profile_session_sample_rate=1,
+        release=SENTRY_RELEASE,
+        dist=SENTRY_DIST,
+        server_name=SENTRY_SERVER_NAME,
+        sample_rate=SENTRY_ERROR_SAMPLE_RATE,
+        send_default_pii=SENTRY_SEND_DEFAULT_PII,
+        traces_sampler=sentry_traces_sampler,
+        profile_session_sample_rate=SENTRY_PROFILE_SESSION_SAMPLE_RATE,
         profile_lifecycle="trace",
         integrations=[
             DjangoIntegration(
@@ -495,13 +632,44 @@ if SENTRY_DSN and ENVIRONMENT == "prod":
                 signals_spans=True,
             ),
             RedisIntegration(),
-        ],
-        disabled_integrations=[
-            LoggingIntegration(),
+            LoggingIntegration(
+                level=SENTRY_BREADCRUMB_LOG_LEVEL,
+                event_level=None,
+                sentry_logs_level=SENTRY_LOG_LEVEL,
+            ),
+            PydanticAIIntegration(
+                include_prompts=SENTRY_INCLUDE_AI_PROMPTS,
+                handled_tool_call_exceptions=True,
+            ),
         ],
         attach_stacktrace=True,
-        include_local_variables=True,
+        include_local_variables=SENTRY_INCLUDE_LOCAL_VARIABLES,
+        max_request_body_size=SENTRY_MAX_REQUEST_BODY_SIZE,
+        max_value_length=SENTRY_MAX_VALUE_LENGTH,
+        enable_logs=SENTRY_ENABLE_LOGS,
+        before_send_log=sentry_before_send_log,
+        enable_metrics=SENTRY_ENABLE_METRICS,
+        stream_gen_ai_spans=SENTRY_STREAM_GEN_AI_SPANS,
+        trace_propagation_targets=SENTRY_TRACE_PROPAGATION_TARGETS,
+        strict_trace_continuation=SENTRY_STRICT_TRACE_CONTINUATION,
+        trace_ignore_status_codes={404},
+        project_root=BASE_DIR,
+        in_app_include=[
+            "api",
+            "blog",
+            "builtwithdjango",
+            "developers",
+            "jobs",
+            "makers",
+            "newsletter",
+            "pages",
+            "podcast",
+            "projects",
+            "tools",
+            "users",
+        ],
     )
+    sentry_sdk.set_tag("app.process_type", env("APP_PROCESS_TYPE", default="unknown"))
 
 BUILTWITHDJANGO_POSTHOG_PROJECT_API_KEY = "phc_Xvm3S1MGcMQXMHo2VJZabDhNJwmwbyhLedddpIU83Mo"
 POSTHOG_API_KEY = env(

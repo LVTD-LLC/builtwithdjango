@@ -11,6 +11,7 @@ from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 
 from builtwithdjango.ai import get_openrouter_model
+from builtwithdjango.sentry_utils import sentry_count, sentry_duration_metric, sentry_span
 from builtwithdjango.utils import get_builtwithdjango_logger
 
 logger = get_builtwithdjango_logger(__name__)
@@ -162,7 +163,11 @@ class Project(models.Model):
         headers = {"Accept": "application/json", "Authorization": f"Bearer {settings.JINA_READER_API_KEY}"}
 
         try:
-            response = requests.get(jina_url, headers=headers, timeout=30)
+            with sentry_span("http.client", "jina.fetch_page_content"), sentry_duration_metric(
+                "projects.content_fetch.duration",
+                attributes={"source": "jina_reader"},
+            ):
+                response = requests.get(jina_url, headers=headers, timeout=30)
             response.raise_for_status()
 
             data = response.json().get("data", {})
@@ -184,10 +189,12 @@ class Project(models.Model):
             )
 
             logger.info(f"Successfully fetched content for project: {self.title}")
+            sentry_count("projects.content_fetch.result", attributes={"outcome": "success"})
             return True
 
         except requests.exceptions.RequestException as e:
             logger.error(f"Error fetching content from Jina Reader: {str(e)}")
+            sentry_count("projects.content_fetch.result", attributes={"outcome": "failure"})
             return False
 
     def analyze_content(self):
@@ -204,20 +211,24 @@ class Project(models.Model):
                 html_content=self.page_content_html,
             )
 
-            result = get_content_analysis_agent().run_sync(f"""
-                Please analyze this project comprehensively.
+            sentry_count("projects.ai_analysis.started")
+            with sentry_span("ai.workflow", "projects.analyze_content"), sentry_duration_metric(
+                "projects.ai_analysis.duration"
+            ):
+                result = get_content_analysis_agent().run_sync(f"""
+                    Please analyze this project comprehensively.
 
-                Project Title: {project_content.title}
-                Project Description: {project_content.description}
+                    Project Title: {project_content.title}
+                    Project Description: {project_content.description}
 
-                Detailed Content:
-                {project_content.content}
+                    Detailed Content:
+                    {project_content.content}
 
-                HTML Content:
-                {project_content.html_content}
+                    HTML Content:
+                    {project_content.html_content}
 
-                Provide a detailed analysis covering all requested aspects.
-                """)
+                    Provide a detailed analysis covering all requested aspects.
+                    """)
 
             logger.info(f"Successfully analyzed content for project: {self.title}")
 
@@ -250,10 +261,18 @@ class Project(models.Model):
                 self.published = False
                 self.save(update_fields=["published"])
 
+            sentry_count(
+                "projects.ai_analysis.completed",
+                attributes={
+                    "outcome": "success",
+                    "might_be_spam": analysis.might_be_spam,
+                },
+            )
             return True
 
         except Exception as e:
             logger.error(f"Error analyzing project content: {str(e)}")
+            sentry_count("projects.ai_analysis.completed", attributes={"outcome": "failure"})
             return False
 
     class Meta:
