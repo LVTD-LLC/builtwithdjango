@@ -452,13 +452,13 @@
         </div>
       </div>
       <div class="bw-webring-shell">
-        <div class="bw-webring-panel" aria-labelledby="bw-webring-title">
+        <div class="bw-webring-panel" role="region" aria-labelledby="bw-webring-title">
           <div class="bw-webring-copy">
             <p class="bw-webring-label">Django Webring</p>
             <h2 id="bw-webring-title">Independent Django sites, one stop away</h2>
             <p>Follow the ring to visit a previous, random, or next member site from the Django community.</p>
           </div>
-          <div class="bw-webring-widget" aria-label="Django Webring navigation">
+          <div class="bw-webring-widget" role="navigation" aria-label="Django Webring navigation">
             <webring-css site="https://builtwithdjango.com"></webring-css>
           </div>
         </div>
@@ -491,8 +491,18 @@
               content.querySelectorAll('a').forEach((link) => {
                 const currentLabel = link.textContent.trim();
                 if (labels[currentLabel]) {
+                  const destinationHost = (() => {
+                    try {
+                      return new URL(link.href).hostname.replace(/^www\./, '');
+                    } catch (error) {
+                      return labels[currentLabel];
+                    }
+                  })();
+                  const siteName = link.getAttribute('title') || destinationHost;
+
                   link.textContent = labels[currentLabel];
-                  link.setAttribute('aria-label', `${labels[currentLabel]} Django Webring site`);
+                  link.dataset.webringSite = siteName;
+                  link.setAttribute('aria-label', `${labels[currentLabel]} Django Webring site: ${siteName}`);
                 }
               });
 
@@ -588,7 +598,7 @@
                   width: 100% !important;
                   overflow: hidden !important;
                   color: oklch(70% 0.025 126) !important;
-                  content: attr(title) !important;
+                  content: attr(data-webring-site) !important;
                   font-size: 0.7rem !important;
                   font-weight: 750 !important;
                   line-height: 1.1 !important;
