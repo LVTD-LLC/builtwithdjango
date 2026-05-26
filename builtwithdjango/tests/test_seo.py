@@ -13,6 +13,7 @@ from builtwithdjango.sitemaps import StaticViewSitemap, sitemaps
 from developers.models import Developer
 from jobs.models import Job
 from makers.models import Maker
+from podcast.models import Episode
 from projects.models import Project
 
 
@@ -218,7 +219,7 @@ class SeoPageRenderTests(TestCase):
             title="Senior Django Developer",
             description="Builds production Django apps.",
             capacity="FTC",
-            location="Madrid, Spain",
+            location="",
         )
 
         job_response = self.client.get(job.get_absolute_url())
@@ -230,4 +231,22 @@ class SeoPageRenderTests(TestCase):
         self.assertIn('<meta property="og:type" content="website" />', job_html)
         self.assertIn('"@type": "JobPosting"', job_html)
         self.assertNotIn('"address": ""', job_html)
-        self.assertIn('"@type": "Person"', developer_response.content.decode())
+        developer_html = developer_response.content.decode()
+        self.assertIn('"@type": "Person"', developer_html)
+        self.assertNotIn('"@type": "PostalAddress"', developer_html)
+        self.assertNotIn('"addressLocality": ""', developer_html)
+
+    def test_podcast_detail_uses_default_website_og_type(self):
+        episode = Episode.objects.create(
+            title="Podcast SEO",
+            slug="podcast-seo",
+            thumbnail="podcast/episode.png",
+            details="A podcast episode about Django SEO.",
+        )
+
+        response = self.client.get(episode.get_absolute_url())
+
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn('<meta property="og:type" content="website" />', html)
+        self.assertIn('"@type": "PodcastEpisode"', html)

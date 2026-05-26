@@ -4,7 +4,7 @@
 
 {% block meta %}
     {% absolute_url object.thumbnail.url as episode_image %}
-    {% include "components/seo_meta.html" with title=object.title description=object.details canonical_path=object.get_absolute_url image=episode_image og_type="article" image_alt=object.title %}
+    {% include "components/seo_meta.html" with title=object.title description=object.details canonical_path=object.get_absolute_url image=episode_image image_alt=object.title %}
 {% endblock meta %}
 
 {% block content %}
