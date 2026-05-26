@@ -71,11 +71,11 @@ class JobCheckoutTests(TestCase):
             listing_url="https://example.com/jobs/django",
             company_name="Example Co",
         )
-        price = SimpleNamespace(id="price_job")
+        price_id = "price_job"
         checkout_session = SimpleNamespace(id="cs_test", url="https://checkout.stripe.test/session")
 
         with (
-            patch("jobs.views.models.Price.objects.get", return_value=price) as get_price,
+            patch("jobs.views.get_stripe_price_id", return_value=price_id) as get_price,
             patch("jobs.views.stripe.checkout.Session.create", return_value=checkout_session) as create_session,
             patch("jobs.views.capture") as capture,
         ):
@@ -83,9 +83,9 @@ class JobCheckoutTests(TestCase):
 
         self.assertEqual(response.status_code, 303)
         self.assertEqual(response["Location"], checkout_session.url)
-        get_price.assert_called_once_with(nickname="job")
+        get_price.assert_called_once_with("job")
         create_session.assert_called_once()
-        self.assertEqual(create_session.call_args.kwargs["metadata"], {"pk": job.pk, "price_id": "price_job"})
+        self.assertEqual(create_session.call_args.kwargs["metadata"], {"pk": str(job.pk), "price_id": price_id})
         capture.assert_called_once()
 
     def test_sponsor_job_checkout_session_redirects_to_stripe_checkout(self):
@@ -94,11 +94,11 @@ class JobCheckoutTests(TestCase):
             listing_url="https://example.com/jobs/sponsored-django",
             company_name="Example Co",
         )
-        price = SimpleNamespace(id="price_job")
+        price_id = "price_job"
         checkout_session = SimpleNamespace(id="cs_sponsor_test", url="https://checkout.stripe.test/sponsor")
 
         with (
-            patch("jobs.views.models.Price.objects.get", return_value=price) as get_price,
+            patch("jobs.views.get_stripe_price_id", return_value=price_id) as get_price,
             patch("jobs.views.stripe.checkout.Session.create", return_value=checkout_session) as create_session,
             patch("jobs.views.capture") as capture,
         ):
@@ -106,9 +106,9 @@ class JobCheckoutTests(TestCase):
 
         self.assertEqual(response.status_code, 303)
         self.assertEqual(response["Location"], checkout_session.url)
-        get_price.assert_called_once_with(nickname="job")
+        get_price.assert_called_once_with("job")
         create_session.assert_called_once()
-        self.assertEqual(create_session.call_args.kwargs["metadata"], {"pk": job.pk, "price_id": "price_job"})
+        self.assertEqual(create_session.call_args.kwargs["metadata"], {"pk": str(job.pk), "price_id": price_id})
         capture.assert_called_once()
 
 

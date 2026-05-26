@@ -21,6 +21,8 @@ from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path
 from django.views.generic import TemplateView
 
+from users.webhooks import stripe_webhook
+
 from .sitemaps import sitemaps
 
 urlpatterns = (
@@ -39,7 +41,8 @@ urlpatterns = (
         path("users/", include("allauth.urls")),
         path("users/", include("users.urls")),
         path("uses", TemplateView.as_view(template_name="pages/uses.html"), name="uses"),
-        path("stripe/", include("djstripe.urls", namespace="djstripe")),
+        path("stripe/webhook/", stripe_webhook, name="stripe-webhook"),
+        path("stripe/webhook/<uuid:webhook_uuid>/", stripe_webhook, name="stripe-webhook-legacy"),
         path(
             "sitemap.xml",
             sitemap,

@@ -1,19 +1,24 @@
+import stripe
 from allauth.account.adapter import get_adapter
 from allauth.account.models import EmailAddress
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import ImproperlyConfigured
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, UpdateView
-from djstripe import models
 
 from builtwithdjango.analytics import capture, capture_checkout_return
+from builtwithdjango.stripe_client import get_or_create_stripe_customer_id
+from builtwithdjango.utils import get_builtwithdjango_logger
 
 from .forms import CustomUserUpdateForm
 from .models import CustomUser
 
 # Authentication is handled by Django Allauth
 # See ACCOUNT_FORMS in settings.py for custom form configuration
+
+logger = get_builtwithdjango_logger(__name__)
 
 
 class ProfileUpdateForm(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
@@ -34,7 +39,11 @@ class ProfileUpdateForm(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return super().get(request, *args, **kwargs)
 
     def form_valid(self, form):
-        models.Customer.get_or_create(subscriber=self.request.user)
+        try:
+            get_or_create_stripe_customer_id(self.request.user)
+        except (ImproperlyConfigured, stripe.StripeError) as e:
+            logger.warning(f"Unable to sync Stripe customer for user {self.request.user.pk}: {str(e)}")
+
         response = super().form_valid(form)
         capture(
             self.request,

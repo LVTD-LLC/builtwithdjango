@@ -95,6 +95,7 @@ class ProjectTestCase(TestCase):
         self.assertEqual(project.content_language, "English")
         self.assertTrue(project.published)
 
+
 class ProjectModelServiceTests(TestCase):
     def test_check_project_is_active_updates_active_flag_from_http_status(self):
         project = Project.objects.create(
