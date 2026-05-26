@@ -4,14 +4,12 @@ from types import SimpleNamespace
 from unittest.mock import Mock, patch
 
 import requests
-from asgiref.sync import async_to_sync
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 from django.utils import timezone
 
-from .models import Like, Project
+from .models import Like, Project, get_content_analysis_agent
 from .tasks import save_screenshot
-from .utils import create_tweet
 from .views import ProjectListView
 
 
@@ -80,8 +78,13 @@ class ProjectTestCase(TestCase):
             published=True,
         )
 
-        with patch("projects.models.Agent", FakeAgent):
+        get_content_analysis_agent.cache_clear()
+        with (
+            patch("projects.models.get_openrouter_model", return_value=object()),
+            patch("projects.models.Agent", FakeAgent),
+        ):
             self.assertTrue(project.analyze_content())
+        get_content_analysis_agent.cache_clear()
 
         project.refresh_from_db()
         self.assertNotIn("result_type", FakeAgent.kwargs)
@@ -91,43 +94,6 @@ class ProjectTestCase(TestCase):
         self.assertEqual(project.content_summary, "A concise summary")
         self.assertEqual(project.content_language, "English")
         self.assertTrue(project.published)
-
-    def test_create_tweet_uses_pydantic_ai_v1_output_api(self):
-        class FakeAgent:
-            kwargs = None
-            deps = None
-
-            def __init__(self, *args, **kwargs):
-                self.output_type = kwargs["output_type"]
-                FakeAgent.kwargs = kwargs
-
-            def instructions(self, func):
-                return func
-
-            async def run(self, prompt, *, deps):
-                FakeAgent.deps = deps
-                return SimpleNamespace(output=self.output_type(tweet_text="A useful launch tweet"))
-
-        project = Project.objects.create(
-            title="Tweet Project",
-            url="https://tweet.example.com",
-            short_description="A project worth tweeting about",
-            twitter_url="https://x.com/example",
-            target_audience="Django developers",
-            content_summary="Tweetable summary",
-            key_features="- Fast",
-            pain_points="- Boilerplate",
-        )
-
-        with patch("projects.utils.Agent", FakeAgent):
-            tweet_text = async_to_sync(create_tweet)(project.id)
-
-        self.assertNotIn("result_type", FakeAgent.kwargs)
-        self.assertEqual(FakeAgent.kwargs["output_type"].__name__, "TweetContent")
-        self.assertEqual(FakeAgent.kwargs["deps_type"].__name__, "ProjectContext")
-        self.assertEqual(FakeAgent.deps.title, "Tweet Project")
-        self.assertEqual(tweet_text, "A useful launch tweet")
-
 
 class ProjectModelServiceTests(TestCase):
     def test_check_project_is_active_updates_active_flag_from_http_status(self):

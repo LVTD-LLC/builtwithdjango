@@ -66,7 +66,6 @@ ipython = "^9.13.0"
 structlog = "^25.5.0"
 django-structlog = "^10.0.0"
 pydantic-ai-slim = {extras = ["openrouter"], version = "^1.102.0"}
-twikit = "^2.3.3"
 logfire = "^4.3.4"
 plotext = "^5.3.2"
 sentry-sdk = "^2.41.0"
