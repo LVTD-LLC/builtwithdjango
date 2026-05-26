@@ -1,10 +1,12 @@
 import os
+from functools import lru_cache
 
 from asgiref.sync import sync_to_async
 from django.conf import settings
 from pydantic_ai import Agent, RunContext
 from twikit import Client
 
+from builtwithdjango.ai import get_openrouter_model
 from builtwithdjango.utils import get_builtwithdjango_logger
 from projects.schemas import ProjectContext, TweetContent
 
@@ -16,15 +18,10 @@ logger = get_builtwithdjango_logger(__name__)
 TWITTER_COOKIE_DICT = None
 
 
-async def create_tweet(project_id):
-    logger.info(f"Starting create_tweet for project_id: {project_id}")
-    try:
-        project = await sync_to_async(Project.objects.get)(id=project_id)
-    except Project.DoesNotExist:
-        raise ValueError(f"Project with id {project_id} does not exist.")
-
+@lru_cache(maxsize=1)
+def get_tweet_agent():
     agent = Agent(
-        settings.PYDANTIC_AI_MODEL,
+        get_openrouter_model(),
         instructions="""
         You are an expert in crafting engaging and concise tweets for new software projects.
         The tweet should highlight the project's title and a very brief description.
@@ -108,8 +105,18 @@ async def create_tweet(project_id):
     def use_twitter_handle(ctx: RunContext[ProjectContext]) -> str:
         return f"Only use the Twitter handle of the project owner: {ctx.deps.twitter_url}"
 
+    return agent
+
+
+async def create_tweet(project_id):
+    logger.info(f"Starting create_tweet for project_id: {project_id}")
+    try:
+        project = await sync_to_async(Project.objects.get)(id=project_id)
+    except Project.DoesNotExist:
+        raise ValueError(f"Project with id {project_id} does not exist.")
+
     logger.info(f"Running agent for project: {project.title}")
-    result = await agent.run(
+    result = await get_tweet_agent().run(
         "Generate a tweet for this project",
         deps=ProjectContext(
             title=project.title,

@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 import requests
 from autoslug import AutoSlugField
 from django.conf import settings
@@ -8,9 +10,56 @@ from model_utils.models import TimeStampedModel
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent
 
+from builtwithdjango.ai import get_openrouter_model
 from builtwithdjango.utils import get_builtwithdjango_logger
 
 logger = get_builtwithdjango_logger(__name__)
+
+
+class ProjectContent(BaseModel):
+    """Model to structure the project content for analysis."""
+
+    title: str
+    description: str
+    content: str
+    html_content: str
+
+
+class ContentAnalysis(BaseModel):
+    """Model to structure the comprehensive content analysis response. All values should be in markdown format"""
+
+    target_audience: str = Field(description="2-3 concise sentences describing who the target audience is")
+    content_summary: str = Field(
+        description="Summary of what the page content is, considering it's likely a Django project showcase"
+    )
+    might_be_spam: bool = Field(
+        description="Estimation if this might be spam content (e.g., unrelated certification posts)"
+    )
+    key_features: str = Field(description="Key features of the project, listed in bullet points")
+    pain_points: str = Field(description="Pain points that the project addresses, listed in bullet points")
+    usage_instructions: str = Field(description="Brief explanation of how to use the product")
+    page_links: str = Field(description="Links found on the page in format: '- What the link is for - actual_link'.")
+    content_language: str = Field(description="The primary language the page is written in")
+
+
+@lru_cache(maxsize=1)
+def get_content_analysis_agent():
+    return Agent(
+        get_openrouter_model(),
+        instructions="""
+        You are an expert in analyzing web applications and digital projects.
+        Analyze the provided content comprehensively, focusing on:
+        1. Understanding who it's built for
+        2. Detecting if it might be spam content
+        3. Identifying key features and pain points
+        4. Extracting useful links and understanding the content structure
+
+        Provide clear, concise responses for each aspect requested.
+        For links, use the format: "Purpose - URL"
+        Be particularly vigilant in identifying spam content like unrelated certification posts.
+        """,
+        output_type=ContentAnalysis,
+    )
 
 
 class Project(models.Model):
@@ -147,32 +196,6 @@ class Project(models.Model):
         Returns True if successful, False otherwise.
         """
 
-        class ProjectContent(BaseModel):
-            """Model to structure the project content for analysis."""
-
-            title: str
-            description: str
-            content: str
-            html_content: str
-
-        class ContentAnalysis(BaseModel):
-            """Model to structure the comprehensive content analysis response. All values should be in markdown format"""
-
-            target_audience: str = Field(description="2-3 concise sentences describing who the target audience is")
-            content_summary: str = Field(
-                description="Summary of what the page content is, considering it's likely a Django project showcase"
-            )
-            might_be_spam: bool = Field(
-                description="Estimation if this might be spam content (e.g., unrelated certification posts)"
-            )
-            key_features: str = Field(description="Key features of the project, listed in bullet points")
-            pain_points: str = Field(description="Pain points that the project addresses, listed in bullet points")
-            usage_instructions: str = Field(description="Brief explanation of how to use the product")
-            page_links: str = Field(
-                description="Links found on the page in format: '- What the link is for - actual_link'."
-            )
-            content_language: str = Field(description="The primary language the page is written in")
-
         try:
             project_content = ProjectContent(
                 title=self.page_title,
@@ -181,24 +204,7 @@ class Project(models.Model):
                 html_content=self.page_content_html,
             )
 
-            agent = Agent(
-                settings.PYDANTIC_AI_MODEL,
-                instructions="""
-                You are an expert in analyzing web applications and digital projects.
-                Analyze the provided content comprehensively, focusing on:
-                1. Understanding who it's built for
-                2. Detecting if it might be spam content
-                3. Identifying key features and pain points
-                4. Extracting useful links and understanding the content structure
-
-                Provide clear, concise responses for each aspect requested.
-                For links, use the format: "Purpose - URL"
-                Be particularly vigilant in identifying spam content like unrelated certification posts.
-                """,
-                output_type=ContentAnalysis,
-            )
-
-            result = agent.run_sync(f"""
+            result = get_content_analysis_agent().run_sync(f"""
                 Please analyze this project comprehensively.
 
                 Project Title: {project_content.title}
