@@ -1,54 +1,62 @@
 """
-Stripe webhook handlers for Built with Django.
+Stripe webhook handling for Built with Django.
 
-This module handles all Stripe webhook events using dj-stripe's signal-based approach.
-Each handler is registered using the @djstripe_receiver decorator and processes
-specific Stripe events.
-
-For more information on dj-stripe webhooks:
-https://dj-stripe.dev/docs/dev/usage/webhooks
+This module verifies incoming Stripe webhook signatures and processes the
+checkout.session.completed events that update local user and job state.
 """
 
 from functools import partial
 
 import stripe
+from django.conf import settings
 from django.db import transaction
 from django.http import HttpResponse
-from djstripe import models, settings as djstripe_settings
-from djstripe.event_handlers import djstripe_receiver
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
 from builtwithdjango.analytics import capture_event, get_user_properties
+from builtwithdjango.stripe_client import configure_stripe, get_stripe_price_id
 from builtwithdjango.utils import get_builtwithdjango_logger
 from users.models import CustomUser
 
 logger = get_builtwithdjango_logger(__name__)
-stripe.api_key = djstripe_settings.djstripe_settings.STRIPE_SECRET_KEY
 
 
-@djstripe_receiver("checkout.session.completed")
-def handle_checkout_session_completed(sender, **kwargs):
+@csrf_exempt
+@require_POST
+def stripe_webhook(request, webhook_uuid=None):
+    configure_stripe()
+
+    if not settings.STRIPE_WEBHOOK_SECRET:
+        logger.error("STRIPE_WEBHOOK_SECRET is not configured")
+        return HttpResponse(status=500)
+
+    signature = request.META.get("HTTP_STRIPE_SIGNATURE")
+
+    try:
+        event = stripe.Webhook.construct_event(request.body, signature, settings.STRIPE_WEBHOOK_SECRET)
+    except ValueError:
+        logger.warning("Received invalid Stripe webhook payload")
+        return HttpResponse(status=400)
+    except stripe.error.SignatureVerificationError:
+        logger.warning("Received Stripe webhook with invalid signature")
+        return HttpResponse(status=400)
+
+    if event.type == "checkout.session.completed":
+        handle_checkout_session_completed(event)
+    else:
+        logger.info(f"Ignoring unhandled Stripe event type: {event.type}")
+
+    return HttpResponse(status=200)
+
+
+def handle_checkout_session_completed(event):
     """
-    Handle successful checkout session completion.
-
-    This handler routes the event to the appropriate processor based on the
-    price_id in the session metadata:
-    - PRO user upgrades
-    - Django Devs subscriptions
-    - Job board postings
-
-    Args:
-        sender: The signal sender (Event model)
-        **kwargs: Additional keyword arguments including the event
-
-    Returns:
-        HttpResponse: HTTP 200 status response
+    Route successful checkout sessions based on the price_id in metadata.
     """
-    event = kwargs.get("event")
-
-    # Get price IDs from database
-    pro_price_id = models.Price.objects.get(nickname="pro").id
-    devs_price_id = models.Price.objects.get(nickname="django_devs").id
-    job_price_id = models.Price.objects.get(nickname="job").id
+    pro_price_id = get_stripe_price_id("pro")
+    devs_price_id = get_stripe_price_id("django_devs")
+    job_price_id = get_stripe_price_id("job")
 
     checkout_session = event.data["object"]
     event_price_id = (checkout_session.get("metadata") or {}).get("price_id")
@@ -86,8 +94,6 @@ def handle_checkout_session_completed(sender, **kwargs):
     else:
         logger.warning(f"Unrecognized price_id in checkout.session.completed: {event_price_id}")
 
-    return HttpResponse(status=200)
-
 
 def get_checkout_distinct_id(checkout_session, price_id, pro_price_id, devs_price_id, job_price_id):
     metadata = checkout_session.get("metadata") or {}
@@ -105,41 +111,21 @@ def get_checkout_distinct_id(checkout_session, price_id, pro_price_id, devs_pric
 
 
 def process_pro_user_upgrade(event):
-    """
-    Process a PRO user upgrade purchase.
+    if event.type != "checkout.session.completed":
+        return
 
-    This function syncs the customer data from Stripe and schedules the user
-    upgrade to happen after the database transaction commits.
-
-    Args:
-        event: The Stripe Event object containing checkout session data
-    """
-    if event.type == "checkout.session.completed":
-        customer_id = event.data["object"]["customer"]
-        logger.info(f"Upgrading Customer: {customer_id}")
-
-        # Sync customer data from Stripe
-        models.Customer.sync_from_stripe_data(stripe.Customer.retrieve(customer_id))
-
-        # Schedule user upgrade after transaction commit
-        transaction.on_commit(partial(upgrade_user_to_pro, event))
+    customer_id = event.data["object"].get("customer")
+    logger.info(f"Upgrading Customer: {customer_id}")
+    transaction.on_commit(partial(upgrade_user_to_pro, event))
 
 
 def upgrade_user_to_pro(event):
-    """
-    Upgrade a user to PRO subscription level.
-
-    This function is called after the database transaction commits to ensure
-    all Stripe data has been synced before updating the user.
-
-    Args:
-        event: The Stripe Event object containing user metadata
-    """
     user_id = event.data["object"]["metadata"]["pk"]
     logger.info(f"Upgrading user {user_id} to PRO subscription level")
 
     try:
         user = CustomUser.objects.get(pk=user_id)
+        update_user_stripe_customer_id(user, event.data["object"].get("customer"))
         user.subscription_level = "PRO"
         user.save()
         capture_event(
@@ -160,41 +146,21 @@ def upgrade_user_to_pro(event):
 
 
 def process_django_devs_subscription(event):
-    """
-    Process a Django Devs subscription purchase.
+    if event.type != "checkout.session.completed":
+        return
 
-    This function syncs the subscription data from Stripe and schedules the
-    subscription flag update to happen after the database transaction commits.
-
-    Args:
-        event: The Stripe Event object containing checkout session data
-    """
-    if event.type == "checkout.session.completed":
-        subscription_id = event.data["object"]["subscription"]
-        logger.info(f"Processing Django Devs subscription: {subscription_id}")
-
-        # Sync subscription data from Stripe
-        models.Subscription.sync_from_stripe_data(stripe.Subscription.retrieve(subscription_id))
-
-        # Schedule subscription flag update after transaction commit
-        transaction.on_commit(partial(activate_django_devs_subscription, event))
+    subscription_id = event.data["object"].get("subscription")
+    logger.info(f"Processing Django Devs subscription: {subscription_id}")
+    transaction.on_commit(partial(activate_django_devs_subscription, event))
 
 
 def activate_django_devs_subscription(event):
-    """
-    Activate Django Devs subscription flag for a user.
-
-    This function is called after the database transaction commits to ensure
-    all Stripe subscription data has been synced before updating the user.
-
-    Args:
-        event: The Stripe Event object containing user metadata
-    """
     user_id = event.data["object"]["metadata"]["user_id"]
     logger.info(f"Activating Django Devs subscription for user {user_id}")
 
     try:
         user = CustomUser.objects.get(id=user_id)
+        update_user_stripe_customer_id(user, event.data["object"].get("customer"))
         user.has_active_django_devs_subscription = True
         user.save()
         capture_event(
@@ -216,33 +182,15 @@ def activate_django_devs_subscription(event):
 
 
 def process_job_board_payment(event):
-    """
-    Process a Job Board posting payment.
+    if event.type != "checkout.session.completed":
+        return
 
-    This function schedules the job approval to happen after the database
-    transaction commits.
-
-    Args:
-        event: The Stripe Event object containing checkout session data
-    """
-    if event.type == "checkout.session.completed":
-        job_id = event.data["object"]["metadata"]["pk"]
-        logger.info(f"Processing Job Board payment for job {job_id}")
-
-        # Schedule job approval after transaction commit
-        transaction.on_commit(partial(approve_paid_job, event))
+    job_id = event.data["object"]["metadata"]["pk"]
+    logger.info(f"Processing Job Board payment for job {job_id}")
+    transaction.on_commit(partial(approve_paid_job, event))
 
 
 def approve_paid_job(event):
-    """
-    Approve and mark a job as paid.
-
-    This function is called after the database transaction commits to update
-    the job's paid and approved status.
-
-    Args:
-        event: The Stripe Event object containing job metadata
-    """
     from jobs.models import Job
 
     job_id = event.data["object"]["metadata"]["pk"]
@@ -273,21 +221,18 @@ def approve_paid_job(event):
         logger.error(f"Error approving job {job_id}: {str(e)}")
 
 
-# Additional webhook handlers can be added here as needed
-# Examples:
-#
-# @djstripe_receiver("customer.subscription.deleted")
-# def handle_subscription_deleted(sender, **kwargs):
-#     """Handle subscription cancellation."""
-#     event = kwargs.get("event")
-#     subscription_id = event.data["object"]["id"]
-#     # Process subscription cancellation
-#     pass
-#
-# @djstripe_receiver("invoice.payment_failed")
-# def handle_payment_failed(sender, **kwargs):
-#     """Handle failed payment."""
-#     event = kwargs.get("event")
-#     invoice_id = event.data["object"]["id"]
-#     # Process payment failure
-#     pass
+def update_user_stripe_customer_id(user, customer_id):
+    if not customer_id:
+        return
+
+    if user.stripe_customer_id == customer_id:
+        return
+
+    if user.stripe_customer_id:
+        logger.warning(
+            f"User {user.pk} already has Stripe customer {user.stripe_customer_id}; checkout used {customer_id}"
+        )
+        return
+
+    user.stripe_customer_id = customer_id
+    user.save(update_fields=["stripe_customer_id"])

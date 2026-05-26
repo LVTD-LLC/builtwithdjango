@@ -1,19 +1,19 @@
 import stripe
 from allauth.account.models import EmailAddress
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import DetailView, ListView, TemplateView, UpdateView
-from djstripe import models, settings as djstripe_settings
 
 from builtwithdjango.analytics import capture
+from builtwithdjango.stripe_client import get_or_create_stripe_customer_id, get_stripe_price_id
 from builtwithdjango.utils import get_builtwithdjango_logger
 
 from .forms import UpdateDeveloperForm
 from .models import Developer
 
 logger = get_builtwithdjango_logger(__name__)
-stripe.api_key = djstripe_settings.djstripe_settings.STRIPE_SECRET_KEY
 
 
 class DeveloperListView(ListView):
@@ -118,14 +118,15 @@ class DeveloperPricingView(LoginRequiredMixin, TemplateView):
     template_name = "developers/pricing-details.html"
 
 
+@login_required(login_url="account_login")
 def create_checkout_session(request):
     user = request.user
-    price_id = models.Price.objects.get(nickname="django_devs").id
-    customer = models.Customer.objects.get(subscriber=user)
+    price_id = get_stripe_price_id("django_devs")
+    customer_id = get_or_create_stripe_customer_id(user)
 
     checkout_session = stripe.checkout.Session.create(
         payment_method_types=["card"],
-        customer=customer.id,
+        customer=customer_id,
         line_items=[
             {
                 "price": price_id,
@@ -140,7 +141,7 @@ def create_checkout_session(request):
         },
         success_url=request.build_absolute_uri(reverse_lazy("update-profile")) + "?session_id={CHECKOUT_SESSION_ID}",
         cancel_url=request.build_absolute_uri(reverse_lazy("update-profile")) + "?status=failed",
-        metadata={f"user_id": user.id, "price_id": price_id},
+        metadata={"user_id": str(user.id), "price_id": price_id},
     )
 
     capture(
@@ -148,7 +149,7 @@ def create_checkout_session(request):
         "django developers checkout started",
         properties={
             "price_id": price_id,
-            "stripe_customer_id": customer.id,
+            "stripe_customer_id": customer_id,
             "stripe_checkout_session_id": checkout_session.id,
             "checkout_mode": "subscription",
         },
@@ -157,17 +158,18 @@ def create_checkout_session(request):
     return redirect(checkout_session.url, code=303)
 
 
+@login_required(login_url="account_login")
 def create_customer_portal_session(request):
-    customer = models.Customer.objects.get(subscriber=request.user)
+    customer_id = get_or_create_stripe_customer_id(request.user)
     session = stripe.billing_portal.Session.create(
-        customer=customer.id,
+        customer=customer_id,
         return_url=request.build_absolute_uri(reverse_lazy("update-profile")),
     )
     capture(
         request,
         "customer portal opened",
         properties={
-            "stripe_customer_id": customer.id,
+            "stripe_customer_id": customer_id,
             "stripe_portal_session_id": session.id,
         },
     )

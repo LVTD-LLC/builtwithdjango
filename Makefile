@@ -18,13 +18,10 @@ bash:
 	docker compose run --rm backend bash
 
 test-webhook:
-	docker compose run --rm stripe trigger customer.subscription.created
+	docker compose run --rm stripe trigger checkout.session.completed
 
-stripe-sync:
-	docker compose run --rm backend python ./manage.py djstripe_sync_models Product Price
-
-stripe-full-sync:
-	docker compose run --rm backend python ./manage.py djstripe_sync_models
+stripe-listen:
+	docker compose up stripe
 
 restart-worker:
 	docker compose up -d workers --force-recreate

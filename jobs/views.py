@@ -8,16 +8,14 @@ from django.utils import timezone
 from django.utils.html import escape
 from django.views.generic import CreateView, DetailView, ListView, TemplateView
 from django_q.tasks import async_task
-from djstripe import models, settings as djstripe_settings
 
 from builtwithdjango.analytics import capture, email_domain, stable_hash
+from builtwithdjango.stripe_client import get_stripe_price_id
 from newsletter.views import NewsletterSignupForm
 
 from .forms import PostJob
 from .models import Job
 from .tasks import notify_of_new_job
-
-stripe.api_key = djstripe_settings.djstripe_settings.STRIPE_SECRET_KEY
 
 
 class AllJobListView(ListView):
@@ -148,7 +146,7 @@ class ThankYouView(TemplateView):
 
 
 def create_checkout_session(request, pk):
-    price_id = models.Price.objects.get(nickname="job").id
+    price_id = get_stripe_price_id("job")
 
     checkout_session = stripe.checkout.Session.create(
         success_url=request.build_absolute_uri(reverse_lazy("job_thank_you")) + "?session_id={CHECKOUT_SESSION_ID}",
@@ -162,7 +160,7 @@ def create_checkout_session(request, pk):
         ],
         allow_promotion_codes=True,
         automatic_tax={"enabled": True},
-        metadata={"pk": pk, "price_id": price_id},
+        metadata={"pk": str(pk), "price_id": price_id},
     )
 
     capture(
@@ -185,7 +183,7 @@ def sponsor_job_checkout_session(request, pk):
     Create a Stripe checkout session for sponsoring an existing job posting.
     This is used when someone wants to sponsor a job that was already posted.
     """
-    price_id = models.Price.objects.get(nickname="job").id
+    price_id = get_stripe_price_id("job")
 
     # Get the job to include in metadata
     job = Job.objects.get(pk=pk)
@@ -203,7 +201,7 @@ def sponsor_job_checkout_session(request, pk):
         ],
         allow_promotion_codes=True,
         automatic_tax={"enabled": True},
-        metadata={"pk": pk, "price_id": price_id},
+        metadata={"pk": str(pk), "price_id": price_id},
     )
 
     capture(

@@ -5,9 +5,9 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, UpdateView
-from djstripe import models
 
 from builtwithdjango.analytics import capture
+from builtwithdjango.stripe_client import get_or_create_stripe_customer_id
 
 from .forms import CustomUserUpdateForm
 from .models import CustomUser
@@ -30,7 +30,7 @@ class ProfileUpdateForm(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
         return self.request.user
 
     def form_valid(self, form):
-        models.Customer.get_or_create(subscriber=self.request.user)
+        get_or_create_stripe_customer_id(self.request.user)
         response = super().form_valid(form)
         capture(
             self.request,

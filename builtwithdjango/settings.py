@@ -97,7 +97,6 @@ INSTALLED_APPS = [
     "widget_tweaks",
     "django_q",
     "webpack_boilerplate",
-    "djstripe",
     "robots",
     "pages.apps.PagesConfig",
     "projects.apps.ProjectsConfig",
@@ -320,8 +319,11 @@ if ENVIRONMENT == "prod":
 STRIPE_LIVE_SECRET_KEY = env("STRIPE_LIVE_SECRET_KEY")
 STRIPE_TEST_SECRET_KEY = env("STRIPE_TEST_SECRET_KEY")
 STRIPE_LIVE_MODE = env.bool("STRIPE_LIVE_MODE")
-DJSTRIPE_USE_NATIVE_JSONFIELD = True
-DJSTRIPE_FOREIGN_KEY_TO_FIELD = "id"
+STRIPE_SECRET_KEY = STRIPE_LIVE_SECRET_KEY if STRIPE_LIVE_MODE else STRIPE_TEST_SECRET_KEY
+STRIPE_WEBHOOK_SECRET = env("STRIPE_WEBHOOK_SECRET", default="")
+STRIPE_PRO_PRICE_ID = env("STRIPE_PRO_PRICE_ID", default="")
+STRIPE_DJANGO_DEVS_PRICE_ID = env("STRIPE_DJANGO_DEVS_PRICE_ID", default="")
+STRIPE_JOB_PRICE_ID = env("STRIPE_JOB_PRICE_ID", default="")
 
 # Cloudinary
 cloudinary.config(
