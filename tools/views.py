@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.views.decorators.http import require_http_methods, require_POST
 from django.views.generic import TemplateView
 
+from builtwithdjango.analytics import capture
 from builtwithdjango.utils import get_builtwithdjango_logger
 from newsletter.views import NewsletterSignupForm
 
@@ -27,6 +28,7 @@ class GenerateDjangoSecret(TemplateView):
 @require_POST
 def generate_django_secret(request):
     secret_key = get_random_secret_key()
+    capture(request, "django secret generated server")
     return JsonResponse({"secret_key": secret_key})
 
 
@@ -46,6 +48,7 @@ def format_html_endpoint(request):
 
     if not html_string:
         logger.warning("[Format HTML] No HTML String provided")
+        capture(request, "html formatter failed server", properties={"reason": "empty_html"})
         return JsonResponse({"error": "No HTML string provided"}, status=400)
 
     try:
@@ -63,14 +66,39 @@ def format_html_endpoint(request):
             logger.info("[Format HTML] Opening formatted file")
             formatted_html = file.read()
 
+        capture(
+            request,
+            "html formatted server",
+            properties={
+                "input_length": len(html_string),
+                "output_length": len(formatted_html),
+            },
+        )
         return JsonResponse({"formatted_html": formatted_html})
 
     except subprocess.CalledProcessError as e:
         logger.error("[Format HTML] Subprocess Error", error=str(e))
+        capture(
+            request,
+            "html formatter failed server",
+            properties={
+                "reason": "djlint_error",
+                "input_length": len(html_string),
+            },
+        )
         return JsonResponse({"error": f"djlint error: {str(e)}"}, status=500)
 
     except Exception as e:
         logger.error("[Format HTML] Error", error=str(e))
+        capture(
+            request,
+            "html formatter failed server",
+            properties={
+                "reason": "unexpected_error",
+                "input_length": len(html_string),
+                "exception_type": e.__class__.__name__,
+            },
+        )
         return JsonResponse({"error": f"Unexpected error: {str(e)}"}, status=500)
 
     finally:

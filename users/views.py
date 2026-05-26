@@ -7,6 +7,8 @@ from django.urls import reverse_lazy
 from django.views.generic import TemplateView, UpdateView
 from djstripe import models
 
+from builtwithdjango.analytics import capture
+
 from .forms import CustomUserUpdateForm
 from .models import CustomUser
 
@@ -29,7 +31,20 @@ class ProfileUpdateForm(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
 
     def form_valid(self, form):
         models.Customer.get_or_create(subscriber=self.request.user)
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        capture(
+            self.request,
+            "profile updated",
+            properties={
+                "has_profile_image": bool(self.object.profile_image),
+                "has_personal_website": bool(self.object.personal_website),
+                "has_twitter_handle": bool(self.object.twitter_handle),
+                "has_github_handle": bool(self.object.github_handle),
+                "has_indiehackers_handle": bool(self.object.indiehackers_handle),
+                "make_public": self.object.make_public,
+            },
+        )
+        return response
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -53,5 +68,12 @@ def resend_email_confirmation_email(request):
     adapter = get_adapter(request)
     emailaddress = EmailAddress.objects.get_for_user(user, user.email)
     adapter.send_confirmation_mail(request, emailaddress, signup=False)
+    capture(
+        request,
+        "email confirmation resent",
+        properties={
+            "email_verified": emailaddress.verified,
+        },
+    )
 
     return redirect("update-profile")

@@ -6,12 +6,24 @@
   <input type="hidden" data-like-target="currentUser" value="{{ user.id }}" />
   {% csrf_token %}
   {% if user.is_authenticated %}
-    <button data-action="click->like#modify" class="bw-icon-button gap-1" type="button" aria-label="Like {{ site.title }}">
+    <button data-action="click->like#modify"
+            data-analytics-event="project like button clicked"
+            data-analytics-project-id="{{ site.id }}"
+            data-analytics-project-title="{{ site.title }}"
+            class="bw-icon-button gap-1"
+            type="button"
+            aria-label="Like {{ site.title }}">
       <span class="text-sm font-black" data-like-target="numberOfLikes" id="{{ site.id }}_likes"></span>
       <i id="{{ site.id }}_heart" aria-hidden="true"></i>
     </button>
   {% else %}
-    <button data-action="click->like#toggleModal" data-like-target="modalButton" class="bw-icon-button gap-1" type="button" aria-label="Like {{ site.title }}">
+    <button data-action="click->like#toggleModal"
+            data-like-target="modalButton"
+            data-analytics-project-id="{{ site.id }}"
+            data-analytics-project-title="{{ site.title }}"
+            class="bw-icon-button gap-1"
+            type="button"
+            aria-label="Like {{ site.title }}">
       <span class="text-sm font-black" data-like-target="numberOfLikes" id="{{ site.id }}_likes"></span>
       <i id="{{ site.id }}_heart" aria-hidden="true"></i>
     </button>

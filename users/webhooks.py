@@ -17,6 +17,7 @@ from django.http import HttpResponse
 from djstripe import models, settings as djstripe_settings
 from djstripe.event_handlers import djstripe_receiver
 
+from builtwithdjango.analytics import capture_event, get_user_properties
 from builtwithdjango.utils import get_builtwithdjango_logger
 from users.models import CustomUser
 
@@ -49,8 +50,29 @@ def handle_checkout_session_completed(sender, **kwargs):
     devs_price_id = models.Price.objects.get(nickname="django_devs").id
     job_price_id = models.Price.objects.get(nickname="job").id
 
-    event_price_id = event.data["object"]["metadata"].get("price_id")
+    checkout_session = event.data["object"]
+    event_price_id = (checkout_session.get("metadata") or {}).get("price_id")
+    checkout_distinct_id = get_checkout_distinct_id(
+        checkout_session,
+        event_price_id,
+        pro_price_id,
+        devs_price_id,
+        job_price_id,
+    )
     logger.info(f"Received checkout.session.completed event for Price ID: {event_price_id}")
+    capture_event(
+        "stripe checkout completed",
+        distinct_id=checkout_distinct_id,
+        properties={
+            "price_id": event_price_id,
+            "stripe_event_id": event.id,
+            "stripe_checkout_session_id": checkout_session.get("id"),
+            "stripe_customer_id": checkout_session.get("customer"),
+            "checkout_mode": checkout_session.get("mode"),
+            "amount_total": checkout_session.get("amount_total"),
+            "currency": checkout_session.get("currency"),
+        },
+    )
 
     if event_price_id == pro_price_id:
         logger.info("Processing PRO user purchase")
@@ -65,6 +87,21 @@ def handle_checkout_session_completed(sender, **kwargs):
         logger.warning(f"Unrecognized price_id in checkout.session.completed: {event_price_id}")
 
     return HttpResponse(status=200)
+
+
+def get_checkout_distinct_id(checkout_session, price_id, pro_price_id, devs_price_id, job_price_id):
+    metadata = checkout_session.get("metadata") or {}
+
+    if price_id == pro_price_id and metadata.get("pk"):
+        return str(metadata["pk"])
+
+    if price_id == devs_price_id and metadata.get("user_id"):
+        return str(metadata["user_id"])
+
+    if price_id == job_price_id and metadata.get("pk"):
+        return f"job:{metadata['pk']}"
+
+    return None
 
 
 def process_pro_user_upgrade(event):
@@ -105,6 +142,16 @@ def upgrade_user_to_pro(event):
         user = CustomUser.objects.get(pk=user_id)
         user.subscription_level = "PRO"
         user.save()
+        capture_event(
+            "profile upgraded",
+            distinct_id=str(user.pk),
+            properties={
+                "$set": get_user_properties(user),
+                "stripe_event_id": event.id,
+                "stripe_checkout_session_id": event.data["object"].get("id"),
+                "stripe_customer_id": event.data["object"].get("customer"),
+            },
+        )
         logger.info(f"Successfully upgraded user {user_id} to PRO")
     except CustomUser.DoesNotExist:
         logger.error(f"User {user_id} not found for PRO upgrade")
@@ -150,6 +197,17 @@ def activate_django_devs_subscription(event):
         user = CustomUser.objects.get(id=user_id)
         user.has_active_django_devs_subscription = True
         user.save()
+        capture_event(
+            "django developers subscription activated",
+            distinct_id=str(user.pk),
+            properties={
+                "$set": get_user_properties(user),
+                "stripe_event_id": event.id,
+                "stripe_checkout_session_id": event.data["object"].get("id"),
+                "stripe_customer_id": event.data["object"].get("customer"),
+                "stripe_subscription_id": event.data["object"].get("subscription"),
+            },
+        )
         logger.info(f"Successfully activated Django Devs subscription for user {user_id}")
     except CustomUser.DoesNotExist:
         logger.error(f"User {user_id} not found for Django Devs subscription activation")
@@ -195,6 +253,19 @@ def approve_paid_job(event):
         job.paid = True
         job.approved = True
         job.save()
+        capture_event(
+            "job payment completed",
+            distinct_id=f"job:{job.id}",
+            properties={
+                "job_id": job.id,
+                "job_title": job.title,
+                "job_company_name": job.company.name if job.company else job.company_name,
+                "stripe_event_id": event.id,
+                "stripe_checkout_session_id": event.data["object"].get("id"),
+                "stripe_customer_id": event.data["object"].get("customer"),
+            },
+            groups={"job": str(job.id)},
+        )
         logger.info(f"Successfully approved paid job {job_id}")
     except Job.DoesNotExist:
         logger.error(f"Job {job_id} not found for approval")

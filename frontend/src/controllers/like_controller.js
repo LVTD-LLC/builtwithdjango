@@ -73,6 +73,14 @@ export default class extends Controller {
               document.getElementById(`${projectId}_heart`).classList.add('text-red-600');
               document.getElementById(`${projectId}_heart`).classList.add('las');
               document.getElementById(`${projectId}_heart`).classList.add('la-heart');
+              if (window.bwdTrack) {
+                window.bwdTrack('project like changed', {
+                  project_id: projectId,
+                  like_value: true,
+                  previous_like_count: numberOfLikes,
+                  new_like_count: numberOfLikes + 1
+                });
+              }
             })
             .catch(function(error) {
               console.log(error);
@@ -112,6 +120,14 @@ export default class extends Controller {
                 document.getElementById(`${projectId}_heart`).classList.add('text-red-600');
                 document.getElementById(`${projectId}_heart`).classList.add('las');
                 document.getElementById(`${projectId}_heart`).classList.add('la-heart');
+                if (window.bwdTrack) {
+                  window.bwdTrack('project like changed', {
+                    project_id: projectId,
+                    like_value: true,
+                    previous_like_count: numberOfLikes,
+                    new_like_count: numberOfLikes + 1
+                  });
+                }
               })
               .catch(function(error) {
                 console.log(error);
@@ -149,6 +165,14 @@ export default class extends Controller {
                 document.getElementById(`${projectId}_heart`).removeAttribute("class");
                 document.getElementById(`${projectId}_heart`).classList.add('lar');
                 document.getElementById(`${projectId}_heart`).classList.add('la-heart');
+                if (window.bwdTrack) {
+                  window.bwdTrack('project like changed', {
+                    project_id: projectId,
+                    like_value: false,
+                    previous_like_count: numberOfLikes,
+                    new_like_count: numberOfLikes - 1
+                  });
+                }
               })
               .catch(function(error) {
                 console.log(error);
@@ -163,8 +187,18 @@ export default class extends Controller {
     toggleModal() {
       if(this.modalTarget.classList.contains('hidden')) {
         enter(this.modalTarget);
+        if (window.bwdTrack) {
+          window.bwdTrack('project like auth modal opened', {
+            project_id: this.projectIdTarget.value
+          });
+        }
       } else {
         leave(this.modalTarget);
+        if (window.bwdTrack) {
+          window.bwdTrack('project like auth modal closed', {
+            project_id: this.projectIdTarget.value
+          });
+        }
       }
     }
 }

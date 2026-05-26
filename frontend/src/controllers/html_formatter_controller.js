@@ -23,14 +23,26 @@ export default class extends Controller {
       if (data.formatted_html) {
         this.resultTarget.value = data.formatted_html;
         this.copyButtonTarget.classList.remove('hidden');
+        this.capture('html formatted', {
+          input_length: this.inputTarget.value.length,
+          output_length: data.formatted_html.length
+        });
       } else if (data.error) {
         this.resultTarget.value = 'Error: ' + data.error;
         this.copyButtonTarget.classList.add('hidden');
+        this.capture('html formatter failed', {
+          input_length: this.inputTarget.value.length,
+          error: data.error
+        });
       }
     })
     .catch(error => {
       this.resultTarget.value = 'Error: ' + error;
       this.copyButtonTarget.classList.add('hidden');
+      this.capture('html formatter failed', {
+        input_length: this.inputTarget.value.length,
+        error: error.message
+      });
     })
     .finally(() => {
       this.setLoading(false);
@@ -41,6 +53,9 @@ export default class extends Controller {
     navigator.clipboard.writeText(this.resultTarget.value);
     this.copyButtonTarget.classList.replace("bg-blue-500", "bg-green-500");
     this.copyButtonTarget.textContent = "Copied!";
+    this.capture('formatted html copied', {
+      output_length: this.resultTarget.value.length
+    });
     setTimeout(() => this.resetCopyButton(), 2000);
   }
 
@@ -59,5 +74,12 @@ export default class extends Controller {
   clearResult() {
     this.resultTarget.value = '';
     this.copyButtonTarget.classList.add('hidden');
+    this.capture('html formatter cleared');
+  }
+
+  capture(eventName, properties = {}) {
+    if (window.bwdTrack) {
+      window.bwdTrack(eventName, properties);
+    }
   }
 }

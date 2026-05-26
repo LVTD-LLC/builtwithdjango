@@ -26,6 +26,7 @@ export default class extends Controller {
         if (event.key === "/" && document.activeElement !== this.inputTarget) {
             event.preventDefault();
             this.inputTarget.focus();
+            this.capture("search keyboard shortcut used");
             return;
         }
 
@@ -88,6 +89,9 @@ export default class extends Controller {
             return;
         }
         this.selectedIndex = -1;
+        this.capture("project search typed", {
+            query_length: query.length
+        });
         this.debouncedSearch(query);
     }
 
@@ -104,32 +108,56 @@ export default class extends Controller {
             }
             const data = await response.json();
             this.showResults(data.slice(0, 3));
+            this.capture("project search results shown", {
+                query,
+                query_length: query.length,
+                result_count: data.length,
+                visible_result_count: Math.min(data.length, 3),
+                has_results: data.length > 0
+            });
         } catch (error) {
             console.error("Search error:", error);
+            this.capture("project search failed", {
+                query_length: query.length,
+                error: error.message
+            });
             this.hideResults();
         }
     }
 
     showResults(results) {
         if (!results.length) {
-            this.resultsTarget.innerHTML = `
-                <div class="p-4 text-sm text-gray-500">
-                    No projects found
-                </div>
-            `;
+            const emptyState = document.createElement("div");
+            emptyState.className = "p-4 text-sm text-gray-500";
+            emptyState.textContent = "No projects found";
+            this.resultsTarget.replaceChildren(emptyState);
             this.resultsTarget.classList.remove("hidden");
             return;
         }
 
-        this.resultsTarget.innerHTML = results.map(result => `
-            <a href="/projects/${result.slug}"
-               class="flex flex-col p-4 border-b border-gray-100 hover:bg-gray-50 last:border-b-0">
-                <div class="font-medium text-gray-900">${result.title}</div>
-                <div class="text-sm text-gray-500">${result.short_description}</div>
-            </a>
-        `).join("");
-
+        this.resultsTarget.replaceChildren(...results.map(result => this.buildResultLink(result)));
         this.resultsTarget.classList.remove("hidden");
+    }
+
+    buildResultLink(result) {
+        const link = document.createElement("a");
+        link.href = `/projects/${encodeURIComponent(result.slug || "")}`;
+        link.dataset.analyticsEvent = "project search result clicked";
+        link.dataset.analyticsProjectId = String(result.id || "");
+        link.dataset.analyticsProjectTitle = result.title || "";
+        link.dataset.analyticsProjectSlug = result.slug || "";
+        link.className = "flex flex-col p-4 border-b border-gray-100 hover:bg-gray-50 last:border-b-0";
+
+        const title = document.createElement("div");
+        title.className = "font-medium text-gray-900";
+        title.textContent = result.title || "";
+
+        const description = document.createElement("div");
+        description.className = "text-sm text-gray-500";
+        description.textContent = result.short_description || "";
+
+        link.append(title, description);
+        return link;
     }
 
     hideResults() {
@@ -147,5 +175,11 @@ export default class extends Controller {
             clearTimeout(timeout);
             timeout = setTimeout(later, wait);
         };
+    }
+
+    capture(eventName, properties = {}) {
+        if (window.bwdTrack) {
+            window.bwdTrack(eventName, properties);
+        }
     }
 }

@@ -15,6 +15,7 @@ from django.views.generic import CreateView, RedirectView, TemplateView, UpdateV
 from django_q.tasks import async_task
 
 from blog.models import Post
+from builtwithdjango.analytics import capture, email_domain, stable_hash
 from jobs.models import Job
 from jobs.tasks import get_latest_jobs_from_tj_alerts, send_sponsorship_request_email
 from newsletter.tasks import send_buttondown_newsletter
@@ -105,6 +106,21 @@ class RequestNftView(SuccessMessageMixin, CreateView):
 
         return context
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        capture(
+            self.request,
+            "nft requested",
+            properties={
+                "nft_request_id": self.object.id,
+                "email_domain": email_domain(self.object.email),
+                "email_hash": stable_hash(self.object.email),
+                "date_requested": str(self.object.date_requested),
+                "wallet_hash": stable_hash(self.object.wallet_public_key),
+            },
+        )
+        return response
+
 
 class ConfirmEmail(SuccessMessageMixin, UpdateView):
     model = CistercianDateNftRequest
@@ -113,6 +129,21 @@ class ConfirmEmail(SuccessMessageMixin, UpdateView):
     success_url = reverse_lazy("request-nft")
     success_message = "Thanks for confirming your email! You will receive your NFT shortly."
     slug_field = "wallet_public_key"
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        capture(
+            self.request,
+            "nft email confirmed",
+            properties={
+                "nft_request_id": self.object.id,
+                "email_domain": email_domain(self.object.email),
+                "email_hash": stable_hash(self.object.email),
+                "date_requested": str(self.object.date_requested),
+                "wallet_hash": stable_hash(self.object.wallet_public_key),
+            },
+        )
+        return response
 
 
 class TermsOfService(TemplateView):
@@ -183,6 +214,16 @@ class SendSponsorshipEmailView(UserPassesTestMixin, View):
 
         # Queue the async task
         async_task(send_sponsorship_request_email, latest_job, task_name=f"send_sponsorship_email_job_{latest_job.id}")
+        capture(
+            request,
+            "admin sponsorship email queued",
+            properties={
+                "job_id": latest_job.id,
+                "job_title": latest_job.title,
+                "job_company_name": latest_job.company.name if latest_job.company else latest_job.company_name,
+            },
+            groups={"job": str(latest_job.id)},
+        )
 
         messages.success(
             request, f"Sponsorship email task queued for job: {latest_job.title} at {latest_job.company_name}"
@@ -201,6 +242,7 @@ class FetchJobsFromTJAlertsView(UserPassesTestMixin, View):
     def post(self, request, *args, **kwargs):
         # Queue the async task to fetch jobs
         async_task(get_latest_jobs_from_tj_alerts, task_name="fetch_jobs_from_tj_alerts")
+        capture(request, "admin tj alerts fetch queued")
 
         messages.success(request, "Job fetching task queued! New jobs from TJ Alerts will be imported shortly.")
 
@@ -227,6 +269,14 @@ class PrepareNewsletterView(UserPassesTestMixin, View):
         # Queue the async task to prepare and send newsletter
         task_id = async_task(
             send_buttondown_newsletter, days_back=days_back, task_name=f"prepare_newsletter_{days_back}_days"
+        )
+        capture(
+            request,
+            "admin newsletter queued",
+            properties={
+                "days_back": days_back,
+                "task_id": task_id,
+            },
         )
 
         messages.success(

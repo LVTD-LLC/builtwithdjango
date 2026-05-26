@@ -14,6 +14,9 @@ export default class extends Controller {
           setTimeout(() => {
             enter(this.modalTarget);
             this.numOfOpens++;
+            if (window.bwdTrack) {
+              window.bwdTrack('exit intent modal opened');
+            }
           }, 1000);
         }
       }
@@ -22,5 +25,8 @@ export default class extends Controller {
     closeModal() {
         console.log("not hidden");
         leave(this.modalTarget);
+        if (window.bwdTrack) {
+          window.bwdTrack('exit intent modal closed');
+        }
     }
 }

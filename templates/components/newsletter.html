@@ -11,12 +11,20 @@
         </p>
       </div>
       <div class="self-center">
-        <form class="grid gap-3 sm:grid-cols-[1fr_auto]" action="{% url 'newsletter_home' %}" method="post" enctype="multipart/form-data">
+        <form class="grid gap-3 sm:grid-cols-[1fr_auto]"
+              action="{% url 'newsletter_home' %}"
+              method="post"
+              enctype="multipart/form-data"
+              data-analytics-source="newsletter component">
           {% csrf_token %}
+          <input type="hidden" name="source" value="newsletter component" />
           {{ newsletter_form.non_field_errors }}
           <label for="email-address" class="sr-only">Email address</label>
           {% render_field newsletter_form.user_email id="email-address" name="email-address" type="email" autocomplete="email" required=True class="min-h-[3rem] w-full rounded-md border border-[oklch(92%_0.035_135)] bg-[oklch(99%_0.008_118)] px-4 py-3 text-[var(--bw-ink)] placeholder:text-[var(--bw-muted)] focus:border-[var(--bw-accent)] focus:ring-[var(--bw-accent)]" placeholder="you@example.com" %}
-          <button type="submit" class="bw-button bw-button-accent">Join free</button>
+          <button type="submit"
+                  class="bw-button bw-button-accent"
+                  data-analytics-event="newsletter submit clicked"
+                  data-analytics-source="newsletter component">Join free</button>
         </form>
         {% if user.is_superuser %}
           <div class="mt-4">

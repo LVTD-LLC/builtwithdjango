@@ -10,6 +10,7 @@ from django.views.generic import CreateView, DetailView, ListView, TemplateView
 from django_q.tasks import async_task
 from djstripe import models, settings as djstripe_settings
 
+from builtwithdjango.analytics import capture, email_domain, stable_hash
 from newsletter.views import NewsletterSignupForm
 
 from .forms import PostJob
@@ -48,6 +49,26 @@ class JobListView(ListView):
 class JobDetailView(DetailView):
     model = Job
     template_name = "jobs/job_detail.html"
+
+    def get(self, request, *args, **kwargs):
+        response = super().get(request, *args, **kwargs)
+        capture(
+            request,
+            "job viewed",
+            properties={
+                "job_id": self.object.id,
+                "job_title": self.object.title,
+                "job_slug": self.object.slug,
+                "job_company_name": self.object.company.name if self.object.company else self.object.company_name,
+                "job_paid": self.object.paid,
+                "job_approved": self.object.approved,
+                "job_source": self.object.source,
+                "job_remote": self.object.remote,
+                "job_has_salary": bool(self.object.min_yearly_salary or self.object.max_yearly_salary),
+            },
+            groups={"job": str(self.object.id)},
+        )
+        return response
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -98,6 +119,21 @@ class JobCreateView(CreateView):
         form.instance.logged_in_maker = self.request.user
         self.object = form.save()
         async_task(notify_of_new_job, self.object)
+        capture(
+            self.request,
+            "job posted",
+            properties={
+                "job_id": self.object.id,
+                "job_title": self.object.title,
+                "job_company_name": self.object.company_name,
+                "email_domain": email_domain(self.object.email),
+                "email_hash": stable_hash(self.object.email),
+                "has_salary": bool(self.object.min_yearly_salary or self.object.max_yearly_salary),
+                "min_yearly_salary": self.object.min_yearly_salary,
+                "max_yearly_salary": self.object.max_yearly_salary,
+            },
+            groups={"job": str(self.object.id)},
+        )
         return super(JobCreateView, self).form_valid(form)
 
 
@@ -129,6 +165,18 @@ def create_checkout_session(request, pk):
         metadata={"pk": pk, "price_id": price_id},
     )
 
+    capture(
+        request,
+        "job checkout started",
+        properties={
+            "job_id": pk,
+            "price_id": price_id,
+            "stripe_checkout_session_id": checkout_session.id,
+            "checkout_mode": "payment",
+        },
+        groups={"job": str(pk)},
+    )
+
     return redirect(checkout_session.url, code=303)
 
 
@@ -156,6 +204,20 @@ def sponsor_job_checkout_session(request, pk):
         allow_promotion_codes=True,
         automatic_tax={"enabled": True},
         metadata={"pk": pk, "price_id": price_id},
+    )
+
+    capture(
+        request,
+        "job sponsor checkout started",
+        properties={
+            "job_id": job.id,
+            "job_title": job.title,
+            "job_company_name": job.company.name if job.company else job.company_name,
+            "price_id": price_id,
+            "stripe_checkout_session_id": checkout_session.id,
+            "checkout_mode": "payment",
+        },
+        groups={"job": str(job.id)},
     )
 
     return redirect(checkout_session.url, code=303)
