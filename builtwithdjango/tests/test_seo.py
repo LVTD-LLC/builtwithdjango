@@ -1,7 +1,12 @@
+import json
+import tempfile
+from pathlib import Path
+
 from django.contrib.auth import get_user_model
 from django.template import Context, Template
 from django.template.loader import render_to_string
 from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
+from webpack_boilerplate import utils as webpack_utils
 
 from blog.models import Post
 from builtwithdjango.sitemaps import StaticViewSitemap, sitemaps
@@ -101,6 +106,39 @@ class SeoSitemapTests(TestCase):
 
 class SeoPageRenderTests(TestCase):
     def setUp(self):
+        self.webpack_manifest_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(self.webpack_manifest_dir.cleanup)
+
+        manifest_path = Path(self.webpack_manifest_dir.name) / "manifest.json"
+        manifest_path.write_text(
+            json.dumps(
+                {
+                    "entrypoints": {
+                        "hotwire": {
+                            "assets": {
+                                "js": ["/static/js/hotwire.js"],
+                                "css": ["/static/css/hotwire.css"],
+                            },
+                        },
+                    },
+                    "css/hotwire.css": "/static/css/hotwire.css",
+                    "js/hotwire.js": "/static/js/hotwire.js",
+                },
+            ),
+            encoding="utf-8",
+        )
+
+        webpack_utils._loaders.clear()
+        self.webpack_settings = self.settings(
+            WEBPACK_LOADER={
+                "CACHE": False,
+                "MANIFEST_FILE": str(manifest_path),
+            },
+        )
+        self.webpack_settings.enable()
+        self.addCleanup(self.webpack_settings.disable)
+        self.addCleanup(webpack_utils._loaders.clear)
+
         self.author = get_user_model().objects.create_user(
             username="page-author",
             email="page-author@example.com",
