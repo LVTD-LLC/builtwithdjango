@@ -30,7 +30,7 @@ def stripe_webhook(request, webhook_uuid=None):
 
     if not settings.STRIPE_WEBHOOK_SECRET:
         logger.error("STRIPE_WEBHOOK_SECRET is not configured")
-        return HttpResponse(status=500)
+        return HttpResponse(status=400)
 
     signature = request.META.get("HTTP_STRIPE_SIGNATURE")
 

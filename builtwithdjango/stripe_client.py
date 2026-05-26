@@ -18,9 +18,11 @@ def configure_stripe():
 
 
 def get_stripe_price_id(nickname):
-    configure_stripe()
+    setting_name = PRICE_ID_SETTINGS.get(nickname)
+    if setting_name is None:
+        raise ImproperlyConfigured(f"Unknown Stripe price nickname: {nickname}")
 
-    setting_name = PRICE_ID_SETTINGS[nickname]
+    configure_stripe()
     configured_price_id = getattr(settings, setting_name, "")
     if configured_price_id:
         return configured_price_id

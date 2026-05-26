@@ -114,6 +114,16 @@ class StripeCustomerTests(TestCase):
     def test_get_stripe_price_id_uses_configured_price_id(self):
         self.assertEqual(get_stripe_price_id("job"), "price_configured_job")
 
+    @override_settings(STRIPE_SECRET_KEY="sk_test_123")
+    def test_get_stripe_price_id_rejects_unknown_nickname(self):
+        with (
+            patch("builtwithdjango.stripe_client.stripe.Price.list") as list_prices,
+            self.assertRaisesMessage(ImproperlyConfigured, "Unknown Stripe price nickname: unknown"),
+        ):
+            get_stripe_price_id("unknown")
+
+        list_prices.assert_not_called()
+
 
 class StripeCustomerMigrationTests(TestCase):
     @override_settings(STRIPE_LIVE_MODE=True)
@@ -167,6 +177,19 @@ class StripeWebhookTests(TestCase):
         self.assertEqual(get_checkout_distinct_id(checkout_session, "pro"), "10")
         self.assertEqual(get_checkout_distinct_id(checkout_session, "django_devs"), "20")
         self.assertEqual(get_checkout_distinct_id(checkout_session, "job"), "job:10")
+
+    @override_settings(STRIPE_SECRET_KEY="sk_test_123", STRIPE_WEBHOOK_SECRET="")
+    def test_stripe_webhook_returns_400_when_webhook_secret_is_missing(self):
+        with patch("users.webhooks.stripe.Webhook.construct_event") as construct_event:
+            response = self.client.post(
+                reverse("stripe-webhook"),
+                data=b"{}",
+                content_type="application/json",
+                HTTP_STRIPE_SIGNATURE="sig_test",
+            )
+
+        self.assertEqual(response.status_code, 400)
+        construct_event.assert_not_called()
 
     def test_checkout_session_completed_activates_django_devs_subscription(self):
         user = get_user_model().objects.create_user(username="devs-user", email="devs@example.com")
