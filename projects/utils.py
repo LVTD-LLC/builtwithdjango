@@ -24,7 +24,7 @@ async def create_tweet(project_id):
         raise ValueError(f"Project with id {project_id} does not exist.")
 
     agent = Agent(
-        "google-gla:gemini-2.5-flash-preview-04-17",
+        "google:gemini-2.5-flash-preview-04-17",
         system_prompt="""
         You are an expert in crafting engaging and concise tweets for new software projects.
         The tweet should highlight the project's title and a very brief description.
@@ -33,7 +33,7 @@ async def create_tweet(project_id):
         Keep the tweet within the 280-character limit.
         Output only the tweet text.
         """,
-        result_type=TweetContent,
+        output_type=TweetContent,
         deps_type=ProjectContext,
     )
 
@@ -125,8 +125,9 @@ async def create_tweet(project_id):
     )
     logger.info(f"Agent finished for project: {project.title}")
 
-    logger.info(f"Finished create_tweet for project_id: {project_id}. Tweet: {result.data.tweet_text}")
-    return result.data.tweet_text
+    tweet_text = result.output.tweet_text
+    logger.info(f"Finished create_tweet for project_id: {project_id}. Tweet: {tweet_text}")
+    return tweet_text
 
 
 async def tweet_project(project_id):
