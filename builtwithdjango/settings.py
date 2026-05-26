@@ -116,7 +116,6 @@ SENTRY_BACKGROUND_TRANSACTION_NAMES = (
     "projects.tasks.fetch_page_content",
     "projects.tasks.analyze_project",
     "newsletter.tasks.send_buttondown_newsletter",
-    "newsletter.utils.generate_buttondown_newsletter_subject",
     "jobs.tasks.get_latest_jobs_from_tj_alerts",
 )
 SENTRY_SENSITIVE_LOG_ATTRIBUTE_PARTS = (
@@ -128,19 +127,24 @@ SENTRY_SENSITIVE_LOG_ATTRIBUTE_PARTS = (
     "secret",
 )
 SENTRY_SENSITIVE_LOG_ATTRIBUTE_NAMES = (
+    "apitoken",
     "api_token",
+    "authtoken",
     "auth_token",
+    "accesstoken",
     "access_token",
     "csrf_token",
+    "idtoken",
     "id_token",
+    "refreshtoken",
     "refresh_token",
+    "sessiontoken",
     "session_token",
     "token",
 )
 SENTRY_SENSITIVE_LOG_ATTRIBUTE_SUFFIXES = (
     ".token",
     "_token",
-    "token",
 )
 
 

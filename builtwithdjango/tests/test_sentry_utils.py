@@ -71,6 +71,7 @@ class SentryLogScrubbingTests(SimpleTestCase):
                 "access_token": "secret-token",
                 "input_tokens": 25,
                 "output_tokens": 10,
+                "token_count": 35,
                 "total_tokens": 35,
                 "user_email": "user@example.com",
             }
@@ -82,4 +83,5 @@ class SentryLogScrubbingTests(SimpleTestCase):
         self.assertEqual(result["attributes"]["user_email"], "[Filtered]")
         self.assertEqual(result["attributes"]["input_tokens"], 25)
         self.assertEqual(result["attributes"]["output_tokens"], 10)
+        self.assertEqual(result["attributes"]["token_count"], 35)
         self.assertEqual(result["attributes"]["total_tokens"], 35)
