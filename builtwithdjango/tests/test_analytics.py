@@ -8,6 +8,12 @@ class PostHogRequestFilterTests(TestCase):
         self.factory = RequestFactory()
 
     @override_settings(POSTHOG_ENABLED=True)
+    def test_filters_like_api_list_requests_no_trailing_slash(self):
+        request = self.factory.get("/api/v1/like?project=1")
+
+        self.assertFalse(posthog_request_filter(request))
+
+    @override_settings(POSTHOG_ENABLED=True)
     def test_filters_like_api_list_requests(self):
         request = self.factory.get("/api/v1/like/?project=1")
 
