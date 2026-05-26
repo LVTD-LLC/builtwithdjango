@@ -1,10 +1,10 @@
 from allauth.account.signals import email_confirmed, user_signed_up
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in, user_logged_out
+from django.core.mail import send_mail
 from django.dispatch import receiver
 
 from builtwithdjango.analytics import capture, capture_event, get_user_properties
-from builtwithdjango.notifications import send_admin_notification
 from newsletter.tasks import add_email_to_buttondown
 
 
@@ -14,7 +14,13 @@ def notify_of_new_user(sender, **kwargs):
       Sender: {sender}
       We have a new user: {kwargs["user"]}
     """
-    return send_admin_notification(f"New User: {kwargs['user']}", message)
+    send_mail(
+        f"New User: {kwargs['user']}",
+        message,
+        "Built with Django <rasul@builtwithdjango.com>",
+        ["Built with Django <rasul@builtwithdjango.com>"],
+        fail_silently=False,
+    )
 
 
 @receiver(user_signed_up)
