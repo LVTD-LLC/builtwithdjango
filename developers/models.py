@@ -7,6 +7,10 @@ from django.urls import reverse
 from model_utils.models import TimeStampedModel
 
 
+def get_timezone_choices():
+    return tuple(zip(pytz.all_timezones, pytz.all_timezones))
+
+
 class Developer(TimeStampedModel):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     looking_for_a_job = models.BooleanField(default=False)
@@ -48,8 +52,7 @@ class Developer(TimeStampedModel):
 
     # Geo
     location = models.CharField(max_length=50)  # City, Country
-    TIMEZONES = tuple(zip(pytz.all_timezones, pytz.all_timezones))
-    timezone = models.CharField(max_length=32, choices=TIMEZONES, default="UTC")
+    timezone = models.CharField(max_length=32, choices=get_timezone_choices, default="UTC")
 
     def __str__(self):
         return self.user.username

@@ -29,6 +29,8 @@ services:
     build:
       context: .
       dockerfile: ./deployment/Dockerfile.python
+      args:
+        REQUIREMENTS_FILE: requirements-dev.txt
     working_dir: /app
     command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     volumes:
@@ -43,12 +45,17 @@ services:
       frontend:
         condition: service_started
     env_file:
-      - builtwithdjango/.env
+      - path: .env.example
+        required: true
+      - path: builtwithdjango/.env
+        required: false
 
   workers:
     build:
       context: .
       dockerfile: ./deployment/Dockerfile.python
+      args:
+        REQUIREMENTS_FILE: requirements-dev.txt
     working_dir: /app
     command: python manage.py qcluster
     volumes:
@@ -59,7 +66,10 @@ services:
       redis:
         condition: service_started
     env_file:
-      - builtwithdjango/.env
+      - path: .env.example
+        required: true
+      - path: builtwithdjango/.env
+        required: false
 
   frontend:
     image: node:18
@@ -84,16 +94,19 @@ services:
     image: stripe/stripe-cli:latest
     command: [
       "listen",
-      "--forward-to", "http://backend:8000/stripe/webhook/${WEBHOOK_UUID}/"
+      "--forward-to", "http://backend:8000/stripe/webhook/${WEBHOOK_UUID:-}/"
     ]
     environment:
-      - STRIPE_API_KEY=${STRIPE_TEST_SECRET_KEY}
+      - STRIPE_API_KEY=${STRIPE_TEST_SECRET_KEY:-}
       - STRIPE_DEVICE_NAME=djstripe_docker
     dns:
       - 8.8.8.8
       - 8.8.4.4
     env_file:
-      - builtwithdjango/.env
+      - path: .env.example
+        required: true
+      - path: builtwithdjango/.env
+        required: false
 
 
   minio:
