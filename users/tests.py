@@ -1,9 +1,11 @@
+from importlib import import_module
 from types import SimpleNamespace
 from unittest.mock import patch
 
 import stripe
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
+from django.db import connection
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
@@ -111,6 +113,41 @@ class StripeCustomerTests(TestCase):
     @override_settings(STRIPE_SECRET_KEY="sk_test_123", STRIPE_JOB_PRICE_ID="price_configured_job")
     def test_get_stripe_price_id_uses_configured_price_id(self):
         self.assertEqual(get_stripe_price_id("job"), "price_configured_job")
+
+
+class StripeCustomerMigrationTests(TestCase):
+    @override_settings(STRIPE_LIVE_MODE=True)
+    def test_djstripe_customer_backfill_filters_by_livemode_when_available(self):
+        user = get_user_model().objects.create_user(username="migration-user", email="migration@example.com")
+        migration = import_module("users.migrations.0014_customuser_stripe_customer_id")
+        apps = SimpleNamespace(get_model=lambda app_label, model_name: get_user_model())
+        schema_editor = SimpleNamespace(connection=connection)
+
+        with connection.cursor() as cursor:
+            cursor.execute("DROP TABLE IF EXISTS djstripe_customer")
+            cursor.execute("""
+                CREATE TABLE djstripe_customer (
+                    id varchar(255) NOT NULL,
+                    subscriber_id integer,
+                    livemode bool NOT NULL
+                )
+                """)
+            cursor.execute(
+                "INSERT INTO djstripe_customer (id, subscriber_id, livemode) VALUES (%s, %s, %s)",
+                ["cus_test", user.pk, False],
+            )
+            cursor.execute(
+                "INSERT INTO djstripe_customer (id, subscriber_id, livemode) VALUES (%s, %s, %s)",
+                ["cus_live", user.pk, True],
+            )
+
+        try:
+            migration.copy_djstripe_customer_ids(apps, schema_editor)
+            user.refresh_from_db()
+            self.assertEqual(user.stripe_customer_id, "cus_live")
+        finally:
+            with connection.cursor() as cursor:
+                cursor.execute("DROP TABLE IF EXISTS djstripe_customer")
 
 
 class StripeWebhookTests(TestCase):

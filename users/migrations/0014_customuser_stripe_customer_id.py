@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import migrations, models
 
 
@@ -16,13 +17,18 @@ def copy_djstripe_customer_ids(apps, schema_editor):
         if not {"id", "subscriber_id"}.issubset(columns):
             return
 
-        cursor.execute(
-            """
+        query = """
             SELECT id, subscriber_id
               FROM djstripe_customer
              WHERE subscriber_id IS NOT NULL
-            """
-        )
+        """
+        params = []
+
+        if "livemode" in columns:
+            query += " AND livemode = %s"
+            params.append(settings.STRIPE_LIVE_MODE)
+
+        cursor.execute(query, params)
         rows = cursor.fetchall()
 
     for stripe_customer_id, user_id in rows:
