@@ -73,7 +73,10 @@ class ProjectTestCase(TestCase):
             published=True,
         )
 
-        with patch("projects.models.Agent", FakeAgent):
+        with (
+            patch("projects.models.Agent", FakeAgent),
+            patch("projects.models.get_openrouter_model", return_value=object()),
+        ):
             self.assertTrue(project.analyze_content())
 
         project.refresh_from_db()
@@ -94,7 +97,7 @@ class ProjectTestCase(TestCase):
                 self.output_type = kwargs["output_type"]
                 FakeAgent.kwargs = kwargs
 
-            def system_prompt(self, func):
+            def instructions(self, func):
                 return func
 
             async def run(self, prompt, *, deps):
@@ -112,7 +115,10 @@ class ProjectTestCase(TestCase):
             pain_points="- Boilerplate",
         )
 
-        with patch("projects.utils.Agent", FakeAgent):
+        with (
+            patch("projects.utils.Agent", FakeAgent),
+            patch("projects.utils.get_openrouter_model", return_value=object()),
+        ):
             tweet_text = async_to_sync(create_tweet)(project.id)
 
         self.assertNotIn("result_type", FakeAgent.kwargs)
