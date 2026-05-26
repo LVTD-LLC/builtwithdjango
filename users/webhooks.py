@@ -9,6 +9,7 @@ from functools import partial
 
 import stripe
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.db import transaction
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -63,19 +64,10 @@ def handle_checkout_session_completed(event):
     """
     Route successful checkout sessions based on the price_id in metadata.
     """
-    pro_price_id = get_stripe_price_id("pro")
-    devs_price_id = get_stripe_price_id("django_devs")
-    job_price_id = get_stripe_price_id("job")
-
     checkout_session = event.data["object"]
     event_price_id = (checkout_session.get("metadata") or {}).get("price_id")
-    checkout_distinct_id = get_checkout_distinct_id(
-        checkout_session,
-        event_price_id,
-        pro_price_id,
-        devs_price_id,
-        job_price_id,
-    )
+    price_nickname = get_checkout_price_nickname(event_price_id)
+    checkout_distinct_id = get_checkout_distinct_id(checkout_session, price_nickname)
     logger.info(f"Received checkout.session.completed event for Price ID: {event_price_id}")
     capture_event(
         "stripe checkout completed",
@@ -91,29 +83,43 @@ def handle_checkout_session_completed(event):
         },
     )
 
-    if event_price_id == pro_price_id:
+    if price_nickname == "pro":
         logger.info("Processing PRO user purchase")
         process_pro_user_upgrade(event)
-    elif event_price_id == devs_price_id:
+    elif price_nickname == "django_devs":
         logger.info("Processing Django Devs subscription purchase")
         process_django_devs_subscription(event)
-    elif event_price_id == job_price_id:
+    elif price_nickname == "job":
         logger.info("Processing Job Board purchase")
         process_job_board_payment(event)
     else:
         logger.warning(f"Unrecognized price_id in checkout.session.completed: {event_price_id}")
 
 
-def get_checkout_distinct_id(checkout_session, price_id, pro_price_id, devs_price_id, job_price_id):
+def get_checkout_price_nickname(price_id):
+    if not price_id:
+        return None
+
+    for nickname in ["pro", "django_devs", "job"]:
+        try:
+            if price_id == get_stripe_price_id(nickname):
+                return nickname
+        except ImproperlyConfigured as e:
+            logger.error(f"Unable to resolve Stripe price '{nickname}' while routing checkout webhook: {str(e)}")
+
+    return None
+
+
+def get_checkout_distinct_id(checkout_session, price_nickname):
     metadata = checkout_session.get("metadata") or {}
 
-    if price_id == pro_price_id and metadata.get("pk"):
+    if price_nickname == "pro" and metadata.get("pk"):
         return str(metadata["pk"])
 
-    if price_id == devs_price_id and metadata.get("user_id"):
+    if price_nickname == "django_devs" and metadata.get("user_id"):
         return str(metadata["user_id"])
 
-    if price_id == job_price_id and metadata.get("pk"):
+    if price_nickname == "job" and metadata.get("pk"):
         return f"job:{metadata['pk']}"
 
     return None
@@ -192,7 +198,12 @@ def activate_django_devs_subscription(event):
 
 def process_django_devs_subscription_inactive(event):
     stripe_object = event.data["object"]
-    devs_price_id = get_stripe_price_id("django_devs")
+    try:
+        devs_price_id = get_stripe_price_id("django_devs")
+    except ImproperlyConfigured as e:
+        logger.error(f"Unable to resolve Django Devs Stripe price while processing {event.type}: {str(e)}")
+        return
+
     if not stripe_object_has_price_id(stripe_object, devs_price_id):
         logger.info(f"Ignoring {event.type} for non-Django Devs price")
         return

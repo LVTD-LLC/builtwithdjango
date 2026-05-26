@@ -2,6 +2,7 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase, override_settings
 
 from builtwithdjango.stripe_client import get_or_create_stripe_customer_id, get_stripe_price_id
@@ -134,6 +135,46 @@ class StripeWebhookTests(TestCase):
         self.assertTrue(user.has_active_django_devs_subscription)
         self.assertEqual(user.stripe_customer_id, "cus_devs")
 
+    def test_checkout_session_completed_routes_known_price_when_other_price_is_unconfigured(self):
+        user = get_user_model().objects.create_user(username="partial-config-user", email="partial@example.com")
+        event = stripe_event(
+            "price_devs",
+            metadata={"user_id": str(user.pk)},
+            customer_id="cus_devs",
+            subscription_id="sub_devs",
+        )
+
+        def get_price_id(nickname):
+            if nickname == "pro":
+                raise ImproperlyConfigured("missing pro price")
+            return PRICE_IDS[nickname]
+
+        with (
+            patch("users.webhooks.get_stripe_price_id", side_effect=get_price_id),
+            patch("users.webhooks.capture_event"),
+            patch("users.webhooks.transaction.on_commit", side_effect=lambda callback: callback()),
+        ):
+            handle_stripe_event(event)
+
+        user.refresh_from_db()
+        self.assertTrue(user.has_active_django_devs_subscription)
+        self.assertEqual(user.stripe_customer_id, "cus_devs")
+
+    def test_checkout_session_completed_ignores_unconfigured_prices_without_raising(self):
+        event = stripe_event("price_unknown", metadata={"pk": "1"}, customer_id="cus_unknown")
+
+        with (
+            patch(
+                "users.webhooks.get_stripe_price_id",
+                side_effect=ImproperlyConfigured("missing price"),
+            ),
+            patch("users.webhooks.capture_event"),
+            patch("users.webhooks.transaction.on_commit") as on_commit,
+        ):
+            handle_stripe_event(event)
+
+        on_commit.assert_not_called()
+
     def test_checkout_session_completed_upgrades_user_to_pro(self):
         user = get_user_model().objects.create_user(username="pro-user", email="pro@example.com")
         event = stripe_event("price_pro", metadata={"pk": str(user.pk)}, customer_id="cus_pro")
@@ -187,6 +228,29 @@ class StripeWebhookTests(TestCase):
 
         user.refresh_from_db()
         self.assertFalse(user.has_active_django_devs_subscription)
+
+    def test_invoice_payment_failed_ignores_missing_django_devs_price_config(self):
+        user = get_user_model().objects.create_user(
+            username="missing-price-devs-user",
+            email="missing-price-devs@example.com",
+            stripe_customer_id="cus_devs",
+            has_active_django_devs_subscription=True,
+        )
+        event = stripe_invoice_event("invoice.payment_failed", "price_devs", customer_id="cus_devs")
+
+        with (
+            patch(
+                "users.webhooks.get_stripe_price_id",
+                side_effect=ImproperlyConfigured("missing django_devs price"),
+            ),
+            patch("users.webhooks.capture_event"),
+            patch("users.webhooks.transaction.on_commit") as on_commit,
+        ):
+            handle_stripe_event(event)
+
+        on_commit.assert_not_called()
+        user.refresh_from_db()
+        self.assertTrue(user.has_active_django_devs_subscription)
 
     def test_subscription_lifecycle_ignores_other_prices(self):
         user = get_user_model().objects.create_user(

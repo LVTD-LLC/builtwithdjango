@@ -50,7 +50,7 @@ class CustomUser(AbstractUser):
         default=FREE,
     )
     has_active_django_devs_subscription = models.BooleanField(default=False)
-    stripe_customer_id = models.CharField(max_length=255, blank=True, default="")
+    stripe_customer_id = models.CharField(max_length=255, blank=True, default="", db_index=True)
 
     class Meta:
         db_table = "auth_user"

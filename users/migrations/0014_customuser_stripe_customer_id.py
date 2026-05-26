@@ -39,7 +39,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="customuser",
             name="stripe_customer_id",
-            field=models.CharField(blank=True, default="", max_length=255),
+            field=models.CharField(blank=True, db_index=True, default="", max_length=255),
         ),
         migrations.RunPython(copy_djstripe_customer_ids, migrations.RunPython.noop),
     ]
