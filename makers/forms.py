@@ -1,7 +1,8 @@
 from django import forms
-from django.core.mail import send_mail
 from django.db import transaction
 from django.forms import ModelForm
+
+from builtwithdjango.notifications import send_admin_notification
 
 from .models import Maker
 
@@ -16,13 +17,7 @@ class ClaimAccountForm(ModelForm):
           Someone tried claiming the account.
           Instance: {instance}
         """
-            send_mail(
-                "Account Claimed",
-                message,
-                "Built with Django <rasul@builtwithdjango.com>",
-                ["Built with Django <rasul@builtwithdjango.com>"],
-                fail_silently=False,
-            )
+            send_admin_notification("Account Claimed", message)
 
         return instance
 

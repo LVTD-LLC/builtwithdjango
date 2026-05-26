@@ -425,6 +425,18 @@ else:
 DEFAULT_FROM_EMAIL = "Built with Django <rasul@builtwithdjango.com>"
 SERVER_EMAIL = "error@builtwithdjango.com"
 
+ADMIN_NOTIFICATION_EMAIL_RECIPIENTS = env_csv(
+    "ADMIN_NOTIFICATION_EMAIL_RECIPIENTS",
+    default=["Built with Django <rasul@builtwithdjango.com>"],
+)
+ADMIN_NOTIFICATION_EMAIL_FALLBACK = env.bool("ADMIN_NOTIFICATION_EMAIL_FALLBACK", default=True)
+APPRISE_API_URL = env("APPRISE_API_URL", default="")
+APPRISE_CONFIG_KEY = env("APPRISE_CONFIG_KEY", default="")
+APPRISE_BASIC_AUTH_USER = env("APPRISE_BASIC_AUTH_USER", default="")
+APPRISE_BASIC_AUTH_PASSWORD = env("APPRISE_BASIC_AUTH_PASSWORD", default="")
+APPRISE_NOTIFICATION_FORMAT = env("APPRISE_NOTIFICATION_FORMAT", default="markdown")
+APPRISE_REQUEST_TIMEOUT = env.int("APPRISE_REQUEST_TIMEOUT", default=10)
+
 # Overriding the HTML of Built-In Widgets
 # from Two Scoops of Django 3.x
 FORM_RENDERER = "django.forms.renderers.TemplatesSetting"
