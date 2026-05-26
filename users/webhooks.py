@@ -39,7 +39,7 @@ def stripe_webhook(request, webhook_uuid=None):
     except ValueError:
         logger.warning("Received invalid Stripe webhook payload")
         return HttpResponse(status=400)
-    except stripe.error.SignatureVerificationError:
+    except stripe.SignatureVerificationError:
         logger.warning("Received Stripe webhook with invalid signature")
         return HttpResponse(status=400)
 
@@ -104,7 +104,7 @@ def get_checkout_price_nickname(price_id):
         try:
             if price_id == get_stripe_price_id(nickname):
                 return nickname
-        except ImproperlyConfigured as e:
+        except (ImproperlyConfigured, stripe.StripeError) as e:
             logger.error(f"Unable to resolve Stripe price '{nickname}' while routing checkout webhook: {str(e)}")
 
     return None
@@ -208,7 +208,7 @@ def process_django_devs_subscription_inactive(event):
     stripe_object = event.data["object"]
     try:
         devs_price_id = get_stripe_price_id("django_devs")
-    except ImproperlyConfigured as e:
+    except (ImproperlyConfigured, stripe.StripeError) as e:
         logger.error(f"Unable to resolve Django Devs Stripe price while processing {event.type}: {str(e)}")
         return
 

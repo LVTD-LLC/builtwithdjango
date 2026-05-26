@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 from unittest.mock import patch
 
+import stripe
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ImproperlyConfigured
 from django.test import TestCase, override_settings
@@ -176,6 +177,20 @@ class StripeWebhookTests(TestCase):
 
         on_commit.assert_not_called()
 
+    def test_checkout_session_completed_ignores_price_lookup_api_failure_without_raising(self):
+        event = stripe_event(
+            "price_devs", metadata={"user_id": "1"}, customer_id="cus_devs", subscription_id="sub_devs"
+        )
+
+        with (
+            patch("users.webhooks.get_stripe_price_id", side_effect=stripe.StripeError("stripe api down")),
+            patch("users.webhooks.capture_event"),
+            patch("users.webhooks.transaction.on_commit") as on_commit,
+        ):
+            handle_stripe_event(event)
+
+        on_commit.assert_not_called()
+
     def test_checkout_session_completed_ignores_missing_required_metadata_without_raising(self):
         for price_id in ["price_pro", "price_devs", "price_job"]:
             with self.subTest(price_id=price_id):
@@ -249,6 +264,26 @@ class StripeWebhookTests(TestCase):
                 "users.webhooks.get_stripe_price_id",
                 side_effect=ImproperlyConfigured("missing django_devs price"),
             ),
+            patch("users.webhooks.capture_event"),
+            patch("users.webhooks.transaction.on_commit") as on_commit,
+        ):
+            handle_stripe_event(event)
+
+        on_commit.assert_not_called()
+        user.refresh_from_db()
+        self.assertTrue(user.has_active_django_devs_subscription)
+
+    def test_invoice_payment_failed_ignores_stripe_price_lookup_api_failure(self):
+        user = get_user_model().objects.create_user(
+            username="price-api-failure-devs-user",
+            email="price-api-failure-devs@example.com",
+            stripe_customer_id="cus_devs",
+            has_active_django_devs_subscription=True,
+        )
+        event = stripe_invoice_event("invoice.payment_failed", "price_devs", customer_id="cus_devs")
+
+        with (
+            patch("users.webhooks.get_stripe_price_id", side_effect=stripe.StripeError("stripe api down")),
             patch("users.webhooks.capture_event"),
             patch("users.webhooks.transaction.on_commit") as on_commit,
         ):
