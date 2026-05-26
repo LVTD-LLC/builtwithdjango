@@ -1,9 +1,9 @@
 import requests
 from django.conf import settings
 from django.core.files.base import ContentFile
-from django.core.mail import send_mail
 from django_q.tasks import async_task
 
+from builtwithdjango.notifications import send_admin_notification
 from builtwithdjango.sentry_utils import sentry_count, sentry_task_transaction
 from builtwithdjango.utils import get_builtwithdjango_logger
 
@@ -38,13 +38,7 @@ def notify_of_new_project(instance):
     message = f"""
       {instance.logged_in_maker} submitted a project ({instance.title} - {instance.url}).
     """
-    send_mail(
-        "New Project Submission",
-        message,
-        "Built with Django <rasul@builtwithdjango.com>",
-        ["Built with Django <rasul@builtwithdjango.com>"],
-        fail_silently=False,
-    )
+    return send_admin_notification("New Project Submission", message)
 
 
 def notify_owner_of_new_comment(instance):

@@ -2,6 +2,8 @@ from django.core.mail import send_mail
 from django.db import transaction
 from django.forms import ModelForm
 
+from builtwithdjango.notifications import send_admin_notification
+
 from .models import CistercianDateNftRequest
 
 
@@ -73,13 +75,7 @@ class ConfirmEmail(ModelForm):
         - wallet: {instance.wallet_public_key}
         - reqeusted date: {instance.date_requested}
             """
-            send_mail(
-                f"{instance.email} just approved his NFT request.",
-                message,
-                "Built with Django <rasul@builtwithdjango.com>",
-                ["Built with Django <rasul@builtwithdjango.com>"],
-                fail_silently=False,
-            )
+            send_admin_notification(f"{instance.email} just approved his NFT request.", message)
 
         return instance
 

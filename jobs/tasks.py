@@ -7,6 +7,7 @@ from django.core.mail import send_mail
 from django.urls import reverse
 from django_q.tasks import async_task
 
+from builtwithdjango.notifications import send_admin_notification
 from builtwithdjango.sentry_utils import sentry_count, sentry_distribution, sentry_task_transaction
 from builtwithdjango.utils import get_builtwithdjango_logger
 
@@ -20,13 +21,7 @@ def notify_of_new_job(instance):
       Someone submitted a new job.
       Instance: {instance}
     """
-    send_mail(
-        "New Job Submission",
-        message,
-        "Built with Django <rasul@builtwithdjango.com>",
-        ["Built with Django <rasul@builtwithdjango.com>"],
-        fail_silently=False,
-    )
+    return send_admin_notification("New Job Submission", message)
 
 
 def queue_sponsorship_request_email(job_instance):
