@@ -1,5 +1,9 @@
 name: Claude Code Review
 
+on:
+  workflow_dispatch:
+
+# To enable automatic PR reviews, replace workflow_dispatch with:
 # on:
 #   pull_request:
 #     types: [opened, synchronize]
