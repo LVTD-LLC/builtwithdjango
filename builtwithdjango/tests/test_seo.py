@@ -12,6 +12,7 @@ from blog.models import Post
 from builtwithdjango.sitemaps import StaticViewSitemap, sitemaps
 from developers.models import Developer
 from jobs.models import Job
+from makers.models import Maker
 from projects.models import Project
 
 
@@ -50,6 +51,14 @@ class SeoTemplateTagTests(SimpleTestCase):
 
         self.assertEqual(html, '"name": "Django \\"Guide\\"\\nTest"')
 
+    def test_json_ld_filter_escapes_script_breakout_characters(self):
+        template = Template("{{ value|json_ld }}")
+        html = template.render(Context({"value": "</script><script>alert(1)</script>&"}))
+
+        self.assertNotIn("</script>", html)
+        self.assertIn("\\u003C/script\\u003E", html)
+        self.assertIn("\\u0026", html)
+
 
 class SeoSitemapTests(TestCase):
     def test_static_sitemap_includes_public_index_pages(self):
@@ -83,6 +92,10 @@ class SeoSitemapTests(TestCase):
             content="Content",
             status=Post.DRAFT,
         )
+        visible_maker = Maker.objects.create(first_name="Visible", last_name="Maker", slug="visible-maker")
+        spam_maker = Maker.objects.create(first_name="Spam", last_name="Maker", slug="spam-maker")
+        inactive_maker = Maker.objects.create(first_name="Inactive", last_name="Maker", slug="inactive-maker")
+
         visible_project = Project.objects.create(
             title="Visible Project",
             url="https://visible.example.com",
@@ -90,6 +103,7 @@ class SeoSitemapTests(TestCase):
             published=True,
             active=True,
             might_be_spam=False,
+            maker=visible_maker,
         )
         Project.objects.create(
             title="Spam Project",
@@ -98,10 +112,21 @@ class SeoSitemapTests(TestCase):
             published=True,
             active=True,
             might_be_spam=True,
+            maker=spam_maker,
+        )
+        Project.objects.create(
+            title="Inactive Project",
+            url="https://inactive.example.com",
+            short_description="Hidden from sitemap.",
+            published=True,
+            active=False,
+            might_be_spam=False,
+            maker=inactive_maker,
         )
 
         self.assertEqual(list(sitemaps["blog"].items()), [published_post])
         self.assertEqual(list(sitemaps["projects"].items()), [visible_project])
+        self.assertEqual(list(sitemaps["makers"].items()), [visible_maker])
 
 
 class SeoPageRenderTests(TestCase):
@@ -201,5 +226,8 @@ class SeoPageRenderTests(TestCase):
 
         self.assertEqual(job_response.status_code, 200)
         self.assertEqual(developer_response.status_code, 200)
-        self.assertIn('"@type": "JobPosting"', job_response.content.decode())
+        job_html = job_response.content.decode()
+        self.assertIn('<meta property="og:type" content="website" />', job_html)
+        self.assertIn('"@type": "JobPosting"', job_html)
+        self.assertNotIn('"address": ""', job_html)
         self.assertIn('"@type": "Person"', developer_response.content.decode())

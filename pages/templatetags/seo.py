@@ -8,6 +8,11 @@ from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 
 register = template.Library()
+_json_ld_escapes = {
+    ord(">"): "\\u003E",
+    ord("<"): "\\u003C",
+    ord("&"): "\\u0026",
+}
 
 
 def _site_url():
@@ -46,7 +51,8 @@ def canonical_url(context, path=None):
 
 @register.filter
 def json_ld(value):
-    return mark_safe(json.dumps(value, cls=DjangoJSONEncoder, ensure_ascii=False))
+    value = json.dumps(value, cls=DjangoJSONEncoder, ensure_ascii=False).translate(_json_ld_escapes)
+    return mark_safe(value)
 
 
 @register.filter

@@ -14,7 +14,7 @@
   "directApply": true,
   {% if object.remote %}
   "jobLocationType": "TELECOMMUTE",
-  {% else %}
+  {% elif object.location %}
   "jobLocation": {
     "@type": "Place",
     "address": {{ object.location|json_ld }}

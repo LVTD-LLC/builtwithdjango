@@ -81,7 +81,13 @@ sitemaps = {
     ),
     "makers": GenericSitemap(
         {
-            "queryset": Maker.objects.filter(projects__published=True).order_by("pk").distinct(),
+            "queryset": Maker.objects.filter(
+                projects__published=True,
+                projects__active=True,
+                projects__might_be_spam=False,
+            )
+            .order_by("pk")
+            .distinct(),
             "date_field": "updated_date",
         },
         priority=0.7,
