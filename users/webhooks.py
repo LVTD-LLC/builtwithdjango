@@ -42,12 +42,22 @@ def stripe_webhook(request, webhook_uuid=None):
         logger.warning("Received Stripe webhook with invalid signature")
         return HttpResponse(status=400)
 
-    if event.type == "checkout.session.completed":
-        handle_checkout_session_completed(event)
-    else:
-        logger.info(f"Ignoring unhandled Stripe event type: {event.type}")
+    handle_stripe_event(event)
 
     return HttpResponse(status=200)
+
+
+def handle_stripe_event(event):
+    if event.type == "checkout.session.completed":
+        handle_checkout_session_completed(event)
+    elif event.type in {
+        "customer.subscription.deleted",
+        "invoice.payment_failed",
+        "invoice.payment_action_required",
+    }:
+        process_django_devs_subscription_inactive(event)
+    else:
+        logger.info(f"Ignoring unhandled Stripe event type: {event.type}")
 
 
 def handle_checkout_session_completed(event):
@@ -127,7 +137,7 @@ def upgrade_user_to_pro(event):
         user = CustomUser.objects.get(pk=user_id)
         update_user_stripe_customer_id(user, event.data["object"].get("customer"))
         user.subscription_level = "PRO"
-        user.save()
+        user.save(update_fields=["subscription_level"])
         capture_event(
             "profile upgraded",
             distinct_id=str(user.pk),
@@ -162,7 +172,7 @@ def activate_django_devs_subscription(event):
         user = CustomUser.objects.get(id=user_id)
         update_user_stripe_customer_id(user, event.data["object"].get("customer"))
         user.has_active_django_devs_subscription = True
-        user.save()
+        user.save(update_fields=["has_active_django_devs_subscription"])
         capture_event(
             "django developers subscription activated",
             distinct_id=str(user.pk),
@@ -179,6 +189,48 @@ def activate_django_devs_subscription(event):
         logger.error(f"User {user_id} not found for Django Devs subscription activation")
     except Exception as e:
         logger.error(f"Error activating Django Devs subscription for user {user_id}: {str(e)}")
+
+
+def process_django_devs_subscription_inactive(event):
+    stripe_object = event.data["object"]
+    devs_price_id = get_stripe_price_id("django_devs")
+    if not stripe_object_has_price_id(stripe_object, devs_price_id):
+        logger.info(f"Ignoring {event.type} for non-Django Devs price")
+        return
+
+    customer_id = stripe_object.get("customer")
+    if not customer_id:
+        logger.warning(f"Ignoring {event.type} without a customer ID")
+        return
+
+    logger.info(f"Deactivating Django Devs subscription for customer {customer_id} after {event.type}")
+    transaction.on_commit(partial(deactivate_django_devs_subscription, event))
+
+
+def deactivate_django_devs_subscription(event):
+    stripe_object = event.data["object"]
+    customer_id = stripe_object.get("customer")
+
+    try:
+        user = CustomUser.objects.get(stripe_customer_id=customer_id)
+        user.has_active_django_devs_subscription = False
+        user.save(update_fields=["has_active_django_devs_subscription"])
+        capture_event(
+            "django developers subscription deactivated",
+            distinct_id=str(user.pk),
+            properties={
+                "$set": get_user_properties(user),
+                "stripe_event_id": event.id,
+                "stripe_event_type": event.type,
+                "stripe_customer_id": customer_id,
+                "stripe_subscription_id": get_stripe_object_subscription_id(stripe_object),
+            },
+        )
+        logger.info(f"Successfully deactivated Django Devs subscription for customer {customer_id}")
+    except CustomUser.DoesNotExist:
+        logger.error(f"User with Stripe customer {customer_id} not found for Django Devs subscription deactivation")
+    except Exception as e:
+        logger.error(f"Error deactivating Django Devs subscription for customer {customer_id}: {str(e)}")
 
 
 def process_job_board_payment(event):
@@ -236,3 +288,38 @@ def update_user_stripe_customer_id(user, customer_id):
 
     user.stripe_customer_id = customer_id
     user.save(update_fields=["stripe_customer_id"])
+
+
+def stripe_object_has_price_id(stripe_object, price_id):
+    if get_price_id(stripe_object) == price_id:
+        return True
+
+    for collection_name in ["items", "lines"]:
+        collection = stripe_object.get(collection_name) or {}
+        for item in collection.get("data") or []:
+            if get_price_id(item) == price_id:
+                return True
+
+    return False
+
+
+def get_price_id(stripe_object):
+    price = stripe_object.get("price")
+    if isinstance(price, str):
+        return price
+    if price:
+        return price.get("id")
+
+    pricing = stripe_object.get("pricing") or {}
+    price_details = pricing.get("price_details") or {}
+    return price_details.get("price")
+
+
+def get_stripe_object_subscription_id(stripe_object):
+    subscription = stripe_object.get("subscription")
+    if isinstance(subscription, str):
+        return subscription
+    if subscription:
+        return subscription.get("id")
+
+    return stripe_object.get("id") if stripe_object.get("object") == "subscription" else None

@@ -1,5 +1,3 @@
-from functools import lru_cache
-
 import stripe
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -19,7 +17,6 @@ def configure_stripe():
     stripe.api_key = settings.STRIPE_SECRET_KEY
 
 
-@lru_cache(maxsize=len(PRICE_ID_SETTINGS))
 def get_stripe_price_id(nickname):
     configure_stripe()
 

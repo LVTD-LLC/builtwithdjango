@@ -6,7 +6,7 @@ from django.test import TestCase, override_settings
 
 from builtwithdjango.stripe_client import get_or_create_stripe_customer_id, get_stripe_price_id
 from jobs.models import Job
-from users.webhooks import handle_checkout_session_completed
+from users.webhooks import handle_stripe_event
 
 PRICE_IDS = {
     "pro": "price_pro",
@@ -31,6 +31,37 @@ def stripe_event(price_id, metadata, customer_id="cus_test", subscription_id=Non
         id="evt_test",
         type="checkout.session.completed",
         data={"object": checkout_session},
+    )
+
+
+def stripe_subscription_event(event_type, price_id, customer_id="cus_test"):
+    return SimpleNamespace(
+        id="evt_subscription",
+        type=event_type,
+        data={
+            "object": {
+                "id": "sub_test",
+                "object": "subscription",
+                "customer": customer_id,
+                "items": {"data": [{"price": {"id": price_id}}]},
+            },
+        },
+    )
+
+
+def stripe_invoice_event(event_type, price_id, customer_id="cus_test"):
+    return SimpleNamespace(
+        id="evt_invoice",
+        type=event_type,
+        data={
+            "object": {
+                "id": "in_test",
+                "object": "invoice",
+                "customer": customer_id,
+                "subscription": "sub_test",
+                "lines": {"data": [{"price": {"id": price_id}}]},
+            },
+        },
     )
 
 
@@ -75,11 +106,7 @@ class StripeCustomerTests(TestCase):
 
     @override_settings(STRIPE_SECRET_KEY="sk_test_123", STRIPE_JOB_PRICE_ID="price_configured_job")
     def test_get_stripe_price_id_uses_configured_price_id(self):
-        get_stripe_price_id.cache_clear()
-        try:
-            self.assertEqual(get_stripe_price_id("job"), "price_configured_job")
-        finally:
-            get_stripe_price_id.cache_clear()
+        self.assertEqual(get_stripe_price_id("job"), "price_configured_job")
 
 
 class StripeWebhookTests(TestCase):
@@ -89,7 +116,7 @@ class StripeWebhookTests(TestCase):
             patch("users.webhooks.capture_event"),
             patch("users.webhooks.transaction.on_commit", side_effect=lambda callback: callback()),
         ):
-            handle_checkout_session_completed(event)
+            handle_stripe_event(event)
 
     def test_checkout_session_completed_activates_django_devs_subscription(self):
         user = get_user_model().objects.create_user(username="devs-user", email="devs@example.com")
@@ -131,3 +158,45 @@ class StripeWebhookTests(TestCase):
         job.refresh_from_db()
         self.assertTrue(job.approved)
         self.assertTrue(job.paid)
+
+    def test_subscription_deleted_deactivates_django_devs_subscription(self):
+        user = get_user_model().objects.create_user(
+            username="inactive-devs-user",
+            email="inactive-devs@example.com",
+            stripe_customer_id="cus_devs",
+            has_active_django_devs_subscription=True,
+        )
+        event = stripe_subscription_event("customer.subscription.deleted", "price_devs", customer_id="cus_devs")
+
+        self.handle_event(event)
+
+        user.refresh_from_db()
+        self.assertFalse(user.has_active_django_devs_subscription)
+
+    def test_invoice_payment_failed_deactivates_django_devs_subscription(self):
+        user = get_user_model().objects.create_user(
+            username="failed-devs-user",
+            email="failed-devs@example.com",
+            stripe_customer_id="cus_devs",
+            has_active_django_devs_subscription=True,
+        )
+        event = stripe_invoice_event("invoice.payment_failed", "price_devs", customer_id="cus_devs")
+
+        self.handle_event(event)
+
+        user.refresh_from_db()
+        self.assertFalse(user.has_active_django_devs_subscription)
+
+    def test_subscription_lifecycle_ignores_other_prices(self):
+        user = get_user_model().objects.create_user(
+            username="other-price-user",
+            email="other-price@example.com",
+            stripe_customer_id="cus_devs",
+            has_active_django_devs_subscription=True,
+        )
+        event = stripe_subscription_event("customer.subscription.deleted", "price_other", customer_id="cus_devs")
+
+        self.handle_event(event)
+
+        user.refresh_from_db()
+        self.assertTrue(user.has_active_django_devs_subscription)
