@@ -1,10 +1,12 @@
 import os
+from functools import lru_cache
 
 from asgiref.sync import sync_to_async
 from django.conf import settings
 from pydantic_ai import Agent, RunContext
 from twikit import Client
 
+from builtwithdjango.ai import get_openrouter_model
 from builtwithdjango.utils import get_builtwithdjango_logger
 from projects.schemas import ProjectContext, TweetContent
 
@@ -16,16 +18,11 @@ logger = get_builtwithdjango_logger(__name__)
 TWITTER_COOKIE_DICT = None
 
 
-async def create_tweet(project_id):
-    logger.info(f"Starting create_tweet for project_id: {project_id}")
-    try:
-        project = await sync_to_async(Project.objects.get)(id=project_id)
-    except Project.DoesNotExist:
-        raise ValueError(f"Project with id {project_id} does not exist.")
-
+@lru_cache(maxsize=1)
+def get_tweet_agent():
     agent = Agent(
-        "google:gemini-2.5-flash-preview-04-17",
-        system_prompt="""
+        get_openrouter_model(),
+        instructions="""
         You are an expert in crafting engaging and concise tweets for new software projects.
         The tweet should highlight the project's title and a very brief description.
         It must include a link to the project on builtwithdjango.com.
@@ -37,7 +34,7 @@ async def create_tweet(project_id):
         deps_type=ProjectContext,
     )
 
-    @agent.system_prompt
+    @agent.instructions
     def add_project_context(ctx: RunContext[ProjectContext]) -> str:
         return (
             "Project context:"
@@ -52,7 +49,7 @@ async def create_tweet(project_id):
             f"Pain Points: {ctx.deps.pain_points}"
         )
 
-    @agent.system_prompt
+    @agent.instructions
     def previous_examples() -> str:
         return """Below are some examples of tweets for other projects I did in the past.
         You can use them as a template to create a tweet for the project you are given.
@@ -104,12 +101,22 @@ async def create_tweet(project_id):
         ---
         """
 
-    @agent.system_prompt
+    @agent.instructions
     def use_twitter_handle(ctx: RunContext[ProjectContext]) -> str:
         return f"Only use the Twitter handle of the project owner: {ctx.deps.twitter_url}"
 
+    return agent
+
+
+async def create_tweet(project_id):
+    logger.info(f"Starting create_tweet for project_id: {project_id}")
+    try:
+        project = await sync_to_async(Project.objects.get)(id=project_id)
+    except Project.DoesNotExist:
+        raise ValueError(f"Project with id {project_id} does not exist.")
+
     logger.info(f"Running agent for project: {project.title}")
-    result = await agent.run(
+    result = await get_tweet_agent().run(
         "Generate a tweet for this project",
         deps=ProjectContext(
             title=project.title,
