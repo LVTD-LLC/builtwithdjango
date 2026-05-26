@@ -56,6 +56,11 @@ def handle_stripe_event(event):
         "invoice.payment_failed",
     }:
         process_django_devs_subscription_inactive(event)
+    elif event.type in {
+        "invoice.paid",
+        "invoice.payment_succeeded",
+    }:
+        process_django_devs_subscription_active(event)
     else:
         logger.info(f"Ignoring unhandled Stripe event type: {event.type}")
 
@@ -202,6 +207,53 @@ def activate_django_devs_subscription(event):
         logger.error(f"User {user_id} not found for Django Devs subscription activation")
     except Exception as e:
         logger.error(f"Error activating Django Devs subscription for user {user_id}: {str(e)}")
+
+
+def process_django_devs_subscription_active(event):
+    stripe_object = event.data["object"]
+    try:
+        devs_price_id = get_stripe_price_id("django_devs")
+    except (ImproperlyConfigured, stripe.StripeError) as e:
+        logger.error(f"Unable to resolve Django Devs Stripe price while processing {event.type}: {str(e)}")
+        return
+
+    if not stripe_object_has_price_id(stripe_object, devs_price_id):
+        logger.info(f"Ignoring {event.type} for non-Django Devs price")
+        return
+
+    customer_id = stripe_object.get("customer")
+    if not customer_id:
+        logger.warning(f"Ignoring {event.type} without a customer ID")
+        return
+
+    logger.info(f"Activating Django Devs subscription for customer {customer_id} after {event.type}")
+    transaction.on_commit(partial(reactivate_django_devs_subscription, event))
+
+
+def reactivate_django_devs_subscription(event):
+    stripe_object = event.data["object"]
+    customer_id = stripe_object.get("customer")
+
+    try:
+        user = CustomUser.objects.get(stripe_customer_id=customer_id)
+        user.has_active_django_devs_subscription = True
+        user.save(update_fields=["has_active_django_devs_subscription"])
+        capture_event(
+            "django developers subscription reactivated",
+            distinct_id=str(user.pk),
+            properties={
+                "$set": get_user_properties(user),
+                "stripe_event_id": event.id,
+                "stripe_event_type": event.type,
+                "stripe_customer_id": customer_id,
+                "stripe_subscription_id": get_stripe_object_subscription_id(stripe_object),
+            },
+        )
+        logger.info(f"Successfully reactivated Django Devs subscription for customer {customer_id}")
+    except CustomUser.DoesNotExist:
+        logger.error(f"User with Stripe customer {customer_id} not found for Django Devs subscription reactivation")
+    except Exception as e:
+        logger.error(f"Error reactivating Django Devs subscription for customer {customer_id}: {str(e)}")
 
 
 def process_django_devs_subscription_inactive(event):

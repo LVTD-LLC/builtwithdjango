@@ -287,6 +287,34 @@ class StripeWebhookTests(TestCase):
         user.refresh_from_db()
         self.assertFalse(user.has_active_django_devs_subscription)
 
+    def test_invoice_paid_reactivates_django_devs_subscription(self):
+        user = get_user_model().objects.create_user(
+            username="paid-devs-user",
+            email="paid-devs@example.com",
+            stripe_customer_id="cus_devs",
+            has_active_django_devs_subscription=False,
+        )
+        event = stripe_invoice_event("invoice.paid", "price_devs", customer_id="cus_devs")
+
+        self.handle_event(event)
+
+        user.refresh_from_db()
+        self.assertTrue(user.has_active_django_devs_subscription)
+
+    def test_invoice_payment_succeeded_reactivates_django_devs_subscription(self):
+        user = get_user_model().objects.create_user(
+            username="succeeded-devs-user",
+            email="succeeded-devs@example.com",
+            stripe_customer_id="cus_devs",
+            has_active_django_devs_subscription=False,
+        )
+        event = stripe_invoice_event("invoice.payment_succeeded", "price_devs", customer_id="cus_devs")
+
+        self.handle_event(event)
+
+        user.refresh_from_db()
+        self.assertTrue(user.has_active_django_devs_subscription)
+
     def test_invoice_payment_failed_ignores_missing_django_devs_price_config(self):
         user = get_user_model().objects.create_user(
             username="missing-price-devs-user",
