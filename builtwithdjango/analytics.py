@@ -38,6 +38,9 @@ def posthog_request_filter(request):
         return False
 
     path = request.path or ""
+    if _is_noisy_analytics_request_path(path):
+        return False
+
     admin_url = "/" + getattr(settings, "ADMIN_URL", "admin/").lstrip("/")
     skipped_prefixes = (
         admin_url,
@@ -51,6 +54,10 @@ def posthog_request_filter(request):
     )
 
     return not path.startswith(skipped_prefixes)
+
+
+def _is_noisy_analytics_request_path(path):
+    return path == "/api/v1/like" or path.startswith("/api/v1/like/")
 
 
 def posthog_extra_tags(request):
