@@ -1,11 +1,13 @@
 import json
 import tempfile
+from datetime import timedelta
 from pathlib import Path
 
 from django.contrib.auth import get_user_model
 from django.template import Context, Template
 from django.template.loader import render_to_string
 from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
+from django.utils import timezone
 from webpack_boilerplate import utils as webpack_utils
 
 from blog.models import Post
@@ -59,6 +61,18 @@ class SeoTemplateTagTests(SimpleTestCase):
         self.assertNotIn("</script>", html)
         self.assertIn("\\u003C/script\\u003E", html)
         self.assertIn("\\u0026", html)
+
+    @override_settings(SITE_URL="https://builtwithdjango.com")
+    def test_robots_txt_declares_crawl_rules_and_sitemap(self):
+        response = self.client.get("/robots.txt")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/plain")
+        robots_txt = response.content.decode()
+        self.assertIn("User-agent: *", robots_txt)
+        self.assertIn("Allow: /", robots_txt)
+        self.assertIn("Disallow: /users/", robots_txt)
+        self.assertIn("Sitemap: https://builtwithdjango.com/sitemap.xml", robots_txt)
 
 
 class SeoSitemapTests(TestCase):
@@ -124,9 +138,30 @@ class SeoSitemapTests(TestCase):
             might_be_spam=False,
             maker=inactive_maker,
         )
+        current_job = Job.objects.create(
+            title="Current Django Engineer",
+            listing_url="https://jobs.example.com/current-django-engineer",
+            company_name="Current Co",
+            approved=True,
+            created_datetime=timezone.now() - timedelta(days=1),
+        )
+        Job.objects.create(
+            title="Expired Django Engineer",
+            listing_url="https://jobs.example.com/expired-django-engineer",
+            company_name="Expired Co",
+            approved=True,
+            created_datetime=timezone.now() - timedelta(days=61),
+        )
+        Job.objects.create(
+            title="Unapproved Django Engineer",
+            listing_url="https://jobs.example.com/unapproved-django-engineer",
+            company_name="Unapproved Co",
+            approved=False,
+        )
 
         self.assertEqual(list(sitemaps["blog"].items()), [published_post])
         self.assertEqual(list(sitemaps["projects"].items()), [visible_project])
+        self.assertEqual(list(sitemaps["jobs"]().items()), [current_job])
         self.assertEqual(list(sitemaps["makers"].items()), [visible_maker])
 
 
@@ -206,6 +241,46 @@ class SeoPageRenderTests(TestCase):
         self.assertIn('name="twitter:image"', html)
         self.assertIn('<link rel="canonical" href="http://localhost:8000/projects/seo-project" />', html)
 
+    def test_project_detail_excludes_non_public_projects(self):
+        project = Project.objects.create(
+            title="Hidden SEO Project",
+            url="https://hidden-project.example.com",
+            short_description="This project should not be publicly indexable.",
+            published=False,
+            active=True,
+            might_be_spam=False,
+        )
+
+        response = self.client.get(project.get_absolute_url())
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_project_page_two_self_canonicalizes(self):
+        for index in range(13):
+            Project.objects.create(
+                title=f"Paginated Project {index}",
+                url=f"https://paginated-project-{index}.example.com",
+                short_description="A project used to exercise pagination metadata.",
+                published=True,
+                active=True,
+                might_be_spam=False,
+            )
+
+        response = self.client.get("/projects/?page=2")
+
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn('<link rel="canonical" href="http://localhost:8000/projects/?page=2" />', html)
+        self.assertNotIn('<meta name="robots"', html)
+
+    def test_project_filters_are_noindexed(self):
+        response = self.client.get("/projects/?order_by=like")
+
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn('<link rel="canonical" href="http://localhost:8000/projects/" />', html)
+        self.assertIn('<meta name="robots" content="noindex,follow" />', html)
+
     def test_job_and_developer_detail_render_structured_data(self):
         job = Job.objects.create(
             title="Django Engineer",
@@ -230,11 +305,111 @@ class SeoPageRenderTests(TestCase):
         job_html = job_response.content.decode()
         self.assertIn('<meta property="og:type" content="website" />', job_html)
         self.assertIn('"@type": "JobPosting"', job_html)
+        self.assertIn('"validThrough":', job_html)
         self.assertNotIn('"address": ""', job_html)
         developer_html = developer_response.content.decode()
         self.assertIn('"@type": "Person"', developer_html)
         self.assertNotIn('"@type": "PostalAddress"', developer_html)
         self.assertNotIn('"addressLocality": ""', developer_html)
+
+    def test_job_detail_excludes_unapproved_jobs(self):
+        job = Job.objects.create(
+            title="Unapproved Django Engineer",
+            listing_url="https://jobs.example.com/unapproved-django-engineer",
+            company_name="Example Co",
+            approved=False,
+        )
+
+        response = self.client.get(job.get_absolute_url())
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_all_jobs_archive_is_noindexed(self):
+        Job.objects.create(
+            title="Archived Django Engineer",
+            listing_url="https://jobs.example.com/archived-django-engineer",
+            company_name="Example Co",
+            approved=True,
+            created_datetime=timezone.now() - timedelta(days=61),
+        )
+
+        response = self.client.get("/jobs/all")
+
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn('<link rel="canonical" href="http://localhost:8000/jobs/all" />', html)
+        self.assertIn('<meta name="robots" content="noindex,follow" />', html)
+
+    def test_all_jobs_archive_paginates_and_self_canonicalizes_pages(self):
+        for index in range(31):
+            Job.objects.create(
+                title=f"Archived Django Engineer {index}",
+                listing_url=f"https://jobs.example.com/archived-django-engineer-{index}",
+                company_name="Example Co",
+                approved=True,
+                created_datetime=timezone.now() - timedelta(days=61),
+            )
+
+        response = self.client.get("/jobs/all?page=2")
+
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn('<link rel="canonical" href="http://localhost:8000/jobs/all?page=2" />', html)
+        self.assertIn("Page 2 of 2", html)
+        self.assertIn('<meta name="robots" content="noindex,follow" />', html)
+
+    def test_expired_job_detail_is_noindexed_but_keeps_expiration_schema(self):
+        job = Job.objects.create(
+            title="Expired Django Engineer",
+            listing_url="https://jobs.example.com/expired-django-engineer",
+            company_name="Example Co",
+            approved=True,
+            created_datetime=timezone.now() - timedelta(days=61),
+        )
+
+        response = self.client.get(job.get_absolute_url())
+
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn('<meta name="robots" content="noindex,follow" />', html)
+        self.assertIn('"validThrough":', html)
+
+    def test_article_listing_excludes_tutorials(self):
+        tutorial = Post.objects.create(
+            title="Tutorial Listing Overlap",
+            description="A tutorial that should stay on the guides page.",
+            author=self.author,
+            slug="tutorial-listing-overlap",
+            content="Tutorial content",
+            status=Post.PUBLISHED,
+            type=Post.TUTORIAL,
+        )
+        article = Post.objects.create(
+            title="Article Listing Result",
+            description="An article that belongs on the articles page.",
+            author=self.author,
+            slug="article-listing-result",
+            content="Article content",
+            status=Post.PUBLISHED,
+            type=Post.ARTICLE,
+        )
+        update = Post.objects.create(
+            title="Update Listing Result",
+            description="A non-article update that should stay out of the articles page.",
+            author=self.author,
+            slug="update-listing-result",
+            content="Update content",
+            status=Post.PUBLISHED,
+            type=Post.UPDATE,
+        )
+
+        response = self.client.get("/blog/articles/")
+
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn(article.title, html)
+        self.assertNotIn(update.title, html)
+        self.assertNotIn(tutorial.title, html)
 
     def test_podcast_detail_uses_default_website_og_type(self):
         episode = Episode.objects.create(

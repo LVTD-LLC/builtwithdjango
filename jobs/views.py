@@ -1,11 +1,9 @@
-from datetime import timedelta
 from urllib.parse import urlencode
 
 import stripe
 from django.http import HttpResponseRedirect
 from django.templatetags.static import static
 from django.urls import reverse, reverse_lazy
-from django.utils import timezone
 from django.views.generic import CreateView, DetailView, ListView, TemplateView
 from django_q.tasks import async_task
 
@@ -21,10 +19,18 @@ from .tasks import notify_of_new_job
 class AllJobListView(ListView):
     model = Job
     template_name = "jobs/all_jobs.html"
+    paginate_by = 30
+
+    def get_queryset(self):
+        return Job.objects.filter(approved=True).order_by("-paid", "-created_datetime")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["newsletter_form"] = NewsletterSignupForm
+        context["canonical_path"] = reverse("all_jobs")
+        if context.get("page_obj") and context["page_obj"].number > 1:
+            context["canonical_path"] = f"{reverse('all_jobs')}?page={context['page_obj'].number}"
+        context["robots"] = "noindex,follow"
 
         return context
 
@@ -34,8 +40,7 @@ class JobListView(ListView):
     template_name = "jobs/all_jobs.html"
 
     def get_queryset(self):
-        filter_date = timezone.now() - timedelta(days=60)
-        return Job.objects.filter(approved=True, created_datetime__gte=filter_date).order_by(
+        return Job.objects.filter(approved=True, created_datetime__gte=Job.current_cutoff()).order_by(
             "-paid", "-created_datetime"
         )[:30]
 
@@ -49,6 +54,12 @@ class JobListView(ListView):
 class JobDetailView(DetailView):
     model = Job
     template_name = "jobs/job_detail.html"
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.request.user.is_staff:
+            return queryset
+        return queryset.filter(approved=True)
 
     def get(self, request, *args, **kwargs):
         response = super().get(request, *args, **kwargs)
@@ -76,6 +87,8 @@ class JobDetailView(DetailView):
         context["newsletter_form"] = NewsletterSignupForm
 
         job = self.object
+        if not job.is_active_listing:
+            context["job_robots"] = "noindex,follow"
         title = f"{job.company.name if job.company else job.company_name}"
         description = job.title
 

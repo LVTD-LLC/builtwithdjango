@@ -7,13 +7,13 @@
     {% if object.company %}
       {% with company_name=object.company.name %}
         {% with page_title=object.title|add:" @ "|add:company_name page_description=company_name|add:" is looking for a "|add:object.title %}
-          {% include "components/seo_meta.html" with title=page_title description=page_description canonical_path=object.get_absolute_url image=og_image image_alt=page_title %}
+          {% include "components/seo_meta.html" with title=page_title description=page_description canonical_path=object.get_absolute_url image=og_image robots=job_robots image_alt=page_title %}
         {% endwith %}
       {% endwith %}
     {% else %}
       {% with company_name=object.company_name %}
         {% with page_title=object.title|add:" @ "|add:company_name page_description=company_name|add:" is looking for a "|add:object.title %}
-          {% include "components/seo_meta.html" with title=page_title description=page_description canonical_path=object.get_absolute_url image=og_image image_alt=page_title %}
+          {% include "components/seo_meta.html" with title=page_title description=page_description canonical_path=object.get_absolute_url image=og_image robots=job_robots image_alt=page_title %}
         {% endwith %}
       {% endwith %}
     {% endif %}

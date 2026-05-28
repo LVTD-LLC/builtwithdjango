@@ -24,6 +24,7 @@ from django.views.generic import TemplateView
 from users.webhooks import stripe_webhook
 
 from .sitemaps import sitemaps
+from .views import robots_txt
 
 urlpatterns = (
     [
@@ -49,7 +50,7 @@ urlpatterns = (
             {"sitemaps": sitemaps},
             name="django.contrib.sitemaps.views.sitemap",
         ),
-        path("robots.txt", include("robots.urls")),
+        path("robots.txt", robots_txt, name="robots_txt"),
     ]
     + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

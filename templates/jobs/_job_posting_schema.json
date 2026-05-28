@@ -9,6 +9,7 @@
   "name": {{ object.title|json_ld }},
   "description": {% if object.description %}{{ object.description|seo_text:5000|json_ld }}{% else %}{{ company_name|add:" is looking for a "|add:object.title|json_ld }}{% endif %},
   "datePosted": "{{ object.created_datetime|date:'c' }}",
+  "validThrough": "{{ object.expires_at|date:'c' }}",
   "employmentType": "FULL_TIME",
   "url": {{ object.listing_url|json_ld }},
   "directApply": true,

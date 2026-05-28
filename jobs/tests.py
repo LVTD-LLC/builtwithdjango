@@ -58,7 +58,7 @@ class JobListViewTests(TestCase):
         view = JobListView()
         view.setup(request)
 
-        with patch("jobs.views.timezone.now", return_value=now):
+        with patch("jobs.models.timezone.now", return_value=now):
             jobs = list(view.get_queryset())
 
         self.assertEqual(jobs, [recent_job])

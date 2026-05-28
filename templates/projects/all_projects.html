@@ -3,7 +3,8 @@
 {% load widget_tweaks %}
 
 {% block meta %}
-    {% include "components/seo_meta.html" with title="Django Projects | Built with Django" description="Discover real projects and apps built with Django." canonical_path="/projects/" twitter_card="summary" image_alt="Built with Django logo" %}
+    {% firstof canonical_path "/projects/" as projects_canonical_path %}
+    {% include "components/seo_meta.html" with title="Django Projects | Built with Django" description="Discover real projects and apps built with Django." canonical_path=projects_canonical_path robots=robots twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 
 {% block content %}
