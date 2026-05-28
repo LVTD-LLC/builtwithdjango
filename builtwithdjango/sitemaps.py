@@ -53,6 +53,17 @@ class StaticViewSitemap(sitemaps.Sitemap):
         return reverse(item)
 
 
+class CurrentJobSitemap(sitemaps.Sitemap):
+    priority = 0.8
+    protocol = "https"
+
+    def items(self):
+        return Job.objects.filter(approved=True, created_datetime__gte=Job.current_cutoff())
+
+    def lastmod(self, obj):
+        return obj.created_datetime
+
+
 sitemaps = {
     "static": StaticViewSitemap,
     "blog": GenericSitemap(
@@ -68,14 +79,7 @@ sitemaps = {
         priority=0.85,
         protocol="https",
     ),
-    "jobs": GenericSitemap(
-        {
-            "queryset": Job.objects.filter(approved=True),
-            "date_field": "created_datetime",
-        },
-        priority=0.8,
-        protocol="https",
-    ),
+    "jobs": CurrentJobSitemap,
     "podcast": GenericSitemap(
         {"queryset": Episode.objects.all(), "date_field": "created_datetime"}, priority=0.8, protocol="https"
     ),

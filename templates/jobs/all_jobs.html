@@ -3,7 +3,8 @@
 {% load widget_tweaks %}
 
 {% block meta %}
-    {% include "components/seo_meta.html" with title="Django Jobs | Built with Django" description="Django jobs for developers who want to work with Django." canonical_path="/jobs/" twitter_card="summary" image_alt="Built with Django logo" %}
+    {% firstof canonical_path "/jobs/" as jobs_canonical_path %}
+    {% include "components/seo_meta.html" with title="Django Jobs | Built with Django" description="Django jobs for developers who want to work with Django." canonical_path=jobs_canonical_path robots=robots twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 
 {% block content %}

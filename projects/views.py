@@ -48,6 +48,14 @@ class ProjectListView(FilterView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["newsletter_form"] = NewsletterSignupForm
+        context["canonical_path"] = reverse("projects")
+
+        query_params = self.request.GET.copy()
+        query_params.pop("page", None)
+        if query_params:
+            context["robots"] = "noindex,follow"
+        elif context.get("page_obj") and context["page_obj"].number > 1:
+            context["canonical_path"] = f"{reverse('projects')}?page={context['page_obj'].number}"
 
         return context
 
@@ -64,6 +72,20 @@ class InactiveProjectListView(LoginRequiredMixin, UserPassesTestMixin, ListView)
 class ProjectDetailView(DetailView):
     model = Project
     template_name = "projects/project_detail.html"
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.request.user.is_staff:
+            return queryset
+
+        public_queryset = queryset.filter(published=True, active=True, might_be_spam=False)
+        if self.request.user.is_authenticated:
+            return queryset.filter(
+                Q(published=True, active=True, might_be_spam=False)
+                | Q(logged_in_maker=self.request.user)
+                | Q(maker__user=self.request.user)
+            ).distinct()
+        return public_queryset
 
     def get(self, request, *args, **kwargs):
         response = super().get(request, *args, **kwargs)

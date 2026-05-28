@@ -1,9 +1,13 @@
+from datetime import timedelta
+
 from autoslug import AutoSlugField
 from cloudinary.models import CloudinaryField
 from django.conf import settings
 from django.db import models
 from django.urls import reverse
 from django.utils import timezone
+
+JOB_LISTING_ACTIVE_DAYS = 60
 
 
 class Job(models.Model):
@@ -56,6 +60,18 @@ class Job(models.Model):
 
     def get_absolute_url(self):
         return reverse("job_details", kwargs={"pk": self.id, "slug": self.slug})
+
+    @classmethod
+    def current_cutoff(cls):
+        return timezone.now() - timedelta(days=JOB_LISTING_ACTIVE_DAYS)
+
+    @property
+    def expires_at(self):
+        return self.created_datetime + timedelta(days=JOB_LISTING_ACTIVE_DAYS)
+
+    @property
+    def is_active_listing(self):
+        return self.approved and self.created_datetime >= self.current_cutoff()
 
     def save(self, *args, **kwargs):
         """On save, update timestamps"""
