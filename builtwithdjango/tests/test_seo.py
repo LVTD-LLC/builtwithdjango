@@ -340,6 +340,24 @@ class SeoPageRenderTests(TestCase):
         self.assertIn('<link rel="canonical" href="http://localhost:8000/jobs/all" />', html)
         self.assertIn('<meta name="robots" content="noindex,follow" />', html)
 
+    def test_all_jobs_archive_paginates_and_self_canonicalizes_pages(self):
+        for index in range(31):
+            Job.objects.create(
+                title=f"Archived Django Engineer {index}",
+                listing_url=f"https://jobs.example.com/archived-django-engineer-{index}",
+                company_name="Example Co",
+                approved=True,
+                created_datetime=timezone.now() - timedelta(days=61),
+            )
+
+        response = self.client.get("/jobs/all?page=2")
+
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn('<link rel="canonical" href="http://localhost:8000/jobs/all?page=2" />', html)
+        self.assertIn("Page 2 of 2", html)
+        self.assertIn('<meta name="robots" content="noindex,follow" />', html)
+
     def test_expired_job_detail_is_noindexed_but_keeps_expiration_schema(self):
         job = Job.objects.create(
             title="Expired Django Engineer",
@@ -377,7 +395,7 @@ class SeoPageRenderTests(TestCase):
         )
         update = Post.objects.create(
             title="Update Listing Result",
-            description="A non-tutorial update that belongs on the articles page.",
+            description="A non-article update that should stay out of the articles page.",
             author=self.author,
             slug="update-listing-result",
             content="Update content",
@@ -390,7 +408,7 @@ class SeoPageRenderTests(TestCase):
         self.assertEqual(response.status_code, 200)
         html = response.content.decode()
         self.assertIn(article.title, html)
-        self.assertIn(update.title, html)
+        self.assertNotIn(update.title, html)
         self.assertNotIn(tutorial.title, html)
 
     def test_podcast_detail_uses_default_website_og_type(self):

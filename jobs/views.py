@@ -19,6 +19,7 @@ from .tasks import notify_of_new_job
 class AllJobListView(ListView):
     model = Job
     template_name = "jobs/all_jobs.html"
+    paginate_by = 30
 
     def get_queryset(self):
         return Job.objects.filter(approved=True).order_by("-paid", "-created_datetime")
@@ -27,6 +28,8 @@ class AllJobListView(ListView):
         context = super().get_context_data(**kwargs)
         context["newsletter_form"] = NewsletterSignupForm
         context["canonical_path"] = reverse("all_jobs")
+        if context.get("page_obj") and context["page_obj"].number > 1:
+            context["canonical_path"] = f"{reverse('all_jobs')}?page={context['page_obj'].number}"
         context["robots"] = "noindex,follow"
 
         return context

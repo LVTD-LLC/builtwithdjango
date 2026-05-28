@@ -38,6 +38,26 @@
         <a href="{% url 'post_job' %}" class="bw-button bw-button-accent mt-6">Post the first job</a>
       </div>
     {% endif %}
+
+    {% if is_paginated %}
+      <nav class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row" aria-label="Job pagination">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}"
+             class="bw-button bw-button-secondary">
+            Previous
+          </a>
+        {% endif %}
+        <span class="rounded-md border border-[var(--bw-border)] bg-[var(--bw-surface)] px-4 py-3 text-sm font-bold bw-muted">
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </span>
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}"
+             class="bw-button bw-button-secondary">
+            Next
+          </a>
+        {% endif %}
+      </nav>
+    {% endif %}
   </div>
 </section>
 

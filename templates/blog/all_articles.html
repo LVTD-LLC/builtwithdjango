@@ -4,7 +4,7 @@
 {% load cloudinary %}
 
 {% block meta %}
-    {% include "components/seo_meta.html" with title="Django Articles | Built with Django" description="Articles, updates, and Django community notes from Built with Django." canonical_path="/blog/articles/" twitter_card="summary" image_alt="Built with Django logo" %}
+    {% include "components/seo_meta.html" with title="Django Articles | Built with Django" description="Articles and Django community notes from Built with Django." canonical_path="/blog/articles/" twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 
 {% block content %}
@@ -12,7 +12,7 @@
   <div class="bw-container">
     <p class="bw-kicker">Articles</p>
     <h1 class="bw-heading-lg mt-3">Django notes from the community</h1>
-    <p class="bw-lede mt-5">Articles, updates, and collected context for people following the Django ecosystem.</p>
+    <p class="bw-lede mt-5">Articles and collected context for people following the Django ecosystem.</p>
   </div>
 </section>
 
@@ -38,8 +38,8 @@
     "@type": "CollectionPage",
     "name": "Built with Django | Articles",
     "about": "Articles",
-    "description": "Articles, updates, and Django community notes from Built with Django.",
-    "abstract": "Articles, updates, and Django community notes from Built with Django.",
+    "description": "Articles and Django community notes from Built with Django.",
+    "abstract": "Articles and Django community notes from Built with Django.",
     "thumbnailUrl": "{% absolute_url '/static/vendors/images/logo.png' %}",
     "url": "{% canonical_url '/blog/articles/' %}",
     "author": {
