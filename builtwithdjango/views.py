@@ -14,6 +14,7 @@ def robots_txt(request):
         "Disallow: /api/",
         "Disallow: /stripe/",
         "Disallow: /users/",
+        "",
         f"Sitemap: {site_url}/sitemap.xml",
     ]
     return HttpResponse("\n".join(lines) + "\n", content_type="text/plain")

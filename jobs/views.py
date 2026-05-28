@@ -26,7 +26,7 @@ class AllJobListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["newsletter_form"] = NewsletterSignupForm
-        context["canonical_path"] = "/jobs/all"
+        context["canonical_path"] = reverse("all_jobs")
         context["robots"] = "noindex,follow"
 
         return context
@@ -84,7 +84,8 @@ class JobDetailView(DetailView):
         context["newsletter_form"] = NewsletterSignupForm
 
         job = self.object
-        context["job_robots"] = "" if job.is_active_listing else "noindex,follow"
+        if not job.is_active_listing:
+            context["job_robots"] = "noindex,follow"
         title = f"{job.company.name if job.company else job.company_name}"
         description = job.title
 

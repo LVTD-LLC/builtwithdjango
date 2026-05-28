@@ -324,6 +324,22 @@ class SeoPageRenderTests(TestCase):
 
         self.assertEqual(response.status_code, 404)
 
+    def test_all_jobs_archive_is_noindexed(self):
+        Job.objects.create(
+            title="Archived Django Engineer",
+            listing_url="https://jobs.example.com/archived-django-engineer",
+            company_name="Example Co",
+            approved=True,
+            created_datetime=timezone.now() - timedelta(days=61),
+        )
+
+        response = self.client.get("/jobs/all")
+
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn('<link rel="canonical" href="http://localhost:8000/jobs/all" />', html)
+        self.assertIn('<meta name="robots" content="noindex,follow" />', html)
+
     def test_expired_job_detail_is_noindexed_but_keeps_expiration_schema(self):
         job = Job.objects.create(
             title="Expired Django Engineer",
