@@ -375,12 +375,22 @@ class SeoPageRenderTests(TestCase):
             status=Post.PUBLISHED,
             type=Post.ARTICLE,
         )
+        update = Post.objects.create(
+            title="Update Listing Result",
+            description="A non-tutorial update that belongs on the articles page.",
+            author=self.author,
+            slug="update-listing-result",
+            content="Update content",
+            status=Post.PUBLISHED,
+            type=Post.UPDATE,
+        )
 
         response = self.client.get("/blog/articles/")
 
         self.assertEqual(response.status_code, 200)
         html = response.content.decode()
         self.assertIn(article.title, html)
+        self.assertIn(update.title, html)
         self.assertNotIn(tutorial.title, html)
 
     def test_podcast_detail_uses_default_website_og_type(self):

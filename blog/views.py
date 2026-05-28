@@ -21,6 +21,7 @@ class PostListView(ListView):
 class ArticleListView(ListView):
     model = Post
     template_name = "blog/all_articles.html"
+    # Articles is the catch-all editorial page for non-tutorial post types like interviews and updates.
     queryset = Post.objects.filter(status=Post.PUBLISHED).exclude(type=Post.TUTORIAL).order_by("-created")
 
     def get_context_data(self, **kwargs):
