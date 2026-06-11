@@ -151,6 +151,43 @@ class ProjectModelServiceTests(TestCase):
         self.assertEqual(project.page_content_html, "<html>Project</html>")
         self.assertIsNotNone(project.date_scraped)
 
+    def test_fetch_page_content_treats_direct_html_failure_as_fallback_warning(self):
+        project = Project.objects.create(
+            title="Blocked HTML Project",
+            url="https://blocked-html.example.com",
+            short_description="A project.",
+        )
+        html_response = Mock()
+        html_response.raise_for_status.side_effect = requests.HTTPError("403 Client Error: Forbidden")
+        jina_response = Mock()
+        jina_response.raise_for_status.return_value = None
+        jina_response.json.return_value = {
+            "data": {
+                "title": "Fallback Readable",
+                "description": "Fetched through Jina.",
+                "content": "# Fallback",
+            }
+        }
+
+        with (
+            patch("projects.models.requests.get", side_effect=[html_response, jina_response]),
+            patch("projects.models.logger") as logger,
+        ):
+            self.assertTrue(project.fetch_page_content())
+
+        project.refresh_from_db()
+        self.assertEqual(project.page_title, "Fallback Readable")
+        self.assertEqual(project.page_description, "Fetched through Jina.")
+        self.assertEqual(project.page_content_markdown, "# Fallback")
+        self.assertEqual(project.page_content_html, "")
+        logger.warning.assert_called_once_with(
+            "Direct HTML fetch failed; continuing with Jina Reader fallback",
+            project_id=project.id,
+            url=project.url,
+            error="403 Client Error: Forbidden",
+        )
+        logger.error.assert_not_called()
+
 
 class ProjectTaskObservabilityTests(TestCase):
     def test_fetch_page_content_counts_unexpected_failure(self):

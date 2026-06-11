@@ -156,7 +156,12 @@ class Project(models.Model):
             html_response.raise_for_status()
             html_content = html_response.text
         except requests.exceptions.RequestException as e:
-            logger.error(f"Error fetching HTML content: {str(e)}")
+            logger.warning(
+                "Direct HTML fetch failed; continuing with Jina Reader fallback",
+                project_id=self.id,
+                url=self.url,
+                error=str(e),
+            )
             html_content = ""
 
         jina_url = f"{settings.JINA_READER_BASE_URL}/{self.url}"

@@ -24,6 +24,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 
 ### Fixed
 - Made the bottom-right desktop ad use a solid surface instead of an opacity fade.
+- Reduced noisy Sentry errors when direct project HTML fetches are blocked but the Jina Reader fallback succeeds.
 
 ## [0.4.6] - 2025-12-08
 ### Added
