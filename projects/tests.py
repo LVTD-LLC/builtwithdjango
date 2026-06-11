@@ -177,9 +177,15 @@ class ProjectModelServiceTests(TestCase):
 
         project.refresh_from_db()
         self.assertEqual(project.page_title, "Fallback Readable")
+        self.assertEqual(project.page_description, "Fetched through Jina.")
         self.assertEqual(project.page_content_markdown, "# Fallback")
         self.assertEqual(project.page_content_html, "")
-        logger.warning.assert_called_once()
+        logger.warning.assert_called_once_with(
+            "Direct HTML fetch failed; continuing with Jina Reader fallback",
+            project_id=project.id,
+            url=project.url,
+            error="403 Client Error: Forbidden",
+        )
         logger.error.assert_not_called()
 
 
