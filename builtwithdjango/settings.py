@@ -110,6 +110,14 @@ SENTRY_MAX_REQUEST_BODY_SIZE = env("SENTRY_MAX_REQUEST_BODY_SIZE", default="smal
 SENTRY_MAX_VALUE_LENGTH = env.int("SENTRY_MAX_VALUE_LENGTH", default=10000)
 SENTRY_TRACE_PROPAGATION_TARGETS = env_csv("SENTRY_TRACE_PROPAGATION_TARGETS", default=[SITE_URL])
 SENTRY_STRICT_TRACE_CONTINUATION = env.bool("SENTRY_STRICT_TRACE_CONTINUATION", default=True)
+SENTRY_BROWSER_DSN = env("SENTRY_BROWSER_DSN", default=SENTRY_DSN)
+SENTRY_BROWSER_ENABLED = bool(SENTRY_BROWSER_DSN) and env.bool("SENTRY_BROWSER_ENABLED", default=SENTRY_ENABLED)
+SENTRY_BROWSER_TRACES_SAMPLE_RATE = env_sample_rate("SENTRY_BROWSER_TRACES_SAMPLE_RATE", SENTRY_TRACES_SAMPLE_RATE)
+SENTRY_BROWSER_REPLAY_SESSION_SAMPLE_RATE = env_sample_rate("SENTRY_BROWSER_REPLAY_SESSION_SAMPLE_RATE", 0.1)
+SENTRY_BROWSER_REPLAY_ERROR_SAMPLE_RATE = env_sample_rate("SENTRY_BROWSER_REPLAY_ERROR_SAMPLE_RATE", 1.0)
+SENTRY_BROWSER_ENABLE_LOGS = env.bool("SENTRY_BROWSER_ENABLE_LOGS", default=True)
+SENTRY_BROWSER_SEND_DEFAULT_PII = env.bool("SENTRY_BROWSER_SEND_DEFAULT_PII", default=SENTRY_SEND_DEFAULT_PII)
+SENTRY_BROWSER_TRACE_PROPAGATION_TARGETS = env_csv("SENTRY_BROWSER_TRACE_PROPAGATION_TARGETS", default=[SITE_URL])
 SENTRY_IGNORED_TRANSACTION_PREFIXES = ("/static/", "/media/", "/favicon.ico", "/robots.txt")
 SENTRY_IMPORTANT_TRANSACTION_PREFIXES = ("/admin/", "/projects/", "/jobs/post/", "/newsletter/")
 SENTRY_BACKGROUND_TRANSACTION_NAMES = (
@@ -278,6 +286,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "users.context_processors.available_social_providers",
                 "builtwithdjango.analytics.posthog_template_context",
+                "builtwithdjango.sentry_utils.sentry_template_context",
             ],
         },
     },

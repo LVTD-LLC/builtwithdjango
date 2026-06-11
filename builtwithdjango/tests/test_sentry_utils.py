@@ -1,8 +1,9 @@
+from types import SimpleNamespace
 from unittest.mock import patch
 
-from django.test import SimpleTestCase
+from django.test import SimpleTestCase, override_settings
 
-from builtwithdjango.sentry_utils import sentry_span, sentry_task_transaction
+from builtwithdjango.sentry_utils import sentry_span, sentry_task_transaction, sentry_template_context
 from builtwithdjango.settings import sentry_before_send_log
 
 
@@ -85,3 +86,81 @@ class SentryLogScrubbingTests(SimpleTestCase):
         self.assertEqual(result["attributes"]["output_tokens"], 10)
         self.assertEqual(result["attributes"]["token_count"], 35)
         self.assertEqual(result["attributes"]["total_tokens"], 35)
+
+
+class SentryTemplateContextTests(SimpleTestCase):
+    @override_settings(SENTRY_BROWSER_ENABLED=False, SENTRY_BROWSER_DSN="https://public@example.ingest.sentry.io/1")
+    def test_browser_context_is_disabled_when_browser_sentry_is_disabled(self):
+        request = SimpleNamespace(user=SimpleNamespace(is_authenticated=False))
+
+        context = sentry_template_context(request)
+
+        self.assertFalse(context["sentry_browser_enabled"])
+        self.assertEqual(context["sentry_browser_config"], {})
+
+    @override_settings(
+        SENTRY_BROWSER_ENABLED=True,
+        SENTRY_BROWSER_DSN="https://public@example.ingest.sentry.io/1",
+        ENVIRONMENT="prod",
+        SENTRY_RELEASE="abc123",
+        SENTRY_DIST=None,
+        SENTRY_BROWSER_TRACES_SAMPLE_RATE=0.2,
+        SENTRY_BROWSER_TRACE_PROPAGATION_TARGETS=["https://builtwithdjango.com"],
+        SENTRY_BROWSER_REPLAY_SESSION_SAMPLE_RATE=0.1,
+        SENTRY_BROWSER_REPLAY_ERROR_SAMPLE_RATE=1.0,
+        SENTRY_BROWSER_SEND_DEFAULT_PII=False,
+        SENTRY_BROWSER_ENABLE_LOGS=True,
+    )
+    def test_browser_context_exposes_runtime_config_without_user_pii_by_default(self):
+        request = SimpleNamespace(
+            user=SimpleNamespace(
+                is_authenticated=True,
+                pk=1,
+                email="user@example.com",
+                username="user",
+            )
+        )
+
+        context = sentry_template_context(request)
+
+        self.assertTrue(context["sentry_browser_enabled"])
+        config = context["sentry_browser_config"]
+        self.assertEqual(config["dsn"], "https://public@example.ingest.sentry.io/1")
+        self.assertEqual(config["environment"], "prod")
+        self.assertEqual(config["release"], "abc123")
+        self.assertEqual(config["tracePropagationTargets"], ["https://builtwithdjango.com"])
+        self.assertNotIn("user", config)
+
+    @override_settings(
+        SENTRY_BROWSER_ENABLED=True,
+        SENTRY_BROWSER_DSN="https://public@example.ingest.sentry.io/1",
+        ENVIRONMENT="prod",
+        SENTRY_RELEASE=None,
+        SENTRY_DIST=None,
+        SENTRY_BROWSER_TRACES_SAMPLE_RATE=0.2,
+        SENTRY_BROWSER_TRACE_PROPAGATION_TARGETS=[],
+        SENTRY_BROWSER_REPLAY_SESSION_SAMPLE_RATE=0.1,
+        SENTRY_BROWSER_REPLAY_ERROR_SAMPLE_RATE=1.0,
+        SENTRY_BROWSER_SEND_DEFAULT_PII=True,
+        SENTRY_BROWSER_ENABLE_LOGS=True,
+    )
+    def test_browser_context_can_include_user_when_browser_pii_is_enabled(self):
+        request = SimpleNamespace(
+            user=SimpleNamespace(
+                is_authenticated=True,
+                pk=1,
+                email="user@example.com",
+                username="user",
+            )
+        )
+
+        context = sentry_template_context(request)
+
+        self.assertEqual(
+            context["sentry_browser_config"]["user"],
+            {
+                "id": "1",
+                "email": "user@example.com",
+                "username": "user",
+            },
+        )
