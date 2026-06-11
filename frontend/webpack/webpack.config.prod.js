@@ -1,11 +1,31 @@
 const Webpack = require("webpack");
 const { merge } = require("webpack-merge");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const { sentryWebpackPlugin } = require("@sentry/webpack-plugin");
 const common = require("./webpack.common.js");
+
+const sentryRelease = process.env.SENTRY_RELEASE || process.env.RENDER_GIT_COMMIT;
+const sentryPluginEnabled = Boolean(
+  process.env.SENTRY_AUTH_TOKEN && process.env.SENTRY_ORG && process.env.SENTRY_PROJECT
+);
+const sentryPluginOptions = {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  sourcemaps: {
+    filesToDeleteAfterUpload: ["./frontend/build/**/*.map"],
+  },
+};
+
+if (sentryRelease) {
+  sentryPluginOptions.release = {
+    name: sentryRelease,
+  };
+}
 
 module.exports = merge(common, {
   mode: "production",
-  devtool: "source-map",
+  devtool: "hidden-source-map",
   bail: true,
   output: {
     filename: "js/[name].[chunkhash:8].js",
@@ -19,7 +39,7 @@ module.exports = merge(common, {
       filename: "css/[name].[contenthash].css",
       chunkFilename: "css/[id].[contenthash].css",
     }),
-  ],
+  ].concat(sentryPluginEnabled ? [sentryWebpackPlugin(sentryPluginOptions)] : []),
   module: {
     rules: [
       {

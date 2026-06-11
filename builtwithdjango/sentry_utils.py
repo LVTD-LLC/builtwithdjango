@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from time import perf_counter
 
 import sentry_sdk
+from django.conf import settings
 from sentry_sdk import metrics
 
 
@@ -92,3 +93,41 @@ def sentry_task_transaction(name, *, attributes=None):
         attributes=attributes,
     ) as transaction:
         yield transaction
+
+
+def sentry_template_context(request):
+    enabled = getattr(settings, "SENTRY_BROWSER_ENABLED", False)
+    dsn = getattr(settings, "SENTRY_BROWSER_DSN", "")
+    if not enabled or not dsn:
+        return {
+            "sentry_browser_enabled": False,
+            "sentry_browser_config": {},
+        }
+
+    send_default_pii = getattr(settings, "SENTRY_BROWSER_SEND_DEFAULT_PII", False)
+    config = {
+        "enabled": True,
+        "dsn": dsn,
+        "environment": getattr(settings, "ENVIRONMENT", ""),
+        "release": getattr(settings, "SENTRY_RELEASE", None),
+        "dist": getattr(settings, "SENTRY_DIST", None),
+        "tracesSampleRate": getattr(settings, "SENTRY_BROWSER_TRACES_SAMPLE_RATE", 0.0),
+        "tracePropagationTargets": getattr(settings, "SENTRY_BROWSER_TRACE_PROPAGATION_TARGETS", []),
+        "replaysSessionSampleRate": getattr(settings, "SENTRY_BROWSER_REPLAY_SESSION_SAMPLE_RATE", 0.0),
+        "replaysOnErrorSampleRate": getattr(settings, "SENTRY_BROWSER_REPLAY_ERROR_SAMPLE_RATE", 1.0),
+        "sendDefaultPii": send_default_pii,
+        "enableLogs": getattr(settings, "SENTRY_BROWSER_ENABLE_LOGS", True),
+    }
+
+    user = getattr(request, "user", None)
+    if send_default_pii and getattr(user, "is_authenticated", False):
+        config["user"] = {
+            "id": str(user.pk),
+            "email": getattr(user, "email", ""),
+            "username": getattr(user, "username", ""),
+        }
+
+    return {
+        "sentry_browser_enabled": True,
+        "sentry_browser_config": config,
+    }
