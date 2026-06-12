@@ -1,6 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import BooleanField, Count, Exists, OuterRef, Q, Value
+from django.db.models import Q
 from django.templatetags.static import static
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
@@ -13,19 +13,9 @@ from newsletter.forms import NewsletterSignupForm
 from .filters import ProjectFilter
 from .forms import AddProject, ProjectUpdateViewForm
 from .hooks import screenshot_saved
-from .models import Like, Project
+from .models import Project
+from .querysets import with_like_metadata
 from .tasks import fetch_page_content, notify_of_new_project, save_screenshot
-
-
-def with_like_metadata(queryset, user):
-    user_has_liked = Value(False, output_field=BooleanField())
-    if user and user.is_authenticated:
-        user_has_liked = Exists(Like.objects.filter(author=user, project=OuterRef("pk"), like=True))
-
-    return queryset.annotate(
-        like_count=Count("like", filter=Q(like__like=True), distinct=True),
-        user_has_liked=user_has_liked,
-    )
 
 
 class ProjectListView(FilterView):

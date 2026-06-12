@@ -23,7 +23,7 @@ from newsletter.tasks import send_buttondown_newsletter
 from newsletter.views import NewsletterSignupForm
 from podcast.models import Episode
 from projects.models import Project
-from projects.views import with_like_metadata
+from projects.querysets import with_like_metadata
 
 from .forms import AddNftRequest, ConfirmEmail
 from .models import CistercianDateNftRequest
