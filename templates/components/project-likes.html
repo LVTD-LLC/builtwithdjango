@@ -17,7 +17,9 @@
             type="button"
             aria-label="Like {{ site.title }}">
       <span class="text-sm font-black" data-like-target="numberOfLikes">{{ site.like_count|default:0 }}</span>
-      <i data-like-target="heart" aria-hidden="true"></i>
+      <i data-like-target="heart"
+         class="{% if site.user_has_liked %}text-red-600 las{% else %}lar{% endif %} la-heart block"
+         aria-hidden="true"></i>
     </button>
   {% else %}
     <button data-action="click->like#toggleModal"
@@ -28,7 +30,9 @@
             type="button"
             aria-label="Like {{ site.title }}">
       <span class="text-sm font-black" data-like-target="numberOfLikes">{{ site.like_count|default:0 }}</span>
-      <i data-like-target="heart" aria-hidden="true"></i>
+      <i data-like-target="heart"
+         class="{% if site.user_has_liked %}text-red-600 las{% else %}lar{% endif %} la-heart block"
+         aria-hidden="true"></i>
     </button>
     <div data-like-target="modal"
          class="fixed inset-0 z-50 hidden overflow-y-auto"

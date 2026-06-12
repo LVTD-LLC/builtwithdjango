@@ -120,9 +120,11 @@ class ProjectLikeToggleAPIView(APIView):
 
     def post(self, request, project_id):
         project = generics.get_object_or_404(Project, pk=project_id)
-        existing_like = Like.objects.filter(author=request.user, project=project).first()
         requested_like = self.get_requested_like(request)
-        like_value = requested_like if requested_like is not None else not bool(existing_like and existing_like.like)
+        like_value = requested_like
+        if like_value is None:
+            existing_like = Like.objects.filter(author=request.user, project=project).first()
+            like_value = not bool(existing_like and existing_like.like)
 
         like, _ = Like.objects.update_or_create(
             author=request.user,

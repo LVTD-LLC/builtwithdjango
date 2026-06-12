@@ -36,7 +36,7 @@ export default class extends Controller {
         this.likedValue = response.data.like;
         this.countValue = response.data.like_count;
         this.render();
-        this.trackChange(nextLiked, previousLikeCount);
+        this.trackChange(this.likedValue, previousLikeCount);
       })
       .catch((error) => {
         console.log(error);
