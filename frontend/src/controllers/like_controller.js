@@ -1,204 +1,111 @@
 import { Controller } from "@hotwired/stimulus";
-import {enter, leave} from 'el-transition';
+import axios from "axios";
+import { enter, leave } from "el-transition";
 
 export default class extends Controller {
-    static targets = [ "projectId", "numberOfLikes", "currentUser", "modalButton", "modal" ];
+  static targets = ["numberOfLikes", "heart", "modalButton", "modal"];
+  static values = {
+    projectId: Number,
+    count: Number,
+    liked: Boolean,
+    toggleUrl: String,
+  };
 
-    // load all likes
-    connect () {
-      const projectId = this.projectIdTarget.value;
-      const currentUserId = this.currentUserTarget.value;
-      const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+  connect() {
+    this.render();
+  }
 
-      const axios = require('axios');
-      axios({
-        methos: 'get',
-        url: `/api/v1/like?project=${projectId}`,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrftoken,
-        }
+  modify() {
+    const previousLikeCount = this.countValue;
+    const nextLiked = !this.likedValue;
+    const csrftoken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+
+    this.setPending(true);
+    axios({
+      method: "post",
+      url: this.toggleUrlValue,
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrftoken,
+      },
+      data: {
+        like: nextLiked,
+      },
+    })
+      .then((response) => {
+        this.likedValue = response.data.like;
+        this.countValue = response.data.like_count;
+        this.render();
+        this.trackChange(this.likedValue, previousLikeCount);
       })
-      .then(function(response) {
-        const arrayWithUsersWithLikes = response.data.filter(like => like.like == true);
-        const arrayOfLikedUserIds = arrayWithUsersWithLikes.map(user => user.author);
-        document.getElementById(`${projectId}_likes`).innerHTML = arrayWithUsersWithLikes.length;
-
-        if (arrayWithUsersWithLikes.length > 0 && arrayOfLikedUserIds.includes(Number(currentUserId))) {
-          document.getElementById(`${projectId}_heart`).classList.add('text-red-600');
-          document.getElementById(`${projectId}_heart`).classList.add('las');
-          document.getElementById(`${projectId}_heart`).classList.add('la-heart');
-          document.getElementById(`${projectId}_heart`).classList.add('block');
-        }
-        else {
-          document.getElementById(`${projectId}_heart`).classList.add('lar');
-          document.getElementById(`${projectId}_heart`).classList.add('la-heart');
-          document.getElementById(`${projectId}_heart`).classList.add('block');
-        }
+      .catch((error) => {
+        console.log(error);
+        this.showError();
       })
-      .catch(error => console.log(error));
+      .finally(() => {
+        this.setPending(false);
+      });
+  }
+
+  render() {
+    this.numberOfLikesTarget.textContent = this.countValue;
+    this.heartTarget.className = this.likedValue ? "text-red-600 las la-heart block" : "lar la-heart block";
+  }
+
+  setPending(isPending) {
+    const button = this.element.querySelector("button");
+    if (!button) {
+      return;
     }
 
-    // Handle liking
-    modify() {
-      const projectId = this.projectIdTarget.value;
-      const currentUserId = this.currentUserTarget.value;
-      const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-      const numberOfLikes = Number(document.getElementById(`${projectId}_likes`).textContent);
+    button.disabled = isPending;
+    button.classList.toggle("opacity-60", isPending);
+  }
 
-      // get the like info for the clicked project
-      const axios = require('axios');
-      axios.get(`/api/v1/like?author=${this.currentUserTarget.value}&project=${this.projectIdTarget.value}`)
-        .then(function (response) {
-          var data = response.data;
+  showError() {
+    const button = this.element.querySelector("button");
+    if (!button) {
+      return;
+    }
 
-          // if there is no like action happened before we need to create one
-          if (data.length == 0) {
-            axios({
-              method: 'post',
-              url: '/api/v1/like/',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken,
-              },
-              data: {
-                "author": currentUserId,
-                "project": projectId,
-                "like": true
-              }
-            })
-            .then(function() {
-              document.getElementById(`${projectId}_likes`).textContent = numberOfLikes + 1;
-              document.getElementById(`${projectId}_likes`).removeAttribute("class");
-              document.getElementById(`${projectId}_heart`).classList.add('text-red-600');
-              document.getElementById(`${projectId}_heart`).classList.add('las');
-              document.getElementById(`${projectId}_heart`).classList.add('la-heart');
-              if (window.bwdTrack) {
-                window.bwdTrack('project like changed', {
-                  project_id: projectId,
-                  like_value: true,
-                  previous_like_count: numberOfLikes,
-                  new_like_count: numberOfLikes + 1
-                });
-              }
-            })
-            .catch(function(error) {
-              console.log(error);
-            });
-          }
-          // if the like is currently of, turn it on
-          else if (data[0].like == false) {
-            axios({
-              methos: 'get',
-              url: `/api/v1/like?author=${currentUserId}&project=${projectId}`,
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken,
-              }
-            })
-            .then(function (response) {
-              const id = response.data[0].id;
-              const data = {
-                "author": Number(currentUserId),
-                "project": Number(projectId),
-                "like": true
-              };
-              const headers = {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken,
-              };
-              axios({
-                method: 'put',
-                url: `/api/v1/like/${id}/`,
-                headers,
-                data
-              })
-              .then(function() {
-                document.getElementById(`${projectId}_likes`).innerHTML = "";
-                document.getElementById(`${projectId}_likes`).innerHTML = `${numberOfLikes + 1}`;
-                document.getElementById(`${projectId}_heart`).removeAttribute("class");
-                document.getElementById(`${projectId}_heart`).classList.add('text-red-600');
-                document.getElementById(`${projectId}_heart`).classList.add('las');
-                document.getElementById(`${projectId}_heart`).classList.add('la-heart');
-                if (window.bwdTrack) {
-                  window.bwdTrack('project like changed', {
-                    project_id: projectId,
-                    like_value: true,
-                    previous_like_count: numberOfLikes,
-                    new_like_count: numberOfLikes + 1
-                  });
-                }
-              })
-              .catch(function(error) {
-                console.log(error);
-              });
-            })
-            .catch();
-          }
-          // if the like is on, turn it of
-          else {
-            axios({
-              methos: 'get',
-              url: `/api/v1/like?author=${currentUserId}&project=${projectId}`,
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrftoken,
-              }
-            })
-            .then(function (response) {
-              const id = response.data[0].id;
-              axios({
-                method: 'put',
-                url: `/api/v1/like/${id}/`,
-                headers: {
-                  'Content-Type': 'application/json',
-                  'X-CSRFToken': csrftoken,
-                },
-                data: {
-                  "author": currentUserId,
-                  "project": projectId,
-                  "like": false
-                }
-              })
-              .then(function() {
-                document.getElementById(`${projectId}_likes`).textContent = numberOfLikes - 1;
-                document.getElementById(`${projectId}_heart`).removeAttribute("class");
-                document.getElementById(`${projectId}_heart`).classList.add('lar');
-                document.getElementById(`${projectId}_heart`).classList.add('la-heart');
-                if (window.bwdTrack) {
-                  window.bwdTrack('project like changed', {
-                    project_id: projectId,
-                    like_value: false,
-                    previous_like_count: numberOfLikes,
-                    new_like_count: numberOfLikes - 1
-                  });
-                }
-              })
-              .catch(function(error) {
-                console.log(error);
-              });
-            })
-            .catch();
-          }
+    button.classList.add("border-red-600", "text-red-600");
+    button.setAttribute("aria-invalid", "true");
+    button.title = "Could not update like";
+    window.setTimeout(() => {
+      button.classList.remove("border-red-600", "text-red-600");
+      button.removeAttribute("aria-invalid");
+      button.removeAttribute("title");
+    }, 3000);
+  }
+
+  trackChange(likeValue, previousLikeCount) {
+    if (!window.bwdTrack) {
+      return;
+    }
+
+    window.bwdTrack("project like changed", {
+      project_id: this.projectIdValue,
+      like_value: likeValue,
+      previous_like_count: previousLikeCount,
+      new_like_count: this.countValue,
+    });
+  }
+
+  toggleModal() {
+    if (this.modalTarget.classList.contains("hidden")) {
+      enter(this.modalTarget);
+      if (window.bwdTrack) {
+        window.bwdTrack("project like auth modal opened", {
+          project_id: this.projectIdValue,
         });
-    }
-
-    // Handle liking for unauthenticated user
-    toggleModal() {
-      if(this.modalTarget.classList.contains('hidden')) {
-        enter(this.modalTarget);
-        if (window.bwdTrack) {
-          window.bwdTrack('project like auth modal opened', {
-            project_id: this.projectIdTarget.value
-          });
-        }
-      } else {
-        leave(this.modalTarget);
-        if (window.bwdTrack) {
-          window.bwdTrack('project like auth modal closed', {
-            project_id: this.projectIdTarget.value
-          });
-        }
+      }
+    } else {
+      leave(this.modalTarget);
+      if (window.bwdTrack) {
+        window.bwdTrack("project like auth modal closed", {
+          project_id: this.projectIdValue,
+        });
       }
     }
+  }
 }

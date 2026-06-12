@@ -4,6 +4,7 @@ from rest_framework import generics, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from blog.models import Post
 from builtwithdjango.analytics import capture
@@ -95,6 +96,63 @@ class UpdateLikeProjectAPIView(generics.RetrieveUpdateDestroyAPIView):
                 "like_id": like_id,
             },
             groups={"project": str(project_id)},
+        )
+
+
+class ProjectLikeToggleAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get_requested_like(self, request):
+        if "like" not in request.data:
+            return None
+
+        value = request.data["like"]
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            normalized_value = value.lower()
+            if normalized_value in {"true", "1", "yes", "on"}:
+                return True
+            if normalized_value in {"false", "0", "no", "off"}:
+                return False
+
+        return bool(value)
+
+    def post(self, request, project_id):
+        project = generics.get_object_or_404(Project, pk=project_id)
+        requested_like = self.get_requested_like(request)
+        like_value = requested_like
+        if like_value is None:
+            existing_like = Like.objects.filter(author=request.user, project=project).first()
+            like_value = not bool(existing_like and existing_like.like)
+
+        like, _ = Like.objects.update_or_create(
+            author=request.user,
+            project=project,
+            defaults={"like": like_value},
+        )
+        like_count = Like.objects.filter(project=project, like=True).count()
+
+        capture(
+            request,
+            "project liked" if like.like else "project unliked",
+            properties={
+                "project_id": like.project_id,
+                "author_id": like.author_id,
+                "like_id": like.id,
+                "like_value": like.like,
+                "like_count": like_count,
+            },
+            groups={"project": str(like.project_id)},
+        )
+
+        return Response(
+            {
+                "project": project.id,
+                "like": like.like,
+                "like_count": like_count,
+            },
+            status=status.HTTP_200_OK,
         )
 
 
