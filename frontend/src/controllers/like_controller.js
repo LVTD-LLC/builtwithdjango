@@ -40,6 +40,7 @@ export default class extends Controller {
       })
       .catch((error) => {
         console.log(error);
+        this.showError();
       })
       .finally(() => {
         this.setPending(false);
@@ -59,6 +60,22 @@ export default class extends Controller {
 
     button.disabled = isPending;
     button.classList.toggle("opacity-60", isPending);
+  }
+
+  showError() {
+    const button = this.element.querySelector("button");
+    if (!button) {
+      return;
+    }
+
+    button.classList.add("border-red-600", "text-red-600");
+    button.setAttribute("aria-invalid", "true");
+    button.title = "Could not update like";
+    window.setTimeout(() => {
+      button.classList.remove("border-red-600", "text-red-600");
+      button.removeAttribute("aria-invalid");
+      button.removeAttribute("title");
+    }, 3000);
   }
 
   trackChange(likeValue, previousLikeCount) {
