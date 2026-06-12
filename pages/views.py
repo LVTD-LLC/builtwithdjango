@@ -23,6 +23,7 @@ from newsletter.tasks import send_buttondown_newsletter
 from newsletter.views import NewsletterSignupForm
 from podcast.models import Episode
 from projects.models import Project
+from projects.views import with_like_metadata
 
 from .forms import AddNftRequest, ConfirmEmail
 from .models import CistercianDateNftRequest
@@ -40,9 +41,10 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["newsletter_form"] = NewsletterSignupForm
-        context["projects"] = Project.objects.filter(published=True, active=True).order_by("-sponsored", "-date_added")[
-            :6
-        ]
+        context["projects"] = with_like_metadata(
+            Project.objects.filter(published=True, active=True).order_by("-sponsored", "-date_added"),
+            getattr(self.request, "user", None),
+        )[:6]
         context["guides"] = Post.objects.filter(type=Post.TUTORIAL, status=Post.PUBLISHED)[:6]
         context["podcast_episodes"] = Episode.objects.all()[:3]
         filter_date = timezone.now() - timedelta(days=60)

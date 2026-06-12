@@ -8,7 +8,7 @@ from django.utils import timezone
 from blog.models import Post
 from jobs.models import Job
 from pages.views import HomeView
-from projects.models import Project
+from projects.models import Like, Project
 
 
 class HomeViewTests(TestCase):
@@ -83,3 +83,28 @@ class HomeViewTests(TestCase):
 
         self.assertEqual(len(context["projects"]), 6)
         self.assertEqual(len(context["guides"]), 6)
+
+    def test_home_projects_include_like_metadata(self):
+        user = get_user_model().objects.create_user(username="home-liker", email="home-liker@example.com")
+        other_user = get_user_model().objects.create_user(username="other-home-liker", email="other@example.com")
+        project = Project.objects.create(
+            title="Liked Home Project",
+            url="https://example.com/home-liked",
+            short_description="A liked home project.",
+            published=True,
+            active=True,
+        )
+        Like.objects.create(author=user, project=project, like=True)
+        Like.objects.create(author=other_user, project=project, like=False)
+
+        request = self.factory.get("/")
+        request.user = user
+        view = HomeView()
+        view.setup(request)
+
+        with patch("pages.views.static", return_value="/static/vendors/images/logo.png"):
+            context = view.get_context_data()
+
+        home_project = context["projects"][0]
+        self.assertEqual(home_project.like_count, 1)
+        self.assertTrue(home_project.user_has_liked)
