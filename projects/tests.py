@@ -290,6 +290,29 @@ class ProjectListViewTests(TestCase):
 
         self.assertEqual(list(view.get_queryset())[:2], [more_liked, less_liked])
 
+    def test_project_list_annotates_like_count_and_user_like_state(self):
+        User = get_user_model()
+        user = User.objects.create_user(username="liker", email="liker@example.com")
+        other_user = User.objects.create_user(username="other-liker", email="other-liker@example.com")
+        project = Project.objects.create(
+            title="Annotated Project",
+            url="https://annotated.example.com",
+            short_description="Annotated.",
+            published=True,
+            active=True,
+        )
+        Like.objects.create(author=user, project=project, like=True)
+        Like.objects.create(author=other_user, project=project, like=False)
+
+        request = RequestFactory().get("/projects/")
+        request.user = user
+        view = ProjectListView()
+        view.setup(request)
+
+        annotated_project = view.get_queryset().get(id=project.id)
+        self.assertEqual(annotated_project.like_count, 1)
+        self.assertTrue(annotated_project.user_has_liked)
+
 
 class LikeMigrationTests(TestCase):
     def test_dedupe_likes_keeps_preferred_like_per_author_project_pair(self):

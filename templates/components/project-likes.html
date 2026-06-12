@@ -1,9 +1,12 @@
 {% load static %}
 {% load widget_tweaks %}
 
-<div data-controller="like" class="inline-flex">
-  <input type="hidden" data-like-target="projectId" value="{{ site.id }}" />
-  <input type="hidden" data-like-target="currentUser" value="{{ user.id }}" />
+<div data-controller="like"
+     data-like-project-id-value="{{ site.id }}"
+     data-like-count-value="{{ site.like_count|default:0 }}"
+     data-like-liked-value="{{ site.user_has_liked|yesno:'true,false' }}"
+     data-like-toggle-url-value="{% url 'api_project_like_toggle' site.id %}"
+     class="inline-flex">
   {% csrf_token %}
   {% if user.is_authenticated %}
     <button data-action="click->like#modify"
@@ -13,8 +16,8 @@
             class="bw-icon-button gap-1"
             type="button"
             aria-label="Like {{ site.title }}">
-      <span class="text-sm font-black" data-like-target="numberOfLikes" id="{{ site.id }}_likes"></span>
-      <i id="{{ site.id }}_heart" aria-hidden="true"></i>
+      <span class="text-sm font-black" data-like-target="numberOfLikes">{{ site.like_count|default:0 }}</span>
+      <i data-like-target="heart" aria-hidden="true"></i>
     </button>
   {% else %}
     <button data-action="click->like#toggleModal"
@@ -24,8 +27,8 @@
             class="bw-icon-button gap-1"
             type="button"
             aria-label="Like {{ site.title }}">
-      <span class="text-sm font-black" data-like-target="numberOfLikes" id="{{ site.id }}_likes"></span>
-      <i id="{{ site.id }}_heart" aria-hidden="true"></i>
+      <span class="text-sm font-black" data-like-target="numberOfLikes">{{ site.like_count|default:0 }}</span>
+      <i data-like-target="heart" aria-hidden="true"></i>
     </button>
     <div data-like-target="modal"
          class="fixed inset-0 z-50 hidden overflow-y-auto"

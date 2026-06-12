@@ -1,6 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db.models import Count, Q
+from django.db.models import BooleanField, Count, Exists, OuterRef, Q, Value
 from django.templatetags.static import static
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
@@ -13,8 +13,19 @@ from newsletter.forms import NewsletterSignupForm
 from .filters import ProjectFilter
 from .forms import AddProject, ProjectUpdateViewForm
 from .hooks import screenshot_saved
-from .models import Project
+from .models import Like, Project
 from .tasks import fetch_page_content, notify_of_new_project, save_screenshot
+
+
+def with_like_metadata(queryset, user):
+    user_has_liked = Value(False, output_field=BooleanField())
+    if user and user.is_authenticated:
+        user_has_liked = Exists(Like.objects.filter(author=user, project=OuterRef("pk"), like=True))
+
+    return queryset.annotate(
+        like_count=Count("like", filter=Q(like__like=True), distinct=True),
+        user_has_liked=user_has_liked,
+    )
 
 
 class ProjectListView(FilterView):
@@ -24,26 +35,20 @@ class ProjectListView(FilterView):
     paginate_by = 12
 
     def get_queryset(self):
-        queryset = Project.objects.filter(published=True, active=True, might_be_spam=False).order_by(
-            "-sponsored", "-updated_date"
+        queryset = with_like_metadata(
+            Project.objects.filter(published=True, active=True, might_be_spam=False),
+            getattr(self.request, "user", None),
         )
 
         if self.request.GET.get("order_by"):
             ordering = self.request.GET.get("order_by")
 
             if ordering == "like":
-                queryset = (
-                    queryset
-                    # need like_count as an alias for comlex query
-                    # https://stackoverflow.com/questions/39375339/django-complex-annotations-require-an-alias-what-is-alias-here
-                    .annotate(like__count=Count("like", filter=Q(like__like=True))).order_by(
-                        "-sponsored", f"-like__count"
-                    )
-                )
+                return queryset.order_by("-sponsored", "-like_count")
             else:
-                queryset = queryset.order_by("-sponsored", "-updated_date")
+                return queryset.order_by("-sponsored", "-updated_date")
 
-        return queryset
+        return queryset.order_by("-sponsored", "-updated_date")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -63,7 +68,12 @@ class ProjectListView(FilterView):
 class InactiveProjectListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Project
     template_name = "projects/all_inactive_projects.html"
-    queryset = Project.objects.filter(published=True, active=False, might_be_spam=False)
+
+    def get_queryset(self):
+        return with_like_metadata(
+            Project.objects.filter(published=True, active=False, might_be_spam=False),
+            self.request.user,
+        )
 
     def test_func(self):
         return self.request.user.is_staff
@@ -74,7 +84,7 @@ class ProjectDetailView(DetailView):
     template_name = "projects/project_detail.html"
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = with_like_metadata(super().get_queryset(), self.request.user)
         if self.request.user.is_staff:
             return queryset
 

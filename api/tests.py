@@ -105,6 +105,60 @@ class LikeApiTests(TestCase):
         self.assertEqual(like.project, self.project)
         self.assertFalse(like.like)
 
+    def test_project_like_toggle_requires_authentication(self):
+        response = self.client.post(
+            reverse("api_project_like_toggle", kwargs={"project_id": self.project.id}),
+            data=json.dumps({"like": True}),
+            content_type="application/json",
+        )
+
+        self.assertIn(response.status_code, {401, 403})
+        self.assertFalse(Like.objects.exists())
+
+    def test_project_like_toggle_creates_like_and_returns_count(self):
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse("api_project_like_toggle", kwargs={"project_id": self.project.id}),
+            data=json.dumps({"like": True}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["like"], True)
+        self.assertEqual(response.json()["like_count"], 1)
+        self.assertTrue(Like.objects.get(author=self.user, project=self.project).like)
+
+    def test_project_like_toggle_updates_existing_like_and_returns_count(self):
+        Like.objects.create(author=self.user, project=self.project, like=True)
+        Like.objects.create(author=self.other_user, project=self.project, like=True)
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse("api_project_like_toggle", kwargs={"project_id": self.project.id}),
+            data=json.dumps({"like": False}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["like"], False)
+        self.assertEqual(response.json()["like_count"], 1)
+        self.assertFalse(Like.objects.get(author=self.user, project=self.project).like)
+
+    def test_project_like_toggle_toggles_when_like_value_is_omitted(self):
+        Like.objects.create(author=self.user, project=self.project, like=True)
+        self.client.force_login(self.user)
+
+        response = self.client.post(
+            reverse("api_project_like_toggle", kwargs={"project_id": self.project.id}),
+            data=json.dumps({}),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["like"], False)
+        self.assertEqual(response.json()["like_count"], 0)
+
 
 class SearchProjectsApiTests(TestCase):
     def test_search_projects_filters_to_public_active_projects_and_limits_results(self):
