@@ -1,9 +1,7 @@
 import stripe
 from allauth.account.adapter import get_adapter
-from allauth.account.internal import flows
 from allauth.account.models import EmailAddress
 from allauth.account.views import SignupView
-from allauth.core.exceptions import ImmediateHttpResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ImproperlyConfigured
@@ -47,7 +45,7 @@ class CustomSignupView(SignupView):
     def form_valid(self, form):
         try:
             with transaction.atomic():
-                self.user, response = form.try_save(self.request)
+                return super().form_valid(form)
         except IntegrityError as error:
             field = duplicate_signup_field(error)
             if field is None:
@@ -56,21 +54,6 @@ class CustomSignupView(SignupView):
             form.add_error(field, DUPLICATE_SIGNUP_ERRORS[field])
             logger.warning(f"Rejected duplicate signup {field} after validation: {str(error)}")
             return self.form_invalid(form)
-
-        if response:
-            return response
-
-        try:
-            # Keep this completion flow in sync with allauth 65.17.0's SignupView.form_valid when upgrading allauth.
-            redirect_url = self.get_success_url()
-            return flows.signup.complete_signup(
-                self.request,
-                user=self.user,
-                redirect_url=redirect_url,
-                by_passkey=form.by_passkey,
-            )
-        except ImmediateHttpResponse as error:
-            return error.response
 
 
 class ProfileUpdateForm(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
