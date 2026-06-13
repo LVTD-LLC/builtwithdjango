@@ -24,11 +24,22 @@ from .models import CustomUser
 
 logger = get_builtwithdjango_logger(__name__)
 
+DUPLICATE_SIGNUP_ERRORS = {
+    "email": "A user with that email already exists.",
+    "username": "A user with that username already exists.",
+}
+
 
 def duplicate_signup_field(error):
     message = str(error).lower()
     if "auth_user_username_key" in message or "auth_user.username" in message:
         return "username"
+    if (
+        "unique_verified_email" in message
+        or "account_emailaddress_email" in message
+        or "account_emailaddress.email" in message
+    ):
+        return "email"
     return None
 
 
@@ -42,7 +53,7 @@ class CustomSignupView(SignupView):
             if field is None:
                 raise
 
-            form.add_error(field, "A user with that username already exists.")
+            form.add_error(field, DUPLICATE_SIGNUP_ERRORS[field])
             logger.warning(f"Rejected duplicate signup {field} after validation: {str(error)}")
             return self.form_invalid(form)
 
