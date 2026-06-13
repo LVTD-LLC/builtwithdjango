@@ -1,9 +1,13 @@
 import stripe
 from allauth.account.adapter import get_adapter
+from allauth.account.internal import flows
 from allauth.account.models import EmailAddress
+from allauth.account.views import SignupView
+from allauth.core.exceptions import ImmediateHttpResponse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ImproperlyConfigured
+from django.db import IntegrityError, transaction
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, UpdateView
@@ -19,6 +23,42 @@ from .models import CustomUser
 # See ACCOUNT_FORMS in settings.py for custom form configuration
 
 logger = get_builtwithdjango_logger(__name__)
+
+
+def duplicate_signup_field(error):
+    message = str(error).lower()
+    if "auth_user_username_key" in message or "auth_user.username" in message:
+        return "username"
+    return None
+
+
+class CustomSignupView(SignupView):
+    def form_valid(self, form):
+        try:
+            with transaction.atomic():
+                self.user, response = form.try_save(self.request)
+        except IntegrityError as error:
+            field = duplicate_signup_field(error)
+            if field is None:
+                raise
+
+            form.add_error(field, "A user with that username already exists.")
+            logger.warning(f"Rejected duplicate signup {field} after validation: {str(error)}")
+            return self.form_invalid(form)
+
+        if response:
+            return response
+
+        try:
+            redirect_url = self.get_success_url()
+            return flows.signup.complete_signup(
+                self.request,
+                user=self.user,
+                redirect_url=redirect_url,
+                by_passkey=form.by_passkey,
+            )
+        except ImmediateHttpResponse as error:
+            return error.response
 
 
 class ProfileUpdateForm(LoginRequiredMixin, SuccessMessageMixin, UpdateView):
