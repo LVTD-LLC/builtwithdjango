@@ -61,6 +61,7 @@ class CustomSignupView(SignupView):
             return response
 
         try:
+            # Keep this completion flow in sync with allauth 65.17.0's SignupView.form_valid when upgrading allauth.
             redirect_url = self.get_success_url()
             return flows.signup.complete_signup(
                 self.request,
