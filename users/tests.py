@@ -4,13 +4,16 @@ from unittest.mock import patch
 
 import stripe
 from django.contrib.auth import get_user_model
+from django.contrib.sessions.middleware import SessionMiddleware
 from django.core.exceptions import ImproperlyConfigured
 from django.db import IntegrityError, connection, transaction
-from django.test import TestCase, override_settings
+from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 
 from builtwithdjango.stripe_client import get_or_create_stripe_customer_id, get_stripe_price_id
 from jobs.models import Job
+from users.forms import CustomUserCreationForm
+from users.views import CustomSignupView, duplicate_signup_field
 from users.webhooks import get_checkout_distinct_id, handle_stripe_event
 
 PRICE_IDS = {
@@ -18,6 +21,73 @@ PRICE_IDS = {
     "django_devs": "price_devs",
     "job": "price_job",
 }
+
+
+class SignupTests(TestCase):
+    def test_duplicate_username_validation_race_returns_form_error(self):
+        request = RequestFactory().post(reverse("account_signup"))
+        SessionMiddleware(lambda req: None).process_request(request)
+        request.session.save()
+        form = CustomUserCreationForm(
+            data={
+                "username": "race-user",
+                "email": "race-user@example.com",
+                "password1": "A-very-long-test-pass123",
+                "password2": "A-very-long-test-pass123",
+            }
+        )
+        self.assertTrue(form.is_valid())
+
+        get_user_model().objects.create_user(username="race-user", email="existing-race-user@example.com")
+
+        view = CustomSignupView()
+        view.setup(request)
+        response = view.form_valid(form)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("username", form.errors)
+        self.assertEqual(get_user_model().objects.filter(username="race-user").count(), 1)
+
+    def test_duplicate_email_save_race_returns_form_error(self):
+        request = RequestFactory().post(reverse("account_signup"))
+        SessionMiddleware(lambda req: None).process_request(request)
+        request.session.save()
+        form = CustomUserCreationForm(
+            data={
+                "username": "email-race-user",
+                "email": "email-race-user@example.com",
+                "password1": "A-very-long-test-pass123",
+                "password2": "A-very-long-test-pass123",
+            }
+        )
+        self.assertTrue(form.is_valid())
+        try_save = patch.object(
+            form, "try_save", side_effect=IntegrityError('duplicate key value violates unique constraint "unique_verified_email"')
+        )
+        try_save.start()
+        self.addCleanup(try_save.stop)
+
+        view = CustomSignupView()
+        view.setup(request)
+        response = view.form_valid(form)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("email", form.errors)
+
+    def test_duplicate_signup_field_detects_postgres_username_constraint(self):
+        error = IntegrityError('duplicate key value violates unique constraint "auth_user_username_key"')
+
+        self.assertEqual(duplicate_signup_field(error), "username")
+
+    def test_duplicate_signup_field_detects_sqlite_username_constraint(self):
+        error = IntegrityError("UNIQUE constraint failed: auth_user.username")
+
+        self.assertEqual(duplicate_signup_field(error), "username")
+
+    def test_duplicate_signup_field_detects_email_constraint(self):
+        error = IntegrityError('duplicate key value violates unique constraint "unique_verified_email"')
+
+        self.assertEqual(duplicate_signup_field(error), "email")
 
 
 def stripe_event(price_id, metadata, customer_id="cus_test", subscription_id=None):

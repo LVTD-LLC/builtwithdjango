@@ -1,9 +1,11 @@
 import stripe
 from allauth.account.adapter import get_adapter
 from allauth.account.models import EmailAddress
+from allauth.account.views import SignupView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.exceptions import ImproperlyConfigured
+from django.db import IntegrityError, transaction
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views.generic import TemplateView, UpdateView
@@ -19,6 +21,39 @@ from .models import CustomUser
 # See ACCOUNT_FORMS in settings.py for custom form configuration
 
 logger = get_builtwithdjango_logger(__name__)
+
+DUPLICATE_SIGNUP_ERRORS = {
+    "email": "A user with that email already exists.",
+    "username": "A user with that username already exists.",
+}
+
+
+def duplicate_signup_field(error):
+    message = str(error).lower()
+    if "auth_user_username_key" in message or "auth_user.username" in message:
+        return "username"
+    if (
+        "unique_verified_email" in message
+        or "account_emailaddress_email" in message
+        or "account_emailaddress.email" in message
+    ):
+        return "email"
+    return None
+
+
+class CustomSignupView(SignupView):
+    def form_valid(self, form):
+        try:
+            with transaction.atomic():
+                return super().form_valid(form)
+        except IntegrityError as error:
+            field = duplicate_signup_field(error)
+            if field is None:
+                raise
+
+            form.add_error(field, DUPLICATE_SIGNUP_ERRORS[field])
+            logger.warning(f"Rejected duplicate signup {field} after validation: {str(error)}")
+            return self.form_invalid(form)
 
 
 class ProfileUpdateForm(LoginRequiredMixin, SuccessMessageMixin, UpdateView):

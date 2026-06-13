@@ -21,6 +21,7 @@ from django.contrib.sitemaps.views import sitemap
 from django.urls import include, path
 from django.views.generic import TemplateView
 
+from users.views import CustomSignupView
 from users.webhooks import stripe_webhook
 
 from .sitemaps import sitemaps
@@ -39,6 +40,7 @@ urlpatterns = (
         path("podcast/", include("podcast.urls")),
         path("developers/", include("developers.urls")),
         path("tools/", include("tools.urls")),
+        path("users/signup/", CustomSignupView.as_view(), name="account_signup"),
         path("users/", include("allauth.urls")),
         path("users/", include("users.urls")),
         path("uses", TemplateView.as_view(template_name="pages/uses.html"), name="uses"),
