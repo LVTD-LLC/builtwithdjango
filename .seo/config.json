@@ -106,7 +106,7 @@
     "browser": false,
     "git": true,
     "rowset": true,
-    "posthog": false,
+    "posthog": true,
     "citeguild": false,
     "reddit": false
   },
@@ -204,11 +204,11 @@
   },
   "posthog": {
     "host": "https://us.posthog.com",
-    "project_id": null,
+    "project_id": 52923,
     "production_hosts": [
       "builtwithdjango.com"
     ],
-    "timezone": null,
+    "timezone": "UTC",
     "success_events": [],
     "site_search_events": [],
     "web_vitals_enabled": null
@@ -235,9 +235,9 @@
   },
   "tool_evidence": {
     "gsc": "Direct site-scoped read succeeded; preferred OpenSEO bridge api_error.",
-    "posthog": "Snippet present in live homepage; ingestion and scoped read access not verified.",
+    "posthog": "Project 52923 confirmed; production-host-scoped request event ingestion verified. Acquisition, conversion attribution, AI referrals and field CWV remain unmeasured.",
     "ga4": "No gtag in sampled homepage; no verified property.",
-    "browser": "Not measured; action changes sitemap only, no rendering path."
+    "browser": "Configured Browserless CDP unreachable on bounded live open; browser/mobile verification unavailable."
   },
   "version": "2.2",
   "automation": {
