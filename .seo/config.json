@@ -1,0 +1,251 @@
+{
+  "site": {
+    "domain": "https://builtwithdjango.com",
+    "name": "Built with Django",
+    "aliases": [
+      "BuiltWithDjango"
+    ],
+    "locale": {
+      "language": "en",
+      "country": null
+    },
+    "repo_kind": "both",
+    "sitemap_url": "https://builtwithdjango.com/sitemap.xml"
+  },
+  "stack": {
+    "kind": "django",
+    "pages_dir": "templates",
+    "routes_file": "builtwithdjango/urls.py",
+    "sitemap_path": "builtwithdjango/sitemaps.py",
+    "content_store": {
+      "type": "app_db",
+      "platform": "Django",
+      "model_or_collection": "blog.Post",
+      "body_format": "Markdown",
+      "read_method": "public HTML and sitemap",
+      "write_method": "authenticated superuser API or reviewed migration; inspect before use"
+    },
+    "content_layout": "templates/blog/post_detail.html"
+  },
+  "gsc": {
+    "site_url": "sc-domain:builtwithdjango.com",
+    "fallback": "existing service account via protected Infisical flow"
+  },
+  "bing": {
+    "api_key_env": null,
+    "site_url": null
+  },
+  "openseo": {
+    "project_id": "06683e18-f563-4b06-a057-f0fb6345508e",
+    "tracker_id": null
+  },
+  "ga4": {
+    "property_id": null
+  },
+  "competitors": [],
+  "content_surfaces": [
+    "templates/"
+  ],
+  "priority_pages": [
+    "https://builtwithdjango.com/",
+    "https://builtwithdjango.com/projects/",
+    "https://builtwithdjango.com/blog/",
+    "https://builtwithdjango.com/tools/django-secret/"
+  ],
+  "crawl_hubs": [
+    "/",
+    "/projects/",
+    "/blog/"
+  ],
+  "authority": {
+    "dr": null,
+    "dr_source": "none",
+    "kd_ceiling": null,
+    "kd_source": null,
+    "last_read": null
+  },
+  "budget": {
+    "per_run_usd": 0,
+    "ai_panel_cadence_days": 14,
+    "health_diff_cadence_days": 1,
+    "claim_reverify_sample": 3,
+    "link_check_cadence_days": 7,
+    "authority": "No paid research cap supplied; conservative zero incremental paid research until configured."
+  },
+  "select": {
+    "floor": 9
+  },
+  "paths": {
+    "roadmap": ".seo/roadmap.md",
+    "ledger": ".seo/content-ledger.md",
+    "truth": ".seo/truth.md",
+    "needs_you": ".seo/needs-you.md",
+    "runs": ".seo/runs/",
+    "health": ".seo/health/",
+    "briefs": ".seo/briefs/",
+    "evidence": ".seo/evidence/"
+  },
+  "logs": {
+    "path": null,
+    "format": "none"
+  },
+  "tools_detected": {
+    "gsc": true,
+    "bing_webmaster": false,
+    "dfs": false,
+    "openseo": true,
+    "answer_engine_data": false,
+    "brand_tracking": false,
+    "crawl_audit": true,
+    "python3": true,
+    "ga4": false,
+    "psi": false,
+    "logs": false,
+    "community_search": false,
+    "social_posting": false,
+    "browser": false,
+    "git": true,
+    "rowset": true,
+    "posthog": false,
+    "citeguild": false,
+    "reddit": false
+  },
+  "tools_declined": [],
+  "cache": {
+    "domain_rating": {
+      "value": null,
+      "read": null
+    },
+    "keyword_volumes": {
+      "read": null
+    },
+    "competitor_gap": {
+      "read": null
+    },
+    "ai_panel": {
+      "read": null
+    },
+    "health_fingerprint": {
+      "read": null
+    }
+  },
+  "sampling": {
+    "p1": {
+      "variants": 6,
+      "platforms": 4,
+      "n": 3
+    },
+    "p2": {
+      "variants": 3,
+      "platforms": 2,
+      "n": 2
+    },
+    "p3": {
+      "variants": 1,
+      "platforms": 1,
+      "n": 1
+    }
+  },
+  "initialized": true,
+  "radar": {
+    "seeds": [
+      "Django project examples",
+      "Django authentication",
+      "Django deployment",
+      "Django developer jobs",
+      "Django tools",
+      "Django SaaS"
+    ],
+    "communities": [
+      "forum.djangoproject.com",
+      "reddit.com/r/django"
+    ],
+    "cadence_days": 7
+  },
+  "speed": {
+    "psi_api_key_env": "PSI_API_KEY",
+    "top_pages": 10,
+    "cadence_days": 7
+  },
+  "cadence": {
+    "gsc_hours": 20,
+    "health_hours": 6,
+    "link_check_hours": 20,
+    "radar_free_hours": 20,
+    "bing_hours": 20,
+    "outcomes_hours": 20,
+    "competitor_hours": 168,
+    "serp_hours": 168,
+    "backlinks_hours": 168,
+    "link_opportunities_hours": 168,
+    "seasonality_hours": 720,
+    "site_search_hours": 168
+  },
+  "git": {
+    "mode": "pr",
+    "merge_policy": "autonomous"
+  },
+  "repo": {
+    "watch_paths": [
+      "CHANGELOG.md",
+      "builtwithdjango/urls.py",
+      "builtwithdjango/sitemaps.py",
+      "templates/**",
+      "blog/**",
+      "projects/**"
+    ]
+  },
+  "serp": {
+    "top_queries": 20
+  },
+  "distribute": {
+    "social_skill": "postiz",
+    "window_days": 14
+  },
+  "posthog": {
+    "host": "https://us.posthog.com",
+    "project_id": null,
+    "production_hosts": [
+      "builtwithdjango.com"
+    ],
+    "timezone": null,
+    "success_events": [],
+    "site_search_events": [],
+    "web_vitals_enabled": null
+  },
+  "research_store": {
+    "backend": "rowset",
+    "project_key": "aac584ff-6115-4ec7-ad1a-2e70bc9fdcda",
+    "seo_section_key": "1abfd02c-18a0-448a-b085-addf9500aff5",
+    "datasets": {
+      "history": "68cbbabb-33fd-46a4-8483-3ee2f83b76ae"
+    },
+    "schema_version": 1,
+    "index_column": "record_key",
+    "last_sync_at": "2026-09-20T07:07:00Z"
+  },
+  "community": {
+    "reddit_enabled": true,
+    "subreddits": [],
+    "max_results_per_query": 10
+  },
+  "citations": {
+    "citeguild_enabled": true,
+    "max_results": 10
+  },
+  "tool_evidence": {
+    "gsc": "Direct site-scoped read succeeded; preferred OpenSEO bridge api_error.",
+    "posthog": "Snippet present in live homepage; ingestion and scoped read access not verified.",
+    "ga4": "No gtag in sampled homepage; no verified property.",
+    "browser": "Not measured; action changes sitemap only, no rendering path."
+  },
+  "version": "2.2",
+  "automation": {
+    "id": "4fdbbddb-9ee1-429c-88a1-4489cb322e7c",
+    "timezone": "Europe/Istanbul",
+    "idempotency": "builtwithdjango.com|<automation id>|<scheduled Istanbul date>",
+    "owner": "main",
+    "default_branch": "resolve via GitHub every run",
+    "parallel_runs": false
+  }
+}

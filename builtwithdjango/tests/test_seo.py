@@ -2,11 +2,14 @@ import json
 import tempfile
 from datetime import timedelta
 from pathlib import Path
+from xml.etree import ElementTree
 
 from django.contrib.auth import get_user_model
+from django.contrib.sites.models import Site
 from django.template import Context, Template
 from django.template.loader import render_to_string
 from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
+from django.urls import reverse
 from django.utils import timezone
 from webpack_boilerplate import utils as webpack_utils
 
@@ -76,6 +79,24 @@ class SeoTemplateTagTests(SimpleTestCase):
 
 
 class SeoSitemapTests(TestCase):
+    def test_sitemap_excludes_submission_form_without_changing_login_redirect(self):
+        Site.objects.update_or_create(pk=1, defaults={"domain": "builtwithdjango.com", "name": "Built with Django"})
+        Site.objects.clear_cache()
+        response = self.client.get("/sitemap.xml")
+
+        self.assertEqual(response.status_code, 200)
+        locations = {
+            node.text
+            for node in ElementTree.fromstring(response.content).iter("{http://www.sitemaps.org/schemas/sitemap/0.9}loc")
+        }
+        self.assertIn("https://builtwithdjango.com/projects/", locations)
+        self.assertNotIn("https://builtwithdjango.com/projects/new/", locations)
+        self.assertRedirects(
+            self.client.get(reverse("submit_project")),
+            f"{reverse('account_login')}?next={reverse('submit_project')}",
+            fetch_redirect_response=False,
+        )
+
     def test_static_sitemap_includes_public_index_pages(self):
         items = StaticViewSitemap().items()
 

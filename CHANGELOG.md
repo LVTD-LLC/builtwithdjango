@@ -25,6 +25,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - Rebuilt project likes to render counts from annotated project queries and use a single toggle request instead of per-card like API reads.
 
 ### Fixed
+- Excluded the sign-in-only project submission form from the public sitemap while preserving its login and submission flow.
 - Returned a signup form error instead of a server error when duplicate username submissions race validation.
 - Made the bottom-right desktop ad use a solid surface instead of an opacity fade.
 - Reduced noisy Sentry errors when direct project HTML fetches are blocked but the Jina Reader fallback succeeds.

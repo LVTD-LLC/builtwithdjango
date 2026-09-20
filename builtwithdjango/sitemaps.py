@@ -27,7 +27,6 @@ class StaticViewSitemap(sitemaps.Sitemap):
             "uses",
             "support",
             "advertize",
-            "submit_project",
             "projects",
             "makers",
             "developers",
