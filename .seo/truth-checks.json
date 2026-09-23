@@ -1,0 +1,22 @@
+[
+  {
+    "claim": "Only public projects enter the sitemap",
+    "paths": [
+      "builtwithdjango/sitemaps.py"
+    ],
+    "must_match": [
+      "published=True, active=True, might_be_spam=False"
+    ],
+    "must_not_match": []
+  },
+  {
+    "claim": "Sign-in-only submission is not a public sitemap destination",
+    "paths": [
+      "builtwithdjango/sitemaps.py"
+    ],
+    "must_match": [],
+    "must_not_match": [
+      "\"submit_project\""
+    ]
+  }
+]
