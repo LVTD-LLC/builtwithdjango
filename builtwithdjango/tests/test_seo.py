@@ -9,7 +9,7 @@ from django.contrib.sites.models import Site
 from django.template import Context, Template
 from django.template.loader import render_to_string
 from django.test import RequestFactory, SimpleTestCase, TestCase, override_settings
-from django.urls import reverse
+from django.urls import Resolver404, resolve, reverse
 from django.utils import timezone
 from webpack_boilerplate import utils as webpack_utils
 
@@ -76,6 +76,33 @@ class SeoTemplateTagTests(SimpleTestCase):
         self.assertIn("Allow: /", robots_txt)
         self.assertIn("Disallow: /users/", robots_txt)
         self.assertIn("Sitemap: https://builtwithdjango.com/sitemap.xml", robots_txt)
+
+
+class PublishedLinkRedirectTests(SimpleTestCase):
+    def test_published_aliases_redirect_directly_and_preserve_queries(self):
+        aliases = {
+            "/guides": "/blog/",
+            "/tutorials": "/blog/",
+            "/showcase": "/projects/",
+            "/tools/secret-key-generator": "/tools/django-secret/",
+            "/tools/html-formatter": "/tools/format-html/",
+        }
+        query = "?utm_source=guide&tag=one&tag=two&next=https%3A%2F%2Fexample.com"
+        for alias, destination in aliases.items():
+            for suffix in ("", "/"):
+                for method in (self.client.get, self.client.head):
+                    with self.subTest(alias=alias, suffix=suffix, method=method.__name__):
+                        self.assertRedirects(
+                            method(alias + suffix + query),
+                            destination + query,
+                            status_code=301,
+                            fetch_redirect_response=False,
+                        )
+
+    def test_aliases_do_not_mask_missing_resources(self):
+        for path in ("/guides/social-auth/", "/guides/missing/", "/showcase/missing/", "/tools/missing/"):
+            with self.subTest(path=path), self.assertRaises(Resolver404):
+                resolve(path)
 
 
 class SeoSitemapTests(TestCase):

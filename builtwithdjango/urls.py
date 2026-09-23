@@ -18,8 +18,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.sitemaps.views import sitemap
-from django.urls import include, path
-from django.views.generic import TemplateView
+from django.urls import include, path, re_path
+from django.views.generic import RedirectView, TemplateView
 
 from users.views import CustomSignupView
 from users.webhooks import stripe_webhook
@@ -30,6 +30,10 @@ from .views import robots_txt
 urlpatterns = (
     [
         path(f"{settings.ADMIN_URL}", admin.site.urls),
+        # Published articles still link to these alternate section names.
+        re_path(r"^guides/?$", RedirectView.as_view(pattern_name="blog", permanent=True, query_string=True)),
+        re_path(r"^tutorials/?$", RedirectView.as_view(pattern_name="blog", permanent=True, query_string=True)),
+        re_path(r"^showcase/?$", RedirectView.as_view(pattern_name="projects", permanent=True, query_string=True)),
         path("", include("pages.urls")),
         path("projects/", include("projects.urls")),
         path("api/v1/", include("api.urls")),
