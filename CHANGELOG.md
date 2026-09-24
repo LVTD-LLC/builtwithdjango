@@ -22,6 +22,8 @@ their recorded dates; previously undated entries use their Git history dates.
 
 ### Changed
 
+- Reverted PR #120's domain-level project restrictions and cleanup command: shared hosts such as GitHub can contain distinct projects. Exact-URL uniqueness remains unchanged; no project records were cleaned up.
+- Retired the domain-lock model while preserving applied migration history and its unused table for rolling-deployment compatibility.
 - Moved all 28 blog posts into version-controlled Markdown with preserved URLs, dates, tags, and icons; blog pages, homepage guides, RSS, sitemap, and authenticated reads now use repository content.
 - Retired database blog publishing: API writes return 405 and legacy admin records are read-only, with original data retained for rollback.
 - Grouped the changelog by date instead of release version and updated contributor guidance to keep future entries date-based.

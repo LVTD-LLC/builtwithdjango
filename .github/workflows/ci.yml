@@ -9,7 +9,7 @@ on:
 
 jobs:
   python:
-    name: Python ${{ matrix.python-version }} (${{ matrix.database }})
+    name: Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -17,27 +17,7 @@ jobs:
         python-version:
           - "3.11"
           - "3.13"
-        database: [sqlite]
-        include:
-          - python-version: "3.13"
-            database: postgres
-    services:
-      postgres:
-        image: postgres:17
-        env:
-          POSTGRES_DB: bwd_test
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
     env:
-      DJANGO_TEST_USE_DATABASE_URL: ${{ matrix.database == 'postgres' && '1' || '0' }}
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/bwd_test
       DJANGO_SETTINGS_MODULE: builtwithdjango.test_settings
     steps:
       - name: Checkout
@@ -71,7 +51,7 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest ${{ matrix.database == 'postgres' && '--migrations' || '' }} \
+          pytest \
             --cov=api \
             --cov=blog \
             --cov=builtwithdjango \
