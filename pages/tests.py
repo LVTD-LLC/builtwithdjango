@@ -60,7 +60,7 @@ class HomeViewTests(TestCase):
         for index in range(7):
             Project.objects.create(
                 title=f"Project {index}",
-                url=f"https://example.com/projects/{index}",
+                url=f"https://project-{index}.example.com",
                 short_description="A Django project worth studying.",
                 published=True,
                 active=True,

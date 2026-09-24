@@ -1,7 +1,10 @@
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q
+from django.http import HttpResponseRedirect
 from django.templatetags.static import static
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, UpdateView
@@ -141,7 +144,11 @@ class ProjectCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.logged_in_maker = self.request.user
-        self.object = form.save()
+        try:
+            self.object = form.save()
+        except ValidationError as exc:
+            form.add_error(None, exc)
+            return self.form_invalid(form)
 
         async_task(
             save_screenshot,
@@ -166,7 +173,8 @@ class ProjectCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
             groups={"project": str(self.object.id)},
         )
 
-        return super(ProjectCreateView, self).form_valid(form)
+        messages.success(self.request, self.get_success_message(form.cleaned_data))
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class ProjectUpdateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageMixin, UpdateView):
@@ -210,16 +218,23 @@ class ProjectUpdateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageM
             if not screenshot_uploaded:
                 form.instance.homepage_screenshot = ""
 
-        with transaction.atomic():
-            previous_title = (
-                Project.objects.select_for_update().filter(id=form.instance.id).values_list("title", flat=True).get()
-            )
-            response = super().form_valid(form)
-            if previous_title != self.object.title:
-                ProjectTitleAlias.objects.get_or_create(
-                    title=previous_title,
-                    defaults={"project": self.object},
+        try:
+            with transaction.atomic():
+                previous_title = (
+                    Project.objects.select_for_update()
+                    .filter(id=form.instance.id)
+                    .values_list("title", flat=True)
+                    .get()
                 )
+                response = super().form_valid(form)
+                if previous_title != self.object.title:
+                    ProjectTitleAlias.objects.get_or_create(
+                        title=previous_title,
+                        defaults={"project": self.object},
+                    )
+        except ValidationError as exc:
+            form.add_error(None, exc)
+            return self.form_invalid(form)
 
         if url_changed:
             if not screenshot_uploaded:
