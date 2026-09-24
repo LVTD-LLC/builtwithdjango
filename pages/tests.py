@@ -5,7 +5,8 @@ from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
 from django.utils import timezone
 
-from blog.models import Post
+from blog.content import Post
+from blog.testing import make_post
 from jobs.models import Job
 from pages.views import HomeView
 from projects.models import Like, Project
@@ -64,7 +65,8 @@ class HomeViewTests(TestCase):
                 published=True,
                 active=True,
             )
-            Post.objects.create(
+            make_post(
+                self,
                 title=f"Guide {index}",
                 description="A practical Django guide.",
                 author=author,

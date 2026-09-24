@@ -9,8 +9,8 @@
 - `users/` - custom user model, profiles, account utilities, Stripe webhooks,
   and user tasks.
 - `makers/` - legacy maker profiles and optional links to users.
-- `blog/` - guides/articles, feeds, comments, publishing tasks, and Markdown
-  rendering.
+- `blog/` - repository content loading, guides/articles, feeds, and Markdown rendering.
+- `content/blog/` - version-controlled Markdown posts and YAML metadata; see `content/README.md`.
 - `jobs/` - job and company models, listing/submission flows, feeds, and import
   tasks.
 - `developers/` - developer directory, profiles, and pricing/access flows.
