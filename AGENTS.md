@@ -33,9 +33,11 @@ lists show only published, active, non-spam records.
   Inspect generated migrations; do not hand-edit historical migrations.
 - Add or update tests for features, bug fixes, authorization changes, queue
   behavior, and risky refactors.
-- Update `CHANGELOG.md` under `Unreleased` for material user-facing or
-  operational changes. Skip entries for tests, formatting, and internal-only
-  refactors.
+- Update `CHANGELOG.md` under the current `YYYY-MM-DD` date heading for
+  material user-facing or operational changes. Keep dates newest first and
+  combine same-day changes under shared change-type headings; do not add
+  release versions or an `Unreleased` section. Preserve existing entry text
+  and dates. Skip entries for tests, formatting, and internal-only refactors.
 - Preserve unrelated user changes in a dirty worktree.
 
 ## Commands
