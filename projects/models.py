@@ -3,7 +3,8 @@ from functools import lru_cache
 import requests
 from autoslug import AutoSlugField
 from django.conf import settings
-from django.db import models
+from django.core.exceptions import ValidationError
+from django.db import models, router, transaction
 from django.urls import reverse
 from django.utils import timezone
 from model_utils.models import TimeStampedModel
@@ -13,6 +14,8 @@ from pydantic_ai import Agent
 from builtwithdjango.ai import get_openrouter_model
 from builtwithdjango.sentry_utils import sentry_count, sentry_duration_metric, sentry_span
 from builtwithdjango.utils import get_builtwithdjango_logger
+
+from .domains import DUPLICATE_DOMAIN_MESSAGE, project_domain
 
 logger = get_builtwithdjango_logger(__name__)
 
@@ -129,6 +132,58 @@ class Project(models.Model):
     usage_instructions = models.TextField(blank=True, help_text="How to use the product")
     page_links = models.TextField(blank=True, help_text="Links found on the page")
     content_language = models.CharField(max_length=50, blank=True, help_text="Language the page is written in")
+
+    def validate_domain(self, using=None):
+        """Validate new sites; grandfather unchanged domains in legacy duplicates."""
+        using = using or router.db_for_write(type(self), instance=self)
+        try:
+            domain = project_domain(self.url)
+        except ValidationError as exc:
+            raise ValidationError({"url": exc.messages}) from exc
+        projects = type(self).objects.using(using)
+        if self.pk and not self._state.adding:
+            previous_url = projects.filter(pk=self.pk).values_list("url", flat=True).first()
+            if previous_url:
+                try:
+                    if project_domain(previous_url) == domain:
+                        return domain
+                except ValidationError:
+                    pass
+        # Read URLs directly so old records and rolling-deploy writes are covered,
+        # without a destructive deduplication or a denormalized-domain backfill.
+        for existing_url in projects.exclude(pk=self.pk).values_list("url", flat=True).iterator():
+            try:
+                existing_domain = project_domain(existing_url)
+            except ValidationError:
+                continue
+            if existing_domain == domain:
+                raise ValidationError({"url": DUPLICATE_DOMAIN_MESSAGE})
+        return domain
+
+    def clean(self):
+        super().clean()
+        self.validate_domain()
+
+    def save(self, *args, **kwargs):
+        update_fields = kwargs.get("update_fields")
+        if update_fields is not None and "url" not in update_fields:
+            return super().save(*args, **kwargs)
+        using = kwargs.get("using") or router.db_for_write(type(self), instance=self)
+        try:
+            domain = project_domain(self.url)
+        except ValidationError as exc:
+            raise ValidationError({"url": exc.messages}) from exc
+        # A unique row per domain serializes competing submissions on PostgreSQL,
+        # including the first two submissions for a previously unseen domain.
+        with transaction.atomic(using=using):
+            # Match owner edits / screenshot tasks: project row first, domain second.
+            # Reversing that order here could deadlock with those callers.
+            if self.pk and not self._state.adding:
+                type(self).objects.using(using).select_for_update().filter(pk=self.pk).first()
+            ProjectDomainLock.objects.using(using).get_or_create(domain=domain)
+            ProjectDomainLock.objects.using(using).select_for_update().get(domain=domain)
+            self.validate_domain(using=using)
+            return super().save(*args, **kwargs)
 
     def __str__(self):
         return self.title
@@ -334,3 +389,9 @@ class Like(TimeStampedModel):
 
     def __str__(self):
         return f"{self.project}: {self.author} ({self.like})"
+
+
+class ProjectDomainLock(models.Model):
+    """Persistent locks for domain-level submission uniqueness, not ownership."""
+
+    domain = models.CharField(max_length=253, primary_key=True)

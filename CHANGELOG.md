@@ -14,6 +14,12 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 **Security** in case of vulnerabilities.
 
 ## Unreleased
+### Fixed
+- Prevent duplicate project domains across submissions and URL edits, including URL variants and concurrent submissions, before notifications or scraping are queued.
+
+### Added
+- Dry-run-first `cleanup_duplicate_project_domains` command with domain/keeper selection and non-deleting deactivation of legacy duplicates.
+
 ### Changed (2026-09-24)
 - Moved all 28 blog posts into version-controlled Markdown with preserved URLs, dates, tags, and icons; blog pages, homepage guides, RSS, sitemap, and authenticated reads now use repository content.
 - Retired database blog publishing: API writes return 405 and legacy admin records are read-only, with original data retained for rollback.

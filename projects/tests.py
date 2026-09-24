@@ -3,6 +3,7 @@ import json
 from base64 import b64decode
 from contextlib import nullcontext
 from datetime import timedelta
+from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from types import SimpleNamespace
@@ -10,8 +11,11 @@ from unittest.mock import Mock, patch
 
 import requests
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import RequestFactory, TestCase
+from django.core.management import call_command
+from django.core.management.base import CommandError
+from django.test import RequestFactory, TestCase, TransactionTestCase, skipUnlessDBFeature
 from django.test.utils import override_settings
 from django.urls import reverse
 from django.utils import timezone
@@ -236,6 +240,69 @@ class ProjectOwnershipTests(TestCase):
         response = self.client.get(reverse("project_update", kwargs={"slug": unlinked_project.slug}))
 
         self.assertEqual(response.status_code, 403)
+
+    @patch("projects.views.async_task")
+    @patch("projects.views.capture")
+    def test_duplicate_domain_rejected_for_any_submitter_without_side_effects(self, capture, enqueue):
+        for user in [self.owner, self.other_user]:
+            with self.subTest(user=user.username):
+                self.client.force_login(user)
+                response = self.client.post(
+                    reverse("submit_project"),
+                    {
+                        "title": "Another Title",
+                        "short_description": "Description",
+                        "url": "http://www.owner-project.example.com:8080/another-project/?ref=ad",
+                    },
+                )
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, "A project with this domain has already been submitted")
+        self.assertEqual(Project.objects.count(), 1)
+        enqueue.assert_not_called()
+        capture.assert_not_called()
+
+    @patch("projects.views.async_task")
+    def test_owner_cannot_move_listing_to_another_projects_domain(self, enqueue):
+        Project.objects.create(title="Taken", url="https://taken.example.com", short_description="Description")
+        self.client.force_login(self.owner)
+        response = self.client.post(
+            reverse("project_update", kwargs={"slug": self.project.slug}),
+            {
+                "title": self.project.title,
+                "short_description": "Description",
+                "url": "https://www.taken.example.com/ad",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "A project with this domain has already been submitted")
+        self.project.refresh_from_db()
+        self.assertEqual(self.project.url, "https://owner-project.example.com")
+        enqueue.assert_not_called()
+
+    @patch("projects.views.async_task")
+    def test_submission_race_returns_field_error(self, enqueue):
+        from .forms import AddProject
+
+        original_save = AddProject.save
+
+        def insert_competitor_then_save(form, *args, **kwargs):
+            Project.objects.create(title="Competitor", url="http://racing.example.com/first", short_description="First")
+            return original_save(form, *args, **kwargs)
+
+        self.client.force_login(self.owner)
+        with patch.object(AddProject, "save", insert_competitor_then_save):
+            response = self.client.post(
+                reverse("submit_project"),
+                {
+                    "title": "Racer",
+                    "short_description": "Description",
+                    "url": "https://racing.example.com/second",
+                },
+            )
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "A project with this domain has already been submitted")
+        self.assertFalse(Project.objects.filter(title="Racer").exists())
+        enqueue.assert_not_called()
 
 
 class ProjectTestCase(TestCase):
@@ -754,3 +821,139 @@ class ProjectTaskTests(TestCase):
 
         project.refresh_from_db()
         self.assertFalse(project.published)
+
+
+class ProjectDomainTests(TestCase):
+    def test_normalizes_site_url_variants(self):
+        from .domains import project_domain
+
+        for url in [
+            "https://mecexis.com",
+            "http://WWW.MECEXIS.COM:8080/en/projects/merkandoo/?ad=1#x",
+            "https://mecexis.com./other",
+        ]:
+            with self.subTest(url=url):
+                self.assertEqual(project_domain(url), "mecexis.com")
+        self.assertEqual(project_domain("https://www.bücher.de/x"), "xn--bcher-kva.de")
+        self.assertEqual(project_domain("http://[2001:db8::1]/"), "2001:db8::1")
+        self.assertNotEqual(project_domain("https://one.example.com"), project_domain("https://two.example.com"))
+        for url in ["not a url", "javascript:alert(1)", "ftp://example.com/file"]:
+            with self.subTest(url=url), self.assertRaises(ValidationError):
+                project_domain(url)
+
+    def test_model_and_admin_form_reject_existing_unpublished_inactive_domains(self):
+        from django.forms import modelform_factory
+
+        Project.objects.create(
+            title="Existing", url="https://mecexis.com/en/one", short_description="First", published=False, active=False
+        )
+        duplicate = Project(title="Duplicate", url="https://www.mecexis.com/en/two", short_description="Second")
+        with self.assertRaises(ValidationError):
+            duplicate.save()
+        form = modelform_factory(Project, fields=["title", "url", "short_description"])(
+            data={
+                "title": duplicate.title,
+                "url": duplicate.url,
+                "short_description": duplicate.short_description,
+            }
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("url", form.errors)
+        self.assertEqual(Project.objects.count(), 1)
+
+    def test_same_domain_edits_and_other_field_saves_remain_valid(self):
+        project = Project.objects.create(title="Existing", url="https://mecexis.com/en/one", short_description="First")
+        project.url = "http://www.mecexis.com/new"
+        project.full_clean()
+        project.save()
+        project.active = False
+        project.save(update_fields=["active"])
+        project.refresh_from_db()
+        self.assertEqual(project.url, "http://www.mecexis.com/new")
+        self.assertFalse(project.active)
+
+    def legacy_duplicates(self):
+        first = Project.objects.create(title="Pending", url="https://mecexis.com/ad/first", short_description="First")
+        second = Project.objects.create(
+            title="Published", url="https://another.example.com", short_description="Second", published=True
+        )
+        # Reproduce data already stored before enforcement (bulk writes bypass save).
+        Project.objects.filter(pk=second.pk).update(url="https://www.mecexis.com/ad/second")
+        return first, second
+
+    def test_cleanup_dry_run_apply_repeat_preserves_records_and_relations(self):
+        first, second = self.legacy_duplicates()
+        user = get_user_model().objects.create_user(username="liker")
+        Like.objects.create(project=first, author=user, like=True)
+        output = StringIO()
+        call_command("cleanup_duplicate_project_domains", domain="mecexis.com", stdout=output)
+        self.assertIn(f"keep #{second.pk}", output.getvalue())
+        first.refresh_from_db()
+        self.assertTrue(first.active)
+        from .models import ProjectDomainLock
+
+        self.assertEqual(ProjectDomainLock.objects.count(), 2)
+        call_command("cleanup_duplicate_project_domains", domain="www.mecexis.com", apply=True, stdout=StringIO())
+        first.refresh_from_db()
+        second.refresh_from_db()
+        self.assertFalse(first.active)
+        self.assertFalse(first.published)
+        self.assertTrue(second.active)
+        self.assertTrue(second.published)
+        self.assertEqual(Project.objects.count(), 2)
+        self.assertEqual(Like.objects.count(), 1)
+        output = StringIO()
+        call_command("cleanup_duplicate_project_domains", apply=True, stdout=output)
+        self.assertIn("0 project(s)", output.getvalue())
+        # Legacy duplicates can still be edited, but cannot enable another submission.
+        first.short_description = "Corrected description"
+        first.save()
+        with self.assertRaises(ValidationError):
+            Project.objects.create(title="Third", url="https://mecexis.com/third", short_description="Third")
+
+    def test_cleanup_explicit_keeper_and_validation(self):
+        first, second = self.legacy_duplicates()
+        unrelated = Project.objects.create(
+            title="Unrelated", url="https://unrelated.example.com", short_description="Other"
+        )
+        for kwargs in [{"keep_id": first.pk}, {"domain": "mecexis.com", "keep_id": unrelated.pk}]:
+            with self.subTest(kwargs=kwargs), self.assertRaises(CommandError):
+                call_command("cleanup_duplicate_project_domains", apply=True, stdout=StringIO(), **kwargs)
+        call_command(
+            "cleanup_duplicate_project_domains", domain="mecexis.com", keep_id=first.pk, apply=True, stdout=StringIO()
+        )
+        second.refresh_from_db()
+        unrelated.refresh_from_db()
+        self.assertFalse(second.active)
+        self.assertTrue(unrelated.active)
+
+
+@skipUnlessDBFeature("has_select_for_update")
+class ProjectDomainConcurrencyTests(TransactionTestCase):
+    def test_simultaneous_submissions_create_only_one_project(self):
+        from concurrent.futures import ThreadPoolExecutor
+        from threading import Barrier
+
+        from django.db import connections
+
+        start = Barrier(2)
+
+        def submit(index):
+            try:
+                start.wait(timeout=10)
+                try:
+                    Project.objects.create(
+                        title=f"Concurrent {index}",
+                        short_description="Racing submission",
+                        url=f"https://www.concurrent.example.com/project/{index}",
+                    )
+                    return "created"
+                except ValidationError:
+                    return "duplicate"
+            finally:
+                connections.close_all()
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            results = list(pool.map(submit, [1, 2]))
+        self.assertCountEqual(results, ["created", "duplicate"])
+        self.assertEqual(Project.objects.count(), 1)
