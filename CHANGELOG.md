@@ -25,6 +25,7 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 - Rebuilt project likes to render counts from annotated project queries and use a single toggle request instead of per-card like API reads.
 
 ### Fixed
+- Replaced an unsupported CDN performance-study claim with sourced Django deployment guidance; preserved the article’s original publication date.
 - Restored broken article links to the guides, project showcase, secret-key generator, and HTML formatter with permanent redirects to their existing pages.
 - Excluded the sign-in-only project submission form from the public sitemap while preserving its login and submission flow.
 - Returned a signup form error instead of a server error when duplicate username submissions race validation.
