@@ -67,6 +67,12 @@ class RepositoryPostTests(SimpleTestCase):
         post = make_post(self, content="# Body\n\n---\n\n```python\nprint('hi')\n```\n")
         self.assertEqual(post.content, "# Body\n\n---\n\n```python\nprint('hi')\n```\n")
 
+    def test_crlf_front_matter_preserves_body_line_endings(self):
+        post = make_post(self, content="First line\nSecond line\n")
+        path = self.blog_directory / (post.slug + ".md")
+        path.write_bytes(path.read_bytes().replace(b"\n", b"\r\n"))
+        self.assertEqual(read_post(path).content, "First line\r\nSecond line\r\n")
+
     def test_file_edits_reload_in_the_same_process(self):
         original = make_post(self)
         self.assertEqual(all_posts(), [original])

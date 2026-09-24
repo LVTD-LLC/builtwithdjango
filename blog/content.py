@@ -68,9 +68,10 @@ def _read_post(path, modified_ns, size):
     # Key by file version so development edits reload without parsing every file on every request.
     try:
         text = path.read_bytes().decode("utf-8")
-        if not text.startswith("---\n"):
+        front_matter = re.match(r"\A---\r?\n(.*?)\r?\n---\r?\n", text, re.DOTALL)
+        if front_matter is None:
             raise ValueError("expected YAML front matter")
-        header, body = text[4:].split("\n---\n", 1)
+        header, body = front_matter.group(1), text[front_matter.end() :]
         data = yaml.safe_load(header)
         if not isinstance(data, dict):
             raise ValueError("front matter must be a mapping")

@@ -39,8 +39,8 @@ The legacy Post/Tag/Comment models and tables are retained, unchanged, as an
 archive for rollback and existing comment foreign keys. Their admin is read-only.
 `/api/v1/posts/` and `/api/v1/posts/<id>/` retain superuser-token read access,
 including status/type/level list filtering; POST/PUT/PATCH/DELETE now return 405.
-Update publishing automations to edit these Markdown files via PR, not the API or
-content data migrations. No automated database deletion or backfill occurs.
+The SEO configuration points automation at these Markdown files. Publishing
+automations must edit them via PR, not the API or content data migrations. No automated database deletion or backfill occurs.
 
 Rollback by reverting the cutover commit and deploying the prior version. Changes
 made to Markdown after cutover are not copied back into the archive automatically;

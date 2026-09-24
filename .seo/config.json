@@ -18,12 +18,12 @@
     "routes_file": "builtwithdjango/urls.py",
     "sitemap_path": "builtwithdjango/sitemaps.py",
     "content_store": {
-      "type": "app_db",
+      "type": "repo_files",
       "platform": "Django",
-      "model_or_collection": "blog.Post",
-      "body_format": "Markdown",
-      "read_method": "public HTML and sitemap",
-      "write_method": "authenticated superuser API or reviewed migration; inspect before use"
+      "model_or_collection": "content/blog/*.md",
+      "body_format": "Markdown with YAML front matter",
+      "read_method": "repository files; public HTML and sitemap; authenticated read-only API",
+      "write_method": "edit content/blog/<slug>.md through a reviewed PR and deployment; never write legacy blog.Post rows"
     },
     "content_layout": "templates/blog/post_detail.html"
   },
@@ -44,7 +44,8 @@
   },
   "competitors": [],
   "content_surfaces": [
-    "templates/"
+    "templates/",
+    "content/blog/"
   ],
   "priority_pages": [
     "https://builtwithdjango.com/",
@@ -192,7 +193,8 @@
       "builtwithdjango/sitemaps.py",
       "templates/**",
       "blog/**",
-      "projects/**"
+      "projects/**",
+      "content/blog/**"
     ]
   },
   "serp": {
