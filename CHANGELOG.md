@@ -14,6 +14,10 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 **Security** in case of vulnerabilities.
 
 ## Unreleased
+### Changed (2026-09-24)
+- Moved all 28 blog posts into version-controlled Markdown with preserved URLs, dates, tags, and icons; blog pages, homepage guides, RSS, sitemap, and authenticated reads now use repository content.
+- Retired database blog publishing: API writes return 405 and legacy admin records are read-only, with original data retained for rollback.
+
 ### Added
 - Restored production PostHog activation from the Built with Django public project key and added explicit checkout return/cancel analytics events for job, sponsored job, and Django Developers checkout flows.
 - Let signed-in project submitters update their linked listing metadata and screenshot.

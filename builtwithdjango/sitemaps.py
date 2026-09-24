@@ -2,7 +2,7 @@ from django.contrib import sitemaps
 from django.contrib.sitemaps import GenericSitemap
 from django.urls import reverse
 
-from blog.models import Post
+from blog.content import published_posts
 from developers.models import Developer
 from jobs.models import Job
 from makers.models import Maker
@@ -63,13 +63,20 @@ class CurrentJobSitemap(sitemaps.Sitemap):
         return obj.created_datetime
 
 
+class BlogSitemap(sitemaps.Sitemap):
+    priority = 0.9
+    protocol = "https"
+
+    def items(self):
+        return published_posts()
+
+    def lastmod(self, obj):
+        return obj.modified
+
+
 sitemaps = {
     "static": StaticViewSitemap,
-    "blog": GenericSitemap(
-        {"queryset": Post.objects.filter(status=Post.PUBLISHED), "date_field": "created"},
-        priority=0.9,
-        protocol="https",
-    ),
+    "blog": BlogSitemap(),
     "projects": GenericSitemap(
         {
             "queryset": Project.objects.filter(published=True, active=True, might_be_spam=False),

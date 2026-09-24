@@ -5,7 +5,9 @@ from django.test import TestCase
 from django.urls import reverse
 from rest_framework.authtoken.models import Token
 
-from blog.models import Post, Tag
+from blog.content import Post
+from blog.models import Post as ArchivedPost
+from blog.testing import make_post
 from projects.models import Like, Project
 
 
@@ -217,172 +219,44 @@ class BlogPostApiTests(TestCase):
         cls.admin_token = Token.objects.create(user=cls.admin)
 
     def test_post_api_requires_superuser_token(self):
-        payload = self.post_payload()
+        make_post(self)
+        for url in (reverse("api_create_post"), reverse("api_post_detail", args=[1])):
+            self.assertEqual(self.client.get(url).status_code, 401)
+            for token in (self.user_token, self.staff_token):
+                self.assertEqual(self.client.get(url, **self.auth_headers(token)).status_code, 403)
+            self.client.force_login(self.admin)
+            self.assertEqual(self.client.get(url).status_code, 401)
+            self.client.logout()
 
-        anonymous_response = self.client.post(
-            reverse("api_create_post"),
-            data=json.dumps(payload),
-            content_type="application/json",
-        )
-        self.assertIn(anonymous_response.status_code, {401, 403})
+    def test_list_and_retrieve_repository_posts_with_filters(self):
+        draft = make_post(self, slug="draft-guide", status=Post.DRAFT)
+        published = make_post(self, slug="published-guide", tag_list=[{"id": 3, "name": "Django", "slug": "django"}])
+        headers = self.auth_headers(self.admin_token)
+        response = self.client.get(reverse("api_create_post"), **headers)
+        self.assertEqual({post["id"] for post in response.json()}, {draft.id, published.id})
+        response = self.client.get(reverse("api_create_post"), {"status": "PB", "type": "TUTORIAL"}, **headers)
+        self.assertEqual([post["id"] for post in response.json()], [published.id])
+        response = self.client.get(reverse("api_post_detail", args=[published.id]), **headers)
+        self.assertEqual(response.json()["content"], published.content)
+        self.assertEqual(response.json()["tag_list"], published.tag_list)
+        self.assertEqual(self.client.get(reverse("api_post_detail", args=[999]), **headers).status_code, 404)
 
-        user_token_response = self.client.post(
-            reverse("api_create_post"),
-            data=json.dumps(payload),
-            content_type="application/json",
-            **self.auth_headers(self.user_token),
-        )
-        self.assertEqual(user_token_response.status_code, 403)
-
-        staff_token_response = self.client.post(
-            reverse("api_create_post"),
-            data=json.dumps(payload),
-            content_type="application/json",
-            **self.auth_headers(self.staff_token),
-        )
-        self.assertEqual(staff_token_response.status_code, 403)
-
-        self.client.force_login(self.admin)
-        session_response = self.client.post(
-            reverse("api_create_post"),
-            data=json.dumps(payload),
-            content_type="application/json",
-        )
-        self.assertIn(session_response.status_code, {401, 403})
-
-        self.assertFalse(Post.objects.filter(slug="testing-django").exists())
-
-    def test_create_post_assigns_token_user_author_and_creates_tags(self):
-        response = self.client.post(
-            reverse("api_create_post"),
-            data=json.dumps(self.post_payload()),
-            content_type="application/json",
-            **self.auth_headers(self.admin_token),
-        )
-
-        self.assertEqual(response.status_code, 201)
-        post = Post.objects.get(slug="testing-django")
-        self.assertEqual(post.author, self.admin)
-        self.assertEqual(post.level, Post.INTERMEDIATE)
-        self.assertEqual(post.unsplashID, "testing-image")
-        self.assertEqual(set(post.tags.values_list("name", flat=True)), {"Django", "Testing"})
-        self.assertTrue(Tag.objects.filter(name="Django", slug="django").exists())
-        self.assertEqual(response.json()["author"], self.admin.id)
-
-    def test_list_posts_returns_all_posts_to_superuser_token(self):
-        draft = self.make_post(title="Draft Guide", slug="draft-guide", status=Post.DRAFT)
-        published = self.make_post(title="Published Guide", slug="published-guide", status=Post.PUBLISHED)
-
-        response = self.client.get(reverse("api_create_post"), **self.auth_headers(self.admin_token))
-
-        self.assertEqual(response.status_code, 200)
-        post_ids = {post["id"] for post in response.json()}
-        self.assertEqual(post_ids, {draft.id, published.id})
-
-    def test_retrieve_post_returns_post_detail_to_superuser_token(self):
-        post = self.make_post(title="Agent Guide", slug="agent-guide")
-        post.tags.add(Tag.objects.create(name="Agents", slug="agents"))
-
-        response = self.client.get(reverse("api_post_detail", args=[post.id]), **self.auth_headers(self.admin_token))
-
-        self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(data["id"], post.id)
-        self.assertEqual(data["title"], "Agent Guide")
-        self.assertEqual(data["tag_list"], [{"id": post.tags.first().id, "name": "Agents", "slug": "agents"}])
-
-    def test_update_post_changes_fields_and_replaces_tags(self):
-        post = self.make_post(title="Old Guide", slug="old-guide", status=Post.DRAFT)
-        post.tags.add(Tag.objects.create(name="Old", slug="old"))
-
-        response = self.client.patch(
-            reverse("api_post_detail", args=[post.id]),
-            data=json.dumps(
-                {
-                    "title": "Updated Guide",
-                    "status": Post.PUBLISHED,
-                    "level": Post.ADVANCED,
-                    "tags": "Django, Agents",
-                }
-            ),
-            content_type="application/json",
-            **self.auth_headers(self.admin_token),
-        )
-
-        self.assertEqual(response.status_code, 200)
-        post.refresh_from_db()
-        self.assertEqual(post.title, "Updated Guide")
-        self.assertEqual(post.status, Post.PUBLISHED)
-        self.assertEqual(post.level, Post.ADVANCED)
-        self.assertEqual(set(post.tags.values_list("name", flat=True)), {"Django", "Agents"})
-
-    def test_update_post_with_blank_tags_leaves_tags_unchanged(self):
-        for index, tags_value in enumerate(["", "  ", ",, ,"]):
-            with self.subTest(tags_value=tags_value):
-                post = self.make_post(title=f"Tagged Guide {index}", slug=f"tagged-guide-{index}")
-                tag = Tag.objects.create(name=f"Old {index}", slug=f"old-{index}")
-                post.tags.add(tag)
-
-                response = self.client.patch(
-                    reverse("api_post_detail", args=[post.id]),
-                    data=json.dumps({"tags": tags_value}),
-                    content_type="application/json",
-                    **self.auth_headers(self.admin_token),
-                )
-
-                self.assertEqual(response.status_code, 200)
-                self.assertEqual(list(post.tags.all()), [tag])
-
-    def test_update_post_reuses_case_variant_tag_names(self):
-        django_tag = Tag.objects.create(name="Django", slug="django")
-        post = self.make_post(title="Case Tags", slug="case-tags")
-
-        response = self.client.patch(
-            reverse("api_post_detail", args=[post.id]),
-            data=json.dumps({"tags": "DJANGO, Agents"}),
-            content_type="application/json",
-            **self.auth_headers(self.admin_token),
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(set(post.tags.values_list("name", flat=True)), {"Django", "Agents"})
-        self.assertIn(django_tag, post.tags.all())
-        self.assertEqual(Tag.objects.filter(slug="django").count(), 1)
-
-    def test_delete_post_removes_post(self):
-        post = self.make_post(title="Delete Me", slug="delete-me")
-
-        response = self.client.delete(reverse("api_post_detail", args=[post.id]), **self.auth_headers(self.admin_token))
-
-        self.assertEqual(response.status_code, 204)
-        self.assertFalse(Post.objects.filter(id=post.id).exists())
-
-    def post_payload(self):
-        return {
-            "title": "Testing Django",
-            "description": "A guide to testing Django projects.",
-            "slug": "testing-django",
-            "tags": "Django, Testing",
-            "content": "Use tests to protect behavior.",
-            "status": Post.PUBLISHED,
-            "type": Post.TUTORIAL,
-            "level": Post.INTERMEDIATE,
-            "unsplashID": "testing-image",
-        }
-
-    def make_post(self, **kwargs):
-        defaults = {
-            "title": "Testing Django",
-            "description": "A guide to testing Django projects.",
-            "slug": "testing-django",
-            "content": "Use tests to protect behavior.",
-            "status": Post.PUBLISHED,
-            "type": Post.TUTORIAL,
-            "level": Post.BEGINNER,
-            "author": self.admin,
-        }
-        defaults.update(kwargs)
-        return Post.objects.create(**defaults)
+    def test_writes_are_disabled_and_archive_untouched(self):
+        archive = ArchivedPost.objects.create(author=self.admin, title="Archive", slug="archive", content="Unchanged")
+        make_post(self, id=archive.id)
+        headers = self.auth_headers(self.admin_token)
+        for method, url in (
+            ("post", reverse("api_create_post")),
+            ("put", reverse("api_post_detail", args=[archive.id])),
+            ("patch", reverse("api_post_detail", args=[archive.id])),
+            ("delete", reverse("api_post_detail", args=[archive.id])),
+        ):
+            response = getattr(self.client, method)(
+                url, data=json.dumps({"title": "Changed"}), content_type="application/json", **headers
+            )
+            self.assertEqual(response.status_code, 405)
+        archive.refresh_from_db()
+        self.assertEqual(archive.title, "Archive")
 
     def auth_headers(self, token):
         return {"HTTP_AUTHORIZATION": f"Token {token.key}"}

@@ -110,8 +110,7 @@ host pytest is mainly for deliberately reproducing the CI environment.
 - Project publication depends on background screenshot processing. When
   diagnosing a missing submission, inspect the Django Q queue, worker, storage
   upload, and final `published` state.
-- Keep API mutation permissions explicit. Blog post API writes are restricted
-  to token-authenticated superusers.
+- Keep API mutation permissions explicit. Blog posts live in `content/blog/*.md`; API reads require a superuser token and writes are disabled.
 - Never print, log, commit, or place in screenshots API keys, OAuth tokens,
   session data, private form contents, or `.env` values.
 - Keep optional integrations behind settings checks so focused local
