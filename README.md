@@ -43,35 +43,3 @@ Browser Sentry defaults to the same DSN through `SENTRY_BROWSER_DSN` and adds Ja
 For a free-plan project, keep the defaults in `.env.example` unless volume requires tuning. The most useful backend knobs are `SENTRY_TRACES_SAMPLE_RATE`, `SENTRY_PROFILE_SESSION_SAMPLE_RATE`, `SENTRY_LOG_LEVEL`, and `SENTRY_INCLUDE_AI_PROMPTS`. Prompts, browser user PII, and local variables are disabled by default to avoid accidentally sending submitted project content or secrets to Sentry.
 
 Production webpack builds emit hidden source maps. If `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, and `SENTRY_PROJECT` are present during the build, the Sentry webpack plugin uploads them and deletes local `.map` files after upload. Sentry Size Analysis is for mobile builds, so source-map upload is the relevant web equivalent for this Django site.
-
-
-### Duplicate project domains
-
-Submissions and URL edits allow one project per normalized hostname, including
-pending, inactive and spam listings. HTTP/HTTPS, `www.`, case, trailing DNS dots,
-ports, paths, queries and fragments do not distinguish projects. Genuine
-subdomains remain separate so hosted apps are not all grouped together. Links
-must point directly to the project, not another site's portfolio/ad page.
-
-Existing duplicates are preserved during deployment. Preview cleanup first:
-
-```bash
-python manage.py cleanup_duplicate_project_domains --domain mecexis.com
-python manage.py cleanup_duplicate_project_domains --domain mecexis.com --keep-id PROJECT_ID
-python manage.py cleanup_duplicate_project_domains --domain mecexis.com --keep-id PROJECT_ID --apply
-```
-
-Omit `--domain` to inspect all domains. The default keeper is a visible, curated
-listing, then an active non-spam listing, then the oldest record (ID breaks ties).
-`--keep-id` requires `--domain` and overrides that choice; the keeper is unchanged,
-not automatically published. `--apply` sets other listings to unpublished and
-inactive. It never deletes projects, comments, likes, ownership, or media, and
-never guesses replacement URLs. Correct a portfolio link to its verified direct
-project URL in admin or the owner's edit form instead. Inspect the preview before
-applying, particularly for shared-host legacy entries.
-
-The additive migration creates a small domain-lock table, without editing existing
-projects. PostgreSQL row locks serialize concurrent submissions; model/form
-validation reads existing URLs directly so no domain backfill can become stale.
-Importers must use `Project.save()`/`objects.create()` or model forms: bulk writes
-and raw SQL bypass model validation and are only appropriate for reviewed repairs.

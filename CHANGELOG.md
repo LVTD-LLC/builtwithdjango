@@ -14,6 +14,10 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 **Security** in case of vulnerabilities.
 
 ## Unreleased
+### Reverted (2026-09-24)
+- Reverted PR #120's domain-level project restrictions and cleanup command: shared hosts such as GitHub can contain distinct projects. Exact-URL uniqueness remains unchanged; no project records were cleaned up.
+- Retired the domain-lock model while preserving applied migration history and its unused table for rolling-deployment compatibility.
+
 ### Fixed
 - Prevent duplicate project domains across submissions and URL edits, including URL variants and concurrent submissions, before notifications or scraping are queued.
 
