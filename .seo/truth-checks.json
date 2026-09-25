@@ -18,5 +18,19 @@
     "must_not_match": [
       "\"submit_project\""
     ]
+  },
+  {
+    "claim": "The CDN guide does not cite the nonexistent benchmark",
+    "paths": [
+      "content/blog/5-hidden-django-secrets-senior-developers-use-lightning-fast-code.md"
+    ],
+    "urls": [
+      "https://builtwithdjango.com/blog/5-hidden-django-secrets-senior-developers-use-lightning-fast-code"
+    ],
+    "must_match": [],
+    "must_not_match": [
+      "django-cdn-performance-study",
+      "40% improvement in first contentful paint"
+    ]
   }
 ]

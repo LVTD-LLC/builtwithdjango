@@ -1,7 +1,7 @@
 ---
 id: 152
 created: '2025-12-21 09:39:46.805969+00:00'
-modified: '2025-12-21 09:39:46.805969+00:00'
+modified: '2026-09-25 07:00:00+00:00'
 title: '5 Hidden Django Secrets Senior Developers Use: Lightning-Fast Code'
 slug: 5-hidden-django-secrets-senior-developers-use-lightning-fast-code
 status: PB
@@ -110,7 +110,7 @@ While backend optimizations are critical, frontend performance—especially stat
 - **Gzip and Brotli Compression**: Enabling compression for static assets reduces bandwidth usage and accelerates load times.
 - **CDN Integration**: Serving static and media files via a CDN offloads traffic from the main server and provides global low-latency access.
 
-A 2025 study found that Django applications serving assets via CDN with Brotli compression achieved a 40% improvement in first contentful paint (FCP) metrics compared to non-optimized setups [Built with Django](https://builtwithdjango.com/blog/django-cdn-performance-study).
+Django’s deployment documentation describes serving collected static files from dedicated servers, cloud storage, or a CDN. Use these deployment patterns where they fit your application, and measure FCP before and after changing asset delivery; the documentation does not promise a fixed percentage improvement. See [Django’s static-file deployment guide](https://docs.djangoproject.com/en/5.2/howto/static-files/deployment/).
 
 #### Table: Static Asset Optimization Techniques
 

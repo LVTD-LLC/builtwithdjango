@@ -14,6 +14,12 @@ their recorded dates; previously undated entries use their Git history dates.
 **Fixed** for any bug fixes.
 **Security** in case of vulnerabilities.
 
+## 2026-09-25
+
+### Fixed
+
+- Replaced the performance guide’s unsupported CDN benchmark and nonexistent study citation with official Django static-file deployment guidance.
+
 ## 2026-09-24
 
 ### Added
