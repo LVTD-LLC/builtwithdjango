@@ -15,7 +15,7 @@ from django.views import View
 from django.views.generic import CreateView, RedirectView, TemplateView, UpdateView
 from django_q.tasks import async_task
 
-from blog.models import Post
+from blog.content import Post, published_posts
 from builtwithdjango.analytics import capture, capture_checkout_return, email_domain, stable_hash
 from jobs.models import Job
 from jobs.tasks import get_latest_jobs_from_tj_alerts, queue_sponsorship_request_email
@@ -45,7 +45,7 @@ class HomeView(TemplateView):
             Project.objects.filter(published=True, active=True).order_by("-sponsored", "-date_added"),
             getattr(self.request, "user", None),
         )[:6]
-        context["guides"] = Post.objects.filter(type=Post.TUTORIAL, status=Post.PUBLISHED)[:6]
+        context["guides"] = published_posts(Post.TUTORIAL)[:6]
         context["podcast_episodes"] = Episode.objects.all()[:3]
         filter_date = timezone.now() - timedelta(days=60)
         context["jobs"] = Job.objects.filter(approved=True, created_datetime__gte=filter_date).order_by(

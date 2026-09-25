@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny, BasePermission, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from blog.models import Post
+from blog.content import all_posts
 from builtwithdjango.analytics import capture
 from projects.models import Like, Project
 
@@ -200,72 +200,33 @@ def search_projects(request):
     return Response(results)
 
 
-class BlogPostListCreateAPIView(generics.ListCreateAPIView):
-    """
-    List and create blog posts for token-authenticated superusers.
-    """
+class BlogPostListAPIView(generics.ListAPIView):
+    """Read-only compatibility API. Publish changes through content/blog/*.md."""
 
-    queryset = Post.objects.select_related("author").prefetch_related("tags")
-    serializer_class = PostSerializer
-    authentication_classes = [TokenAuthentication]
-    permission_classes = [IsSuperuser]
-    filter_backends = [DjangoFilterBackend]
-    filterset_fields = ["status", "type", "level"]
-
-    def perform_create(self, serializer):
-        post = serializer.save(author=self.request.user)
-        capture(
-            self.request,
-            "post created",
-            properties={
-                "post_id": post.id,
-                "post_title": post.title,
-                "post_slug": post.slug,
-                "post_status": post.status,
-                "post_type": post.type,
-            },
-        )
-
-
-class BlogPostRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView):
-    """
-    Retrieve, update, and delete blog posts for token-authenticated superusers.
-    """
-
-    queryset = Post.objects.select_related("author").prefetch_related("tags")
     serializer_class = PostSerializer
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsSuperuser]
 
-    def perform_update(self, serializer):
-        post = serializer.save()
-        capture(
-            self.request,
-            "post updated",
-            properties={
-                "post_id": post.id,
-                "post_title": post.title,
-                "post_slug": post.slug,
-                "post_status": post.status,
-                "post_type": post.type,
-            },
-        )
+    def get_queryset(self):
+        posts = all_posts()
+        for field in ("status", "type", "level"):
+            value = self.request.query_params.get(field)
+            if value is not None:
+                posts = [post for post in posts if getattr(post, field) == value]
+        return posts
 
-    def perform_destroy(self, instance):
-        post_id = instance.id
-        post_title = instance.title
-        post_slug = instance.slug
-        post_status = instance.status
-        post_type = instance.type
-        instance.delete()
-        capture(
-            self.request,
-            "post deleted",
-            properties={
-                "post_id": post_id,
-                "post_title": post_title,
-                "post_slug": post_slug,
-                "post_status": post_status,
-                "post_type": post_type,
-            },
-        )
+
+class BlogPostRetrieveAPIView(generics.RetrieveAPIView):
+    """Read a repository post by its stable legacy ID; writes return 405."""
+
+    serializer_class = PostSerializer
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsSuperuser]
+
+    def get_object(self):
+        from django.http import Http404
+
+        for post in all_posts():
+            if post.id == self.kwargs["pk"]:
+                return post
+        raise Http404("Post not found")

@@ -22,7 +22,7 @@
   {
     "claim": "The CDN guide does not cite the nonexistent benchmark",
     "paths": [
-      "templates/blog/**/*.html"
+      "content/blog/5-hidden-django-secrets-senior-developers-use-lightning-fast-code.md"
     ],
     "urls": [
       "https://builtwithdjango.com/blog/5-hidden-django-secrets-senior-developers-use-lightning-fast-code"

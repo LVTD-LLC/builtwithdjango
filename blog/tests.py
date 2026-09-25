@@ -1,75 +1,89 @@
-import hashlib
-from importlib import import_module
-from types import SimpleNamespace
 from unittest.mock import patch
 
-from django.apps import apps
-from django.contrib.auth import get_user_model
-from django.db import connection
-from django.test import TestCase
+from django.contrib import admin
+from django.core.exceptions import ImproperlyConfigured
+from django.test import RequestFactory, SimpleTestCase, override_settings
+from django.urls import reverse
 
-from blog.models import Post
+from blog.content import all_posts, published_posts, read_post
+from blog.feeds import BlogFeed
+from blog.models import Comment, Post as ArchivedPost, Tag
+from blog.testing import make_post
+from blog.views import PostDetailView
+from builtwithdjango.sitemaps import BlogSitemap
 
 
-class CdnCorrectionMigrationTests(TestCase):
-    def setUp(self):
-        self.migration = import_module("blog.migrations.0013_correct_cdn_benchmark")
-        self.editor = SimpleNamespace(connection=connection)
-        self.author = get_user_model().objects.create_user(username="editor", email="editor@example.com")
-        self.before = "Keep this introduction.\n\n" + self.migration.OLD_TEXT + "\n\nKeep this conclusion."
-        self.after = self.before.replace(self.migration.OLD_TEXT, self.migration.NEW_TEXT)
-        self.post = Post.objects.create(
-            pk=self.migration.POST_ID,
-            slug=self.migration.SLUG,
-            author=self.author,
-            title="Performance guide",
-            content=self.before,
-            status=Post.PUBLISHED,
-        )
-        for name, body in [("OLD_SHA256", self.before), ("NEW_SHA256", self.after)]:
-            patcher = patch.object(self.migration, name, hashlib.sha256(body.encode()).hexdigest())
-            patcher.start()
-            self.addCleanup(patcher.stop)
+class RepositoryPostTests(SimpleTestCase):
+    def test_real_content_inventory_is_valid_and_has_no_db_dependency(self):
+        posts = all_posts()
+        self.assertGreaterEqual(len(posts), 28)
+        self.assertEqual(len({p.id for p in posts}), len(posts))
+        self.assertTrue(all(p.get_absolute_url() == f"/blog/{p.slug}" for p in posts))
 
-    def test_reversible_correction_preserves_other_copy_and_publication(self):
-        created, modified = self.post.created, self.post.modified
-        self.migration.forwards(apps, self.editor)
-        self.post.refresh_from_db()
-        self.assertEqual(self.post.content, self.after)
-        self.assertEqual(self.post.created, created)
-        self.assertEqual(self.post.status, Post.PUBLISHED)
-        self.assertGreater(self.post.modified, modified)
+    def test_published_surfaces_exclude_drafts_and_sort_by_original_date(self):
+        old = make_post(self, slug="old", created="2020-01-01T00:00:00Z")
+        new = make_post(self, slug="new", created="2021-01-01T00:00:00Z", type="ARTICLE")
+        draft = make_post(self, slug="draft", status="DR")
+        self.assertEqual(published_posts(), [new, old])
+        self.assertEqual(published_posts("TUTORIAL"), [old])
+        self.assertEqual(BlogFeed().items(), [new, old])
+        self.assertEqual(BlogFeed().item_pubdate(old), old.created)
+        self.assertEqual(BlogSitemap().items(), [new, old])
+        self.assertEqual(BlogSitemap().lastmod(old), old.modified)
+        with patch("blog.views.capture"):
+            for slug in (draft.slug, "unknown", "../old"):
+                response = self.client.get(f"/blog/{slug}")
+                self.assertEqual(response.status_code, 404)
 
-        self.migration.backwards(apps, self.editor)
-        self.post.refresh_from_db()
-        self.assertEqual(self.post.content, self.before)
-        self.assertEqual(self.post.created, created)
+    def test_post_view_keeps_markdown_metadata_and_analytics_id(self):
+        post = make_post(self, id=152)
+        request = RequestFactory().get(post.get_absolute_url())
+        with patch("blog.views.capture") as capture:
+            response = PostDetailView.as_view()(request, slug=post.slug)
+        self.assertEqual(response.context_data["object"], post)
+        self.assertEqual(capture.call_args.kwargs["properties"]["post_id"], 152)
 
-    def test_changed_article_is_not_overwritten_in_either_direction(self):
-        for direction, body in [("forwards", self.before), ("backwards", self.after)]:
-            with self.subTest(direction=direction):
-                changed = body + "\nAn editor's newer paragraph."
-                Post.objects.filter(pk=self.post.pk).update(content=changed)
-                with self.assertRaisesRegex(RuntimeError, "Article changed"):
-                    getattr(self.migration, direction)(apps, self.editor)
-                self.post.refresh_from_db()
-                self.assertEqual(self.post.content, changed)
+    def test_missing_directory_duplicate_id_and_bad_metadata_fail_closed(self):
+        post = make_post(self)
+        make_post(self, slug="duplicate", id=post.id)
+        with self.assertRaises(ImproperlyConfigured):
+            all_posts()
+        with override_settings(BLOG_CONTENT_DIR=self.blog_directory / "missing"):
+            with self.assertRaises(ImproperlyConfigured):
+                all_posts()
+        path = self.blog_directory / "test-guide.md"
+        original = path.read_text()
+        for text in (
+            "no front matter",
+            original.replace("status: PB", "status: TYPO"),
+            original.replace("id: 1", "id: false"),
+            original.replace("slug: test-guide", "slug: ../../secret"),
+        ):
+            path.write_text(text)
+            with self.assertRaises(ImproperlyConfigured):
+                read_post(path)
 
-    def test_wrong_row_identity_is_not_changed(self):
-        Post.objects.filter(pk=self.post.pk).update(slug="another-article")
-        with self.assertRaisesRegex(RuntimeError, "target does not match"):
-            self.migration.forwards(apps, self.editor)
+    def test_frontmatter_delimiter_in_body_is_preserved(self):
+        post = make_post(self, content="# Body\n\n---\n\n```python\nprint('hi')\n```\n")
+        self.assertEqual(post.content, "# Body\n\n---\n\n```python\nprint('hi')\n```\n")
 
-    def test_missing_production_row_is_safe_for_fresh_installs(self):
-        self.post.delete()
-        self.migration.forwards(apps, self.editor)
-        self.migration.backwards(apps, self.editor)
-        self.assertEqual(Post.objects.count(), 0)
+    def test_crlf_front_matter_preserves_body_line_endings(self):
+        post = make_post(self, content="First line\nSecond line\n")
+        path = self.blog_directory / (post.slug + ".md")
+        path.write_bytes(path.read_bytes().replace(b"\n", b"\r\n"))
+        self.assertEqual(read_post(path).content, "First line\r\nSecond line\r\n")
 
-    def test_reapplication_does_not_refresh_modified_again(self):
-        self.migration.forwards(apps, self.editor)
-        self.post.refresh_from_db()
-        modified = self.post.modified
-        self.migration.forwards(apps, self.editor)
-        self.post.refresh_from_db()
-        self.assertEqual(self.post.modified, modified)
+    def test_file_edits_reload_in_the_same_process(self):
+        original = make_post(self)
+        self.assertEqual(all_posts(), [original])
+        updated = make_post(self, id=original.id, content="Edited **Markdown** body.")
+        self.assertEqual(all_posts(), [updated])
+        self.assertNotEqual(original.content, updated.content)
+
+    def test_legacy_admin_cannot_publish_or_delete(self):
+        request = RequestFactory().get("/")
+        for model in (ArchivedPost, Tag, Comment):
+            model_admin = admin.site._registry[model]
+            self.assertFalse(model_admin.has_add_permission(request))
+            self.assertFalse(model_admin.has_change_permission(request))
+            self.assertFalse(model_admin.has_delete_permission(request))

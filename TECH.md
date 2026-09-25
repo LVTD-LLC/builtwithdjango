@@ -78,8 +78,9 @@ storage, and database state separately.
 
 - Project search and read-oriented like endpoints are public.
 - Like mutations require an authenticated user and are scoped to that user.
-- Blog post CRUD under `/api/v1/posts/` uses DRF token authentication and is
-  restricted to superusers.
+- Blog posts live in `content/blog/*.md` (see `content/README.md`). The read-only
+  `/api/v1/posts/` API uses DRF token authentication restricted to superusers.
+  Legacy ORM tables are a read-only rollback archive, not a publishing surface.
 - Keep serializers and permission checks explicit when extending API behavior.
 
 ## Frontend rules

@@ -1,15 +1,17 @@
+from django.http import Http404
 from django.views.generic import DetailView, ListView
 
 from builtwithdjango.analytics import capture
 from newsletter.forms import NewsletterSignupForm
 
-from .models import Post
+from .content import Post, published_posts
 
 
 class PostListView(ListView):
-    model = Post
     template_name = "blog/all_posts.html"
-    queryset = Post.objects.filter(type=Post.TUTORIAL, status=Post.PUBLISHED)
+
+    def get_queryset(self):
+        return published_posts(Post.TUTORIAL)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -19,9 +21,10 @@ class PostListView(ListView):
 
 
 class ArticleListView(ListView):
-    model = Post
     template_name = "blog/all_articles.html"
-    queryset = Post.objects.filter(status=Post.PUBLISHED, type=Post.ARTICLE).order_by("-created")
+
+    def get_queryset(self):
+        return published_posts(Post.ARTICLE)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -31,11 +34,13 @@ class ArticleListView(ListView):
 
 
 class PostDetailView(DetailView):
-    model = Post
     template_name = "blog/post_detail.html"
 
-    def get_queryset(self):
-        return Post.objects.filter(status=Post.PUBLISHED)
+    def get_object(self, queryset=None):
+        for post in published_posts():
+            if post.slug == self.kwargs["slug"]:
+                return post
+        raise Http404("Post not found")
 
     def get(self, request, *args, **kwargs):
         response = super().get(request, *args, **kwargs)

@@ -13,7 +13,8 @@ from django.urls import Resolver404, resolve, reverse
 from django.utils import timezone
 from webpack_boilerplate import utils as webpack_utils
 
-from blog.models import Post
+from blog.content import Post
+from blog.testing import make_post
 from builtwithdjango.sitemaps import StaticViewSitemap, sitemaps
 from developers.models import Developer
 from jobs.models import Job
@@ -114,7 +115,9 @@ class SeoSitemapTests(TestCase):
         self.assertEqual(response.status_code, 200)
         locations = {
             node.text
-            for node in ElementTree.fromstring(response.content).iter("{http://www.sitemaps.org/schemas/sitemap/0.9}loc")
+            for node in ElementTree.fromstring(response.content).iter(
+                "{http://www.sitemaps.org/schemas/sitemap/0.9}loc"
+            )
         }
         self.assertIn("https://builtwithdjango.com/projects/", locations)
         self.assertNotIn("https://builtwithdjango.com/projects/new/", locations)
@@ -139,7 +142,8 @@ class SeoSitemapTests(TestCase):
             email="seo-author@example.com",
             password="test-pass",
         )
-        published_post = Post.objects.create(
+        published_post = make_post(
+            self,
             title="Published Guide",
             description="Visible in sitemap.",
             author=author,
@@ -147,7 +151,8 @@ class SeoSitemapTests(TestCase):
             content="Content",
             status=Post.PUBLISHED,
         )
-        Post.objects.create(
+        make_post(
+            self,
             title="Draft Guide",
             description="Hidden from sitemap.",
             author=author,
@@ -255,7 +260,8 @@ class SeoPageRenderTests(TestCase):
         )
 
     def test_blog_post_detail_renders_article_metadata(self):
-        post = Post.objects.create(
+        post = make_post(
+            self,
             title='Django "SEO" Guide',
             description="A practical guide to Django SEO.",
             author=self.author,
@@ -423,7 +429,8 @@ class SeoPageRenderTests(TestCase):
         self.assertIn('"validThrough":', html)
 
     def test_article_listing_excludes_tutorials(self):
-        tutorial = Post.objects.create(
+        tutorial = make_post(
+            self,
             title="Tutorial Listing Overlap",
             description="A tutorial that should stay on the guides page.",
             author=self.author,
@@ -432,7 +439,8 @@ class SeoPageRenderTests(TestCase):
             status=Post.PUBLISHED,
             type=Post.TUTORIAL,
         )
-        article = Post.objects.create(
+        article = make_post(
+            self,
             title="Article Listing Result",
             description="An article that belongs on the articles page.",
             author=self.author,
@@ -441,7 +449,8 @@ class SeoPageRenderTests(TestCase):
             status=Post.PUBLISHED,
             type=Post.ARTICLE,
         )
-        update = Post.objects.create(
+        update = make_post(
+            self,
             title="Update Listing Result",
             description="A non-article update that should stay out of the articles page.",
             author=self.author,

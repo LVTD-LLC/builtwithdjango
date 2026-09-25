@@ -33,9 +33,11 @@ lists show only published, active, non-spam records.
   Inspect generated migrations; do not hand-edit historical migrations.
 - Add or update tests for features, bug fixes, authorization changes, queue
   behavior, and risky refactors.
-- Update `CHANGELOG.md` under `Unreleased` for material user-facing or
-  operational changes. Skip entries for tests, formatting, and internal-only
-  refactors.
+- Update `CHANGELOG.md` under the current `YYYY-MM-DD` date heading for
+  material user-facing or operational changes. Keep dates newest first and
+  combine same-day changes under shared change-type headings; do not add
+  release versions or an `Unreleased` section. Preserve existing entry text
+  and dates. Skip entries for tests, formatting, and internal-only refactors.
 - Preserve unrelated user changes in a dirty worktree.
 
 ## Commands
@@ -110,8 +112,7 @@ host pytest is mainly for deliberately reproducing the CI environment.
 - Project publication depends on background screenshot processing. When
   diagnosing a missing submission, inspect the Django Q queue, worker, storage
   upload, and final `published` state.
-- Keep API mutation permissions explicit. Blog post API writes are restricted
-  to token-authenticated superusers.
+- Keep API mutation permissions explicit. Blog posts live in `content/blog/*.md`; API reads require a superuser token and writes are disabled.
 - Never print, log, commit, or place in screenshots API keys, OAuth tokens,
   session data, private form contents, or `.env` values.
 - Keep optional integrations behind settings checks so focused local

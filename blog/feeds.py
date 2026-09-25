@@ -1,7 +1,7 @@
 from django.contrib.syndication.views import Feed
 from django.template.defaultfilters import truncatewords
 
-from .models import Post
+from .content import published_posts
 
 
 class BlogFeed(Feed):
@@ -10,7 +10,7 @@ class BlogFeed(Feed):
     description = "Articles about Django."
 
     def items(self):
-        return Post.objects.filter(status=Post.PUBLISHED).order_by("-created")
+        return published_posts()
 
     def item_title(self, item):
         return item.title
