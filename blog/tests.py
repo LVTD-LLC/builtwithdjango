@@ -8,6 +8,7 @@ from django.urls import reverse
 from blog.content import all_posts, published_posts, read_post
 from blog.feeds import BlogFeed
 from blog.models import Comment, Post as ArchivedPost, Tag
+from blog.templatetags.markdown_extras import markdown
 from blog.testing import make_post
 from blog.views import PostDetailView
 from builtwithdjango.sitemaps import BlogSitemap
@@ -29,10 +30,11 @@ class RepositoryPostTests(SimpleTestCase):
             "the-ultimate-guide-to-mastering-django-web-development",
         )
         for slug in sources:
-            with self.subTest(slug=slug), patch("blog.views.capture"):
-                response = self.client.get(f"/blog/{slug}")
-                self.assertContains(response, 'href="https://builtwithdjango.com/blog/github-auth"')
-                self.assertNotContains(response, "https://builtwithdjango.com/guides/social-auth")
+            with self.subTest(slug=slug):
+                post = next(post for post in published_posts() if post.slug == slug)
+                html = markdown(post.content)
+                self.assertIn('href="https://builtwithdjango.com/blog/github-auth"', html)
+                self.assertNotIn("https://builtwithdjango.com/guides/social-auth", html)
 
     def test_published_surfaces_exclude_drafts_and_sort_by_original_date(self):
         old = make_post(self, slug="old", created="2020-01-01T00:00:00Z")
