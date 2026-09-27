@@ -86,7 +86,7 @@ User authentication is a cornerstone of modern web applications. Traditional use
 
 #### Implementation Example
 
-A Django developer can enable GitHub authentication in under 30 minutes using `django-allauth`, as detailed in the [Built with Django guides](https://builtwithdjango.com/guides/social-authentication/). This not only accelerates development but also ensures compliance with OAuth2 standards.
+A Django developer can enable GitHub authentication in under 30 minutes using `django-allauth`, as detailed in the [Built with Django guides](https://builtwithdjango.com/blog/github-auth). This not only accelerates development but also ensures compliance with OAuth2 standards.
 
 #### Comparative Table: Traditional vs. Social Authentication
 

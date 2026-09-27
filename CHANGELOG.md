@@ -14,6 +14,12 @@ their recorded dates; previously undated entries use their Git history dates.
 **Fixed** for any bug fixes.
 **Security** in case of vulnerabilities.
 
+## 2026-09-27
+
+### Fixed
+
+- Repaired three article links to the existing GitHub authentication guide instead of nonexistent social-auth URLs.
+
 ## 2026-09-25
 
 ### Fixed
