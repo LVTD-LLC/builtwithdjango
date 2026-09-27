@@ -113,7 +113,7 @@ The shift towards containerization (Docker), orchestration (Kubernetes), and clo
 
 ### Social Authentication and User Experience
 
-Integrating social authentication, such as GitHub OAuth, has become a standard feature in modern web applications. Django’s extensible authentication system and third-party packages (e.g., django-allauth) make it straightforward to implement secure, user-friendly login flows ([Built with Django](https://builtwithdjango.com/guides/social-auth/)).
+Integrating social authentication, such as GitHub OAuth, has become a standard feature in modern web applications. Django’s extensible authentication system and third-party packages (e.g., django-allauth) make it straightforward to implement secure, user-friendly login flows ([Built with Django](https://builtwithdjango.com/blog/github-auth)).
 
 ## Comparative Analysis: Django vs. Competing Frameworks
 

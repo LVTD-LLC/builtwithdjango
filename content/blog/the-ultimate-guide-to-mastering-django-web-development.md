@@ -100,7 +100,7 @@ After grasping the basics, developers should explore:
 - **Form Handling:** Securely process user input using Django forms.
 
 **Example:**
-Implementing social authentication (e.g., GitHub OAuth) is a common requirement. Django’s extensible authentication system and third-party packages like `django-allauth` simplify integration, as demonstrated in [Built with Django’s social auth guide](https://builtwithdjango.com/guides/social-auth/).
+Implementing social authentication (e.g., GitHub OAuth) is a common requirement. Django’s extensible authentication system and third-party packages like `django-allauth` simplify integration, as demonstrated in [Built with Django’s social auth guide](https://builtwithdjango.com/blog/github-auth).
 
 ### Advanced Mastery
 

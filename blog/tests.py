@@ -8,6 +8,7 @@ from django.urls import reverse
 from blog.content import all_posts, published_posts, read_post
 from blog.feeds import BlogFeed
 from blog.models import Comment, Post as ArchivedPost, Tag
+from blog.templatetags.markdown_extras import markdown
 from blog.testing import make_post
 from blog.views import PostDetailView
 from builtwithdjango.sitemaps import BlogSitemap
@@ -19,6 +20,21 @@ class RepositoryPostTests(SimpleTestCase):
         self.assertGreaterEqual(len(posts), 28)
         self.assertEqual(len({p.id for p in posts}), len(posts))
         self.assertTrue(all(p.get_absolute_url() == f"/blog/{p.slug}" for p in posts))
+
+    def test_published_social_auth_references_resolve_to_existing_guide(self):
+        target = next(post for post in published_posts() if post.slug == "github-auth")
+        self.assertEqual(target.status, "PB")
+        sources = (
+            "3-django-breakthroughs-that-instantly-elevate-your-development",
+            "essential-django-updates-mastering-modern-web-development",
+            "the-ultimate-guide-to-mastering-django-web-development",
+        )
+        for slug in sources:
+            with self.subTest(slug=slug):
+                post = next(post for post in published_posts() if post.slug == slug)
+                html = markdown(post.content)
+                self.assertIn('href="https://builtwithdjango.com/blog/github-auth"', html)
+                self.assertNotIn("https://builtwithdjango.com/guides/social-auth", html)
 
     def test_published_surfaces_exclude_drafts_and_sort_by_original_date(self):
         old = make_post(self, slug="old", created="2020-01-01T00:00:00Z")
