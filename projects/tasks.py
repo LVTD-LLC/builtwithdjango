@@ -1,9 +1,12 @@
+from functools import partial
+
 import requests
 from django.conf import settings
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django_q.tasks import async_task
 
+from builtwithdjango.analytics import capture_event
 from builtwithdjango.notifications import send_admin_notification
 from builtwithdjango.sentry_utils import sentry_count, sentry_task_transaction
 from builtwithdjango.utils import get_builtwithdjango_logger
@@ -41,12 +44,17 @@ def save_screenshot(project_identifier, expected_url=None, expected_screenshot=N
         f"https://api.screenshotmachine.com?key={settings.SCREENSHOT_API_KEY}&url={project.url}&dimension=1680x876"
     )
 
-    logger.info(f"Getting info from {image_url}.")
+    logger.info("screenshot_fetch_started", project_id=project.id)
     try:
         response = requests.get(image_url, timeout=30)
         response.raise_for_status()
     except requests.RequestException as e:
-        logger.error("screenshot_fetch_failed", project_id=project.id, error=str(e))
+        logger.error("screenshot_fetch_failed", project_id=project.id, error_type=type(e).__name__)
+        capture_event(
+            "project screenshot failed",
+            distinct_id=str(project.logged_in_maker_id) if project.logged_in_maker_id else None,
+            properties={"project_id": project.id, "error_type": type(e).__name__},
+        )
         return False
 
     with transaction.atomic():
@@ -57,8 +65,18 @@ def save_screenshot(project_identifier, expected_url=None, expected_screenshot=N
 
         file = ContentFile(response.content)
         project.homepage_screenshot.save(f"{project.title}.png", file, save=False)
+        was_published = project.published
         project.published = True
         project.save()
+        if not was_published:
+            transaction.on_commit(
+                partial(
+                    capture_event,
+                    "project published",
+                    distinct_id=str(project.logged_in_maker_id) if project.logged_in_maker_id else None,
+                    properties={"project_id": project.id, "publication_source": "screenshot"},
+                )
+            )
     return True
 
 

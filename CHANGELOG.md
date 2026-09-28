@@ -16,6 +16,14 @@ their recorded dates; previously undated entries use their Git history dates.
 
 ## 2026-09-28
 
+### Fixed
+
+- Restored PostHog browser ingestion by preserving its public ingestion token; joined browser/server identities, reset identity after logout, and deduplicated retried Stripe analytics events.
+
+### Added
+
+- Added Web Vitals, form engagement and validation, scroll milestones, and project publication/screenshot failure analytics with masked replay, secret-safe URLs, and no exception-local capture.
+
 ### Changed
 
 - Added numbered project pagination with nearby and end-page links, preserving active filters and page-specific canonicals while shortening discovery paths.

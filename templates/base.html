@@ -46,6 +46,10 @@
                 }
               });
             });
+            url.hash = "";
+            url.username = "";
+            url.password = "";
+            if (/^\/(accounts|users)\//.test(url.pathname)) url.pathname = "/accounts/[REDACTED]";
             return url.toString();
           } catch (error) {
             return "[REDACTED_URL]";
@@ -75,6 +79,21 @@
           capture_pageview: "history_change",
           capture_pageleave: true,
           capture_dead_clicks: true,
+          capture_performance: { web_vitals: true },
+          mask_all_text: true,
+          mask_all_element_attributes: true,
+          loaded: function(client) {
+            // Runs before the initial pageview; never attribute logout traffic
+            // to the previous signed-in person on a shared browser.
+            {% if user.is_authenticated %}
+              client.identify("{{ user.pk|escapejs }}", {
+                subscription_level: "{{ user.subscription_level|escapejs }}",
+                is_staff: {{ user.is_staff|yesno:"true,false" }}
+              });
+            {% else %}
+              if (client.get_property("$user_id")) client.reset();
+            {% endif %}
+          },
           capture_exceptions: {
             capture_unhandled_errors: true,
             capture_unhandled_rejections: true,
@@ -82,20 +101,24 @@
           },
           disable_session_recording: false,
           enable_heatmaps: true,
-          person_profiles: "always",
+          person_profiles: "identified_only",
           addTracingHeaders: [window.location.host],
+          // `token` is the public project ingestion key, not a user secret.
+          // Removing it makes every browser event fail ingestion with HTTP 400.
           property_denylist: [
             "password",
             "password1",
             "password2",
             "csrfmiddlewaretoken",
-            "token",
             "secret",
             "api_key"
           ],
           session_recording: {
             maskAllInputs: true,
-            maskTextSelector: ".ph-no-capture, [data-sensitive], [data-private]",
+            maskTextSelector: "*",
+            blockSelector: "[data-private], .ph-no-capture, input, textarea, select",
+            recordHeaders: false,
+            recordBody: false,
             maskCapturedNetworkRequestFn: function(request) {
               if (request.name && bwdIsNoisyAnalyticsRequest(request.name)) {
                 return null;
@@ -130,22 +153,13 @@
           environment: "{{ posthog_environment|escapejs }}"
         });
 
-        {% if user.is_authenticated %}
-          posthog.identify("{{ user.pk|escapejs }}", {
-            email: "{{ user.email|escapejs }}",
-            username: "{{ user.username|escapejs }}",
-            subscription_level: "{{ user.subscription_level|escapejs }}",
-            has_active_django_devs_subscription: {{ user.has_active_django_devs_subscription|yesno:"true,false" }},
-            is_staff: {{ user.is_staff|yesno:"true,false" }},
-            is_superuser: {{ user.is_superuser|yesno:"true,false" }}
-          });
-        {% endif %}
-
         window.bwdTrack = function(eventName, properties) {
           if (!window.posthog || !eventName) return;
           posthog.capture(eventName, Object.assign({
             app: "builtwithdjango",
-            path: window.location.pathname,
+            event_source: "browser",
+            event_version: 1,
+            path: bwdRedactUrl(window.location.pathname),
             page_title: document.title
           }, properties || {}));
         };
@@ -210,7 +224,7 @@
           } catch (error) {
             return;
           }
-          if (destination.host !== window.location.host) {
+          if (["http:", "https:"].indexOf(destination.protocol) !== -1 && destination.host !== window.location.host) {
             window.bwdTrack("outbound link clicked", {
               link_url: bwdRedactUrl(destination.toString()),
               link_host: destination.host,

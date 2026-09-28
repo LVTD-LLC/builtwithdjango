@@ -623,6 +623,11 @@ class LikeMigrationTests(TestCase):
 
 
 class ProjectTaskTests(TestCase):
+    def setUp(self):
+        media = TemporaryDirectory()
+        self.addCleanup(media.cleanup)
+        self.enterContext(override_settings(MEDIA_ROOT=media.name))
+
     def test_save_screenshot_publishes_project_when_screenshot_succeeds(self):
         project = Project.objects.create(
             title="Screenshot Project",
@@ -632,8 +637,20 @@ class ProjectTaskTests(TestCase):
         response = Mock(content=b"image-bytes")
         response.raise_for_status.return_value = None
 
-        with patch("projects.tasks.requests.get", return_value=response) as get:
-            self.assertTrue(save_screenshot(project.id))
+        with patch("projects.tasks.requests.get", return_value=response) as get, patch(
+            "projects.tasks.capture_event"
+        ) as analytics:
+            with self.captureOnCommitCallbacks(execute=True):
+                self.assertTrue(save_screenshot(project.id))
+            self.assertEqual(analytics.call_args.args[0], "project published")
+            analytics.reset_mock()
+            with self.captureOnCommitCallbacks(execute=True):
+                self.assertTrue(
+                    save_screenshot(
+                        project.id, project.url, Project.objects.get(pk=project.pk).homepage_screenshot.name
+                    )
+                )
+            analytics.assert_not_called()
 
         project.refresh_from_db()
         self.assertTrue(project.published)
@@ -749,8 +766,12 @@ class ProjectTaskTests(TestCase):
         response = Mock()
         response.raise_for_status.side_effect = requests.HTTPError("failed")
 
-        with patch("projects.tasks.requests.get", return_value=response):
+        with patch("projects.tasks.requests.get", return_value=response), patch(
+            "projects.tasks.capture_event"
+        ) as analytics:
             self.assertFalse(save_screenshot(project.id))
+            self.assertEqual(analytics.call_args.args[0], "project screenshot failed")
+            self.assertEqual(analytics.call_args.kwargs["properties"]["error_type"], "HTTPError")
 
         project.refresh_from_db()
         self.assertFalse(project.published)

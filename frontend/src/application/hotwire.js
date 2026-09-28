@@ -12,3 +12,5 @@ const context = require.context("../controllers", true, /\.js$/);
 application.load(definitionsFromContext(context));
 
 application.register('reveal', Reveal);
+
+import "../analytics-engagement";
