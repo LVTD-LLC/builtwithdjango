@@ -2,6 +2,7 @@ import json
 import tempfile
 from datetime import timedelta
 from pathlib import Path
+from unittest.mock import patch
 from xml.etree import ElementTree
 
 from django.contrib.auth import get_user_model
@@ -326,6 +327,39 @@ class SeoPageRenderTests(TestCase):
         html = response.content.decode()
         self.assertIn('<link rel="canonical" href="http://localhost:8000/projects/?page=2" />', html)
         self.assertNotIn('<meta name="robots"', html)
+
+    def test_project_pagination_has_bounded_numbered_links_and_preserves_filters(self):
+        for index in range(28):
+            Project.objects.create(
+                title=f"Navigation Project {index}",
+                url=f"https://navigation-{index}.example.com",
+                published=True,
+                active=True,
+                might_be_spam=False,
+                is_open_source=True,
+            )
+
+        with patch("projects.views.ProjectListView.paginate_by", 1):
+            first = self.client.get("/projects/")
+            html = first.content.decode()
+            self.assertIn('aria-label="Go to project page 28"', html)
+            self.assertIn('href="?page=28"', html)
+            self.assertIn('aria-current="page" aria-label="Page 1"', html)
+            self.assertNotIn('aria-label="Previous project page"', html)
+
+            middle = self.client.get("/projects/?order_by=like&is_open_source=true&page=14")
+            html = middle.content.decode()
+            self.assertIn('href="?order_by=like&amp;is_open_source=true&amp;page=28"', html)
+            self.assertIn('aria-current="page" aria-label="Page 14"', html)
+            self.assertIn('<meta name="robots" content="noindex,follow" />', html)
+            self.assertLessEqual(len(list(middle.context["pagination_range"])), 11)
+            self.assertIn('aria-label="Go to project page 1"', html)
+
+            last = self.client.get("/projects/?page=28")
+            html = last.content.decode()
+            self.assertNotIn('aria-label="Next project page"', html)
+            self.assertIn('href="?page=1"', html)
+            self.assertIn('<link rel="canonical" href="http://localhost:8000/projects/?page=28" />', html)
 
     def test_project_filters_are_noindexed(self):
         response = self.client.get("/projects/?order_by=like")
