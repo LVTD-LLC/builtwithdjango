@@ -74,3 +74,12 @@ test('engagement installs once, bounds scroll events and never captures form val
   handlers['turbo:load'](); handlers.scroll();
   assert.equal(events.length, 8);
 });
+
+test('nested SDK attribution and middleware paths cannot bypass URL redaction', () => {
+  const {config} = configFixture();
+  const event = config.before_send({event:'$pageview',properties:{token:'public-project-token',
+    $pathname:'/accounts/reset/private-token/', $set_once:{$initial_current_url:'https://example.com/?token=secret#secret'}}});
+  assert.equal(event.properties.token, 'public-project-token');
+  assert.ok(!JSON.stringify(event).includes('private-token'));
+  assert.ok(!JSON.stringify(event).includes('secret'));
+});

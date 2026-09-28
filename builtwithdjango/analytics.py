@@ -1,8 +1,8 @@
 import hashlib
 import json
-import uuid
 import re
 import time
+import uuid
 from urllib.parse import parse_qsl, unquote, urlencode, urlsplit, urlunsplit
 
 import posthog
@@ -478,6 +478,12 @@ def _scrub_value(value):
             key_string = str(key)
             if key_string not in _ALLOWED_SENSITIVE_KEYS and _SENSITIVE_KEY_RE.search(key_string):
                 scrubbed[key] = "[REDACTED]"
+            elif (
+                isinstance(inner_value, str)
+                and inner_value.startswith("/")
+                and re.search("path|url|href", key_string, re.I)
+            ):
+                scrubbed[key] = redact_url(inner_value)
             else:
                 scrubbed[key] = _scrub_value(inner_value)
         return scrubbed
