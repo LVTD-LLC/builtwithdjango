@@ -6,7 +6,8 @@
     "build": "cross-env NODE_ENV=production webpack --config frontend/webpack/webpack.config.prod.js",
     "start": "webpack serve --config frontend/webpack/webpack.config.dev.js",
     "watch": "webpack --watch --config frontend/webpack/webpack.config.watch.js",
-    "webpack": "npx webpack --mode=development"
+    "webpack": "npx webpack --mode=development",
+    "test:analytics": "node --test scripts/test-analytics.mjs"
   },
   "repository": {
     "type": "git",

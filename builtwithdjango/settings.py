@@ -712,7 +712,7 @@ posthog.debug = DEBUG
 posthog.disabled = not POSTHOG_ENABLED
 posthog.disable_geoip = False
 posthog.enable_exception_autocapture = True
-posthog.capture_exception_code_variables = True
+posthog.capture_exception_code_variables = False
 posthog.code_variables_mask_patterns = [
     r"(?i)password",
     r"(?i)secret",

@@ -1,7 +1,9 @@
 import hashlib
+import json
+import uuid
 import re
 import time
-from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+from urllib.parse import parse_qsl, unquote, urlencode, urlsplit, urlunsplit
 
 import posthog
 from django.conf import settings
@@ -142,7 +144,9 @@ def capture_event(event, properties=None, distinct_id=None, groups=None):
     if not getattr(settings, "POSTHOG_ENABLED", False):
         return None
 
-    event_properties = properties or {}
+    event_properties = dict(properties or {})
+    event_properties.setdefault("event_source", "server")
+    event_properties.setdefault("event_version", 1)
     resolved_distinct_id = distinct_id or get_event_distinct_id(event, event_properties)
     if not resolved_distinct_id:
         logger.warning("posthog_capture_without_distinct_id", event=event)
@@ -154,6 +158,8 @@ def capture_event(event, properties=None, distinct_id=None, groups=None):
     }
     if groups:
         kwargs["groups"] = groups
+    if event_properties.get("stripe_event_id"):
+        kwargs["uuid"] = str(uuid.uuid5(uuid.NAMESPACE_URL, f"bwd:{event}:{event_properties['stripe_event_id']}"))
 
     try:
         return posthog.capture(event, **kwargs)
@@ -190,7 +196,10 @@ def capture_checkout_return(request, checkout_surface):
 def get_request_properties(request):
     resolver_match = getattr(request, "resolver_match", None)
     properties = {
-        "request_path": request.path,
+        "event_source": "server",
+        "event_version": 1,
+        "$process_person_profile": _user_is_authenticated(getattr(request, "user", None)),
+        "request_path": redact_url(request.path),
         "request_method": request.method,
         "request_query_keys": sorted(request.GET.keys()),
         "request_query_count": len(request.GET),
@@ -258,7 +267,7 @@ def get_request_distinct_id(request):
     if header_value:
         return header_value
 
-    return get_anonymous_distinct_id(request)
+    return _sanitize_identifier(get_browser_state(request).get("distinct_id")) or get_anonymous_distinct_id(request)
 
 
 def get_anonymous_distinct_id(request):
@@ -267,16 +276,23 @@ def get_anonymous_distinct_id(request):
     if session_key:
         return f"anonymous_session:{stable_hash(session_key)}"
 
-    fingerprint_parts = [
-        get_client_ip(request),
-        request.META.get("HTTP_USER_AGENT", ""),
-        request.META.get("HTTP_ACCEPT_LANGUAGE", ""),
-    ]
-    fingerprint = "|".join(part or "" for part in fingerprint_parts)
-    if fingerprint.strip("|"):
-        return f"anonymous_request:{stable_hash(fingerprint)}"
+    # Never merge unrelated visitors by IP/browser fingerprint. Before the SDK
+    # cookie exists, use a request-scoped personless identity.
+    if not hasattr(request, "_analytics_distinct_id"):
+        request._analytics_distinct_id = f"anonymous_request:{uuid.uuid4()}"
+    return request._analytics_distinct_id
 
-    return None
+
+def get_browser_state(request):
+    key = getattr(settings, "POSTHOG_API_KEY", "")
+    raw = request.COOKIES.get(f"ph_{key}_posthog", "")
+    if not raw or len(raw) > 8192:
+        return {}
+    try:
+        state = json.loads(unquote(raw))
+        return state if isinstance(state, dict) else {}
+    except (ValueError, TypeError):
+        return {}
 
 
 def get_request_session_id(request):
@@ -284,7 +300,11 @@ def get_request_session_id(request):
     if header_value:
         return header_value
 
-    return _sanitize_identifier(get_post_value(request, "_posthog_session_id"))
+    posted = _sanitize_identifier(get_post_value(request, "_posthog_session_id"))
+    if posted:
+        return posted
+    session = get_browser_state(request).get("$sesid")
+    return _sanitize_identifier(session[1]) if isinstance(session, list) and len(session) == 3 else None
 
 
 def get_event_distinct_id(event, properties):
@@ -362,7 +382,11 @@ def redact_url(url):
         else:
             query_params.append((key, value))
 
-    return urlunsplit((parsed.scheme, parsed.netloc, parsed.path, urlencode(query_params), parsed.fragment))
+    path = parsed.path
+    if path.startswith(("/accounts/", "/users/")):
+        path = "/accounts/[REDACTED]"
+    netloc = parsed.netloc.rsplit("@", 1)[-1]
+    return urlunsplit((parsed.scheme, netloc, path, urlencode(query_params), ""))
 
 
 class AnalyticsRequestMiddleware:
@@ -381,6 +405,24 @@ class AnalyticsRequestMiddleware:
         self._capture_request(request, started_at, "request completed", response=response)
         return response
 
+    def process_template_response(self, request, response):
+        if not posthog_request_filter(request):
+            return response
+        form = (response.context_data or {}).get("form")
+        if form is not None and getattr(form, "is_bound", False) and form.errors:
+            capture(
+                request,
+                "form validation failed",
+                properties={
+                    "form_type": type(form).__name__,
+                    "error_codes": {
+                        field: [error.code or "invalid" for error in errors]
+                        for field, errors in form.errors.as_data().items()
+                    },
+                },
+            )
+        return response
+
     def _capture_request(self, request, started_at, event, response=None, exception=None):
         if not posthog_request_filter(request):
             return
@@ -389,6 +431,8 @@ class AnalyticsRequestMiddleware:
             "duration_ms": round((time.perf_counter() - started_at) * 1000, 2),
         }
         if response is not None:
+            if response.status_code >= 500:
+                event = "request failed"
             properties.update(
                 {
                     "status_code": response.status_code,

@@ -82,5 +82,8 @@ jobs:
       - name: Install frontend dependencies
         run: npm ci
 
+      - name: Analytics browser regression tests
+        run: npm run test:analytics
+
       - name: Build frontend assets
         run: npm run build
