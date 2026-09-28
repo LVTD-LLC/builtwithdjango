@@ -106,3 +106,17 @@ class AnalyticsReliabilityTests(TestCase):
         self.assertEqual(mocked.call_args.args[1], "form validation failed")
         self.assertNotIn("private-invalid-value", str(mocked.call_args))
         self.assertEqual(mocked.call_args.kwargs["properties"]["error_codes"], {"email": ["invalid"]})
+
+    def test_middleware_paths_are_scrubbed_recursively(self):
+        from builtwithdjango.analytics import posthog_before_send
+
+        result = posthog_before_send(
+            {
+                "properties": {
+                    "$request_path": "/accounts/reset/private-token/",
+                    "$set_once": {"$initial_current_url": "https://example.com/?token=secret#secret"},
+                }
+            }
+        )
+        self.assertNotIn("private-token", str(result))
+        self.assertNotIn("secret", str(result))

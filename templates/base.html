@@ -56,6 +56,19 @@
           }
         }
 
+        function bwdScrubUrls(value, key) {
+          if (Array.isArray(value)) return value.map(function(item) { return bwdScrubUrls(item, key); });
+          if (value && typeof value === "object") {
+            Object.keys(value).forEach(function(name) { value[name] = bwdScrubUrls(value[name], name); });
+            return value;
+          }
+          if (typeof value === "string" && (/^https?:\/\//.test(value) ||
+              (value.charAt(0) === "/" && /path|url|href/i.test(key || "")))) {
+            return bwdRedactUrl(value);
+          }
+          return value;
+        }
+
         function bwdIsNoisyAnalyticsRequest(value) {
           if (!value) return false;
           try {
@@ -136,14 +149,9 @@
             }
           },
           before_send: function(event) {
-            if (event && event.properties) {
-              if (event.properties.$current_url) {
-                event.properties.$current_url = bwdRedactUrl(event.properties.$current_url);
-              }
-              if (event.properties.$referrer) {
-                event.properties.$referrer = bwdRedactUrl(event.properties.$referrer);
-              }
-            }
+            // Also scrub SDK-generated initial URLs, pathname and nested person
+            // attribution. Never remove the protocol's public ingestion token.
+            if (event && event.properties) bwdScrubUrls(event.properties);
             return event;
           }
         });

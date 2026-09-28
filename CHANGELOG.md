@@ -18,6 +18,7 @@ their recorded dates; previously undated entries use their Git history dates.
 
 ### Fixed
 
+- Applied analytics URL redaction recursively to SDK attribution and middleware paths, including account recovery URLs.
 - Restored PostHog browser ingestion by preserving its public ingestion token; joined browser/server identities, reset identity after logout, and deduplicated retried Stripe analytics events.
 
 ### Added
