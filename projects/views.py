@@ -53,6 +53,12 @@ class ProjectListView(FilterView):
         elif context.get("page_obj") and context["page_obj"].number > 1:
             context["canonical_path"] = f"{reverse('projects')}?page={context['page_obj'].number}"
 
+        if context.get("page_obj"):
+            page = context["page_obj"]
+            context["pagination_range"] = list(
+                page.paginator.get_elided_page_range(page.number, on_each_side=2, on_ends=2)
+            )
+
         return context
 
 

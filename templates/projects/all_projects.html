@@ -86,22 +86,30 @@
     {% endif %}
 
     {% if is_paginated %}
-      <nav class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row" aria-label="Project pagination">
-        {% if page_obj.has_previous %}
-          <a href="?{% if request.GET.order_by %}order_by={{ request.GET.order_by }}&{% endif %}{% if request.GET.is_open_source %}is_open_source={{ request.GET.is_open_source }}&{% endif %}page={{ page_obj.previous_page_number }}"
-             class="bw-button bw-button-secondary">
-            Previous
-          </a>
-        {% endif %}
-        <span class="rounded-md border border-[var(--bw-border)] bg-[var(--bw-surface)] px-4 py-3 text-sm font-bold bw-muted">
+      <nav class="mt-10 flex flex-col items-center justify-center gap-3" aria-label="Project pagination">
+        <span class="text-sm font-bold bw-muted">
           Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
         </span>
-        {% if page_obj.has_next %}
-          <a href="?{% if request.GET.order_by %}order_by={{ request.GET.order_by }}&{% endif %}{% if request.GET.is_open_source %}is_open_source={{ request.GET.is_open_source }}&{% endif %}page={{ page_obj.next_page_number }}"
-             class="bw-button bw-button-secondary">
-            Next
-          </a>
-        {% endif %}
+        <div class="flex flex-wrap items-center justify-center gap-2">
+          {% if page_obj.has_previous %}
+            <a href="{% querystring page=page_obj.previous_page_number %}"
+               class="bw-button bw-button-secondary" aria-label="Previous project page">Previous</a>
+          {% endif %}
+          {% for number in pagination_range %}
+            {% if number == page_obj.paginator.ELLIPSIS %}
+              <span class="px-2 bw-muted" aria-hidden="true">{{ number }}</span>
+            {% elif number == page_obj.number %}
+              <span class="bw-button bw-button-primary" aria-current="page" aria-label="Page {{ number }}">{{ number }}</span>
+            {% else %}
+              <a href="{% querystring page=number %}" class="bw-button bw-button-secondary"
+                 aria-label="Go to project page {{ number }}">{{ number }}</a>
+            {% endif %}
+          {% endfor %}
+          {% if page_obj.has_next %}
+            <a href="{% querystring page=page_obj.next_page_number %}"
+               class="bw-button bw-button-secondary" aria-label="Next project page">Next</a>
+          {% endif %}
+        </div>
       </nav>
     {% endif %}
   </div>

@@ -14,6 +14,12 @@ their recorded dates; previously undated entries use their Git history dates.
 **Fixed** for any bug fixes.
 **Security** in case of vulnerabilities.
 
+## 2026-09-28
+
+### Changed
+
+- Added numbered project pagination with nearby and end-page links, preserving active filters and page-specific canonicals while shortening discovery paths.
+
 ## 2026-09-27
 
 ### Fixed
