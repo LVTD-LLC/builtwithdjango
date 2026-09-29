@@ -14,6 +14,12 @@ their recorded dates; previously undated entries use their Git history dates.
 **Fixed** for any bug fixes.
 **Security** in case of vulnerabilities.
 
+## 2026-09-29
+
+### Fixed
+
+- Corrected unsupported survey and benchmark claims in the Django power-features article, with documented trade-offs and runnable examples.
+
 ## 2026-09-28
 
 ### Fixed
