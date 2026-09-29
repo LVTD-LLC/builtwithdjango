@@ -18,6 +18,8 @@ their recorded dates; previously undated entries use their Git history dates.
 
 ### Fixed
 
+- Kept the power-features article's generic-relation explanation within narrow mobile screens.
+
 - Corrected unsupported survey and benchmark claims in the Django power-features article, with documented trade-offs and runnable examples.
 
 ## 2026-09-28

@@ -149,7 +149,7 @@ This example assumes integer primary keys. Match `object_id` to the primary-key 
 
 ### Best Practices
 
-You cannot filter directly with `Comment.objects.filter(content_object=target)`. Filter on `content_type` and `object_id` instead. Deleting a target can leave a dangling reference unless you configure reverse-relation deletion behavior. Review the [ContentTypes documentation](https://docs.djangoproject.com/en/5.2/ref/contrib/contenttypes/) before choosing this design.
+You cannot filter directly on `content_object`. Filter on `content_type` and `object_id` instead. Deleting a target can leave a dangling reference unless you configure reverse-relation deletion behavior. Review the [ContentTypes documentation](https://docs.djangoproject.com/en/5.2/ref/contrib/contenttypes/) before choosing this design.
 
 ## Integrating Power Features: Building Unstoppable Django Projects
 
