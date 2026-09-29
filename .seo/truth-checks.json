@@ -32,5 +32,23 @@
       "django-cdn-performance-study",
       "40% improvement in first contentful paint"
     ]
+  },
+  {
+    "claim": "Power-features article does not present unsupported survey or outcome percentages",
+    "paths": [
+      "content/blog/3-django-power-features-youre-ignoring-build-unstoppable-projects.md"
+    ],
+    "urls": [
+      "https://builtwithdjango.com/blog/3-django-power-features-youre-ignoring-build-unstoppable-projects"
+    ],
+    "must_match": [],
+    "must_not_match": [
+      "60% of Django",
+      "30% fewer codebase bugs",
+      "25% faster deployment",
+      "40% reduction in redundant",
+      "GitHub Open Source Report",
+      "devecosystem-2024/python"
+    ]
   }
 ]
