@@ -50,5 +50,24 @@
       "GitHub Open Source Report",
       "devecosystem-2024/python"
     ]
+  },
+  {
+    "claim": "Frontend comparison distinguishes verified site architecture from optional integrations",
+    "paths": [
+      "content/blog/7-top-frontend-frameworks-for-seamless-django-integration.md"
+    ],
+    "urls": [
+      "https://builtwithdjango.com/blog/7-top-frontend-frameworks-for-seamless-django-integration"
+    ],
+    "must_match": [
+      "rather than a React SPA",
+      "Authentication Needs Integration",
+      "Those choices do not generate a React or Vue application"
+    ],
+    "must_not_match": [
+      "including platforms like Built with Django",
+      "Supports authentication, image optimization, and internationalization out-of-the-box",
+      "provide boilerplates for integrating Django with React, Vue"
+    ]
   }
 ]
