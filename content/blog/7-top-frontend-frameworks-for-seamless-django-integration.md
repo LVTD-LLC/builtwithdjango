@@ -1,7 +1,7 @@
 ---
 id: 16
 created: '2025-12-08 17:37:33.433413+00:00'
-modified: '2025-12-08 17:46:36.150723+00:00'
+modified: '2026-09-30 07:00:00+00:00'
 title: 7 Top Frontend Frameworks for Seamless Django Integration
 slug: 7-top-frontend-frameworks-for-seamless-django-integration
 status: PB
@@ -58,7 +58,7 @@ React, developed by Meta, is widely regarded as the most popular JavaScript libr
 
 ### Example Use Case
 
-A typical Django-React stack involves Django REST Framework powering the backend API, with React handling the SPA frontend. This architecture is widely adopted in production environments, including platforms like Built with Django, which showcases real-world Django [web apps](https://www.builtwithdjango.com/).
+A Django-React application can use Django REST Framework for a JSON API and React for an interactive dashboard. A separate SPA is not required: React also supports [adding components to an existing page](https://react.dev/learn/add-react-to-an-existing-project). Built with Django itself uses server-rendered Django templates with Stimulus, Turbo, and Alpine.js, rather than a React SPA.
 
 ## 2. Vue.js
 
@@ -141,7 +141,7 @@ Next.js, built on top of React, is a leading framework for server-side rendering
 
 - **SSR and SSG**: Delivers fast, SEO-friendly pages, complementing Django’s backend strengths.
 - **API Routes**: Can be used alongside Django REST Framework, or as a standalone frontend with Django powering the [backend](https://nextjs.org/).
-- **Full-Stack Capabilities**: Supports authentication, image optimization, and internationalization out-of-the-box.
+- **Authentication Needs Integration**: Next.js provides building blocks, not a ready-made sign-in system. Its [authentication guide](https://nextjs.org/docs/app/guides/authentication) recommends an authentication library. When pairing it with Django, decide which backend owns authentication and enforce authorization on the Django API; rendering a page in Next.js does not secure that API.
 
 ### Example Use Case
 
@@ -176,8 +176,8 @@ Modern build tools like Webpack, Vite, and Parcel are used to bundle frontend as
 ## Real-World Examples and Industry Adoption
 
 - **Instagram**: Originally built with Django, Instagram leverages React for its web frontend, demonstrating the scalability of this integration.
-- **Built with Django**: The [Built with Django](https://www.builtwithdjango.com/) platform itself showcases [numerous projects](https://builtwithdjango.com/projects/) where frontend frameworks are paired with Django for [modern, interactive web experiences](https://builtwithdjango.com/projects/madewithdjango).
-- **Open Source Projects**: Repositories like [cookiecutter-django](https://github.com/cookiecutter/cookiecutter-django) provide boilerplates for integrating Django with React, Vue, and other frameworks, accelerating development and standardizing best practices.
+- **Built with Django**: This site is an HTML-first example: Django templates render the pages, while Stimulus, Turbo, and Alpine.js add interactivity. Browse the [project directory](https://builtwithdjango.com/projects/) for other Django products, but check each project's own documentation before assuming its frontend stack.
+- **Cookiecutter Django**: Its [project-generation options](https://cookiecutter-django.readthedocs.io/en/latest/1-getting-started/project-generation-options.html) include optional Django REST Framework support and frontend asset pipelines. Those choices do not generate a React or Vue application; adding either frontend is separate integration work.
 
 ## Challenges and Considerations
 

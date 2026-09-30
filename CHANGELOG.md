@@ -5,6 +5,11 @@ Each `YYYY-MM-DD` heading groups all changes for that day by type, without
 release versions or an Unreleased section. Historical dated entries retain
 their recorded dates; previously undated entries use their Git history dates.
 
+## 2026-09-30
+
+### Fixed
+- Corrected the frontend comparison's Built with Django stack, Next.js authentication, and Cookiecutter Django integration claims, with primary-source links.
+
 ## Types of changes
 
 **Added** for new features.
