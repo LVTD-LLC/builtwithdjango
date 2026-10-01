@@ -5,6 +5,11 @@ Each `YYYY-MM-DD` heading groups all changes for that day by type, without
 release versions or an Unreleased section. Historical dated entries retain
 their recorded dates; previously undated entries use their Git history dates.
 
+## 2026-10-01
+
+### Fixed
+- Made the existing Django articles index discoverable from the Guides hub and shared Explore footer.
+
 ## 2026-09-30
 
 ### Fixed
