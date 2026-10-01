@@ -260,6 +260,36 @@ class SeoPageRenderTests(TestCase):
             password="test-pass",
         )
 
+    def test_article_index_is_reachable_from_home_and_guides_without_exposing_drafts(self):
+        article = make_post(self, slug="community-note", type="ARTICLE", author=self.author)
+        guide = make_post(self, slug="practical-guide", type="TUTORIAL", author=self.author)
+        draft = make_post(self, slug="draft-note", type="ARTICLE", status="DR", author=self.author)
+        article_index = reverse("articles")
+
+        for path in (reverse("home"), reverse("blog")):
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertEqual(response.status_code, 200)
+                html = response.content.decode()
+                footer = html.split('<footer class="bw-footer">', 1)[1].split("</footer>", 1)[0]
+                self.assertIn(f'href="{article_index}"', footer)
+                if path == reverse("blog"):
+                    main = html.split('<main id="main-content"', 1)[1].split("</main>", 1)[0]
+                    self.assertIn(f'href="{article_index}"', main)
+                    self.assertIn("Explore Django articles", main)
+                    self.assertIn(f'href="{guide.get_absolute_url()}"', main)
+
+        response = self.client.get(article_index)
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn(f'href="{article.get_absolute_url()}"', html)
+        self.assertNotIn(f'href="{draft.get_absolute_url()}"', html)
+        self.assertNotIn(f'href="{guide.get_absolute_url()}"', html)
+        self.assertIn(f'<link rel="canonical" href="http://localhost:8000{article_index}" />', html)
+        self.assertNotIn('<meta name="robots"', html)
+        self.assertEqual(html.count("<h1 "), 1)
+        self.assertIn('"@type": "CollectionPage"', html)
+
     def test_blog_post_detail_renders_article_metadata(self):
         post = make_post(
             self,

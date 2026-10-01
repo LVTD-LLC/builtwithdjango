@@ -8,7 +8,8 @@
 {% endblock meta %}
 
 {% block content %}
-{% include "components/page-hero.html" with kicker="Django guides" title="Learn Django by building" description="Tutorials and notes for developers who want practical patterns, not abstract framework tours." %}
+{% url 'articles' as articles_url %}
+{% include "components/page-hero.html" with cta_url=articles_url cta_label="Explore Django articles" cta_class="bw-button bw-button-secondary" kicker="Django guides" title="Learn Django by building" description="Tutorials and notes for developers who want practical patterns, not abstract framework tours." %}
 
 <section class="pb-16">
   <div class="bw-container">
