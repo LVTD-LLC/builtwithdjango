@@ -25,6 +25,11 @@ class MakerDetailView(DetailView):
     model = Maker
     template_name = "makers/maker_detail.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["public_projects"] = self.object.projects.filter(published=True, active=True, might_be_spam=False)
+        return context
+
 
 class MakerUpdateView(LoginRequiredMixin, UpdateView):
     login_url = "account_login"

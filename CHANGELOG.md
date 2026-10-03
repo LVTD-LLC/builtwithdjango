@@ -5,6 +5,11 @@ Each `YYYY-MM-DD` heading groups all changes for that day by type, without
 release versions or an Unreleased section. Historical dated entries retain
 their recorded dates; previously undated entries use their Git history dates.
 
+## 2026-10-03
+
+### Fixed
+- Maker profiles now link only to published, active, non-spam projects, preventing cards that lead visitors to unavailable listings.
+
 ## 2026-10-01
 
 ### Fixed
