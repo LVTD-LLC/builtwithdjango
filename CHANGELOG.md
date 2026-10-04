@@ -5,6 +5,11 @@ Each `YYYY-MM-DD` heading groups all changes for that day by type, without
 release versions or an Unreleased section. Historical dated entries retain
 their recorded dates; previously undated entries use their Git history dates.
 
+## 2026-10-04
+
+### Fixed
+- Corrected the cursor guide’s unsupported named-cursor example, ORM window-function claim, and unverified import-speed benchmark; clarified backend and transaction limits with current Django references.
+
 ## 2026-10-03
 
 ### Fixed

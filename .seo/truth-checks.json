@@ -69,5 +69,25 @@
       "Supports authentication, image optimization, and internationalization out-of-the-box",
       "provide boilerplates for integrating Django with React, Vue"
     ]
+  },
+  {
+    "claim": "Cursor guide uses supported Django APIs and does not invent a performance benchmark",
+    "paths": [
+      "content/blog/django-cursors-advanced-database-access-techniques-guide.md"
+    ],
+    "urls": [
+      "https://builtwithdjango.com/blog/django-cursors-advanced-database-access-techniques-guide"
+    ],
+    "must_match": [
+      "does not accept a",
+      "DISABLE_SERVER_SIDE_CURSORS",
+      "Window"
+    ],
+    "must_not_match": [
+      "cursor\\(name\\s*=",
+      "reduced import time by over 80%",
+      "features not exposed by the ORM",
+      "realpython.com/django-raw-sql/"
+    ]
   }
 ]
