@@ -1,7 +1,7 @@
 ---
 id: 126
 created: '2025-12-18 07:39:36.252861+00:00'
-modified: '2025-12-18 07:39:36.252861+00:00'
+modified: '2026-10-04 07:00:00+00:00'
 title: 'Django Cursors: Advanced Database Access Techniques [Guide]'
 slug: django-cursors-advanced-database-access-techniques-guide
 status: PB
@@ -32,7 +32,7 @@ tag_list:
   slug: custom-database-queries-django
 author: 1
 ---
-Django, as a high-level Python web framework, is celebrated for its robust ORM (Object-Relational Mapping) system, which abstracts away much of the complexity involved in database interactions. However, there are scenarios where developers require more granular control over database operations—cases where the ORM’s abstraction becomes a limitation rather than a convenience. For these advanced use cases, Django provides direct access to database cursors, enabling the execution of raw SQL queries and custom database operations. This guide explores advanced techniques for using Django cursors, integrating insights from the latest research and best practices, and is tailored for developers seeking to [master direct database access in Django projects](https://builtwithdjango.com/projects/djangowiki).
+Django, as a high-level Python web framework, is celebrated for its robust ORM (Object-Relational Mapping) system, which abstracts away much of the complexity involved in database interactions. However, there are scenarios where developers require more granular control over database operations—cases where the ORM’s abstraction becomes a limitation rather than a convenience. For these advanced use cases, Django provides direct access to database cursors, enabling the execution of raw SQL queries and custom database operations. This guide explores advanced techniques for using Django cursors, using Django 5.2 APIs and documented database behavior, and is tailored for developers seeking to [master direct database access in Django projects](https://builtwithdjango.com/projects/djangowiki).
 
 ## Why Use Cursors in Django?
 
@@ -43,22 +43,23 @@ While Django’s ORM simplifies most database operations, certain scenarios dema
 - **Bulk Operations:** Performing batch inserts, updates, or deletes efficiently.
 - **Legacy Database Integration:** Interfacing with databases not fully compatible with Django’s ORM.
 
-Understanding when and how to use Django cursors is essential for developers aiming to unlock the full power of their database layer, as detailed in the [Django documentation](https://docs.djangoproject.com/en/5.0/topics/db/sql/).
+Understanding when and how to use Django cursors is essential for developers aiming to unlock the full power of their database layer, as detailed in the [Django documentation](https://docs.djangoproject.com/en/5.2/topics/db/sql/).
 
 ## Django Cursors: The Basics
 
-Django provides access to database cursors through the `django.db.connection` module. A cursor is a control structure that enables traversal over the records in a database, allowing execution of raw SQL statements and retrieval of results.
+Django provides access to database cursors through the `django.db.connection` object. A cursor is a control structure that enables traversal over the records in a database, allowing execution of raw SQL statements and retrieval of results.
 
 ### Basic Usage Example
 
 ```python
 from django.db import connection
 
-def my_custom_sql(query):
+def echo_value(value):
     with connection.cursor() as cursor:
-        cursor.execute(query)
-        row = cursor.fetchone()
-    return row
+        cursor.execute("SELECT %s", [value])
+        return cursor.fetchone()[0]
+
+print(echo_value("hello"))  # hello
 ```
 
 This pattern ensures proper management of database resources, automatically closing the cursor when the block is exited.
@@ -76,7 +77,7 @@ def get_user_by_email(email):
         return cursor.fetchone()
 ```
 
-This approach ensures user input is safely escaped, aligning with [best security practices](https://owasp.org/www-community/attacks/SQL_Injection).
+Pass values separately from SQL and leave `%s` placeholders unquoted, as explained in [Django's raw SQL guide](https://docs.djangoproject.com/en/5.2/topics/db/sql/#passing-parameters-into-raw). Parameters represent values, not table or column names. This example assumes the default `auth_user` table; a custom user model may use a different table and fields.
 
 ### 2. Fetching Multiple Rows
 
@@ -96,18 +97,22 @@ with connection.cursor() as cursor:
 
 ### 3. Using Named Cursors for Large Datasets
 
-When working with large datasets, loading all results into memory can be inefficient. Some database backends (notably PostgreSQL) support server-side cursors, which fetch data in manageable chunks:
+Django's `connection.cursor()` wrapper does not accept a `name` argument. A database driver's named-cursor API is not interchangeable with Django's wrapper.
+
+For model queries, use `QuerySet.iterator()` to avoid filling the QuerySet result cache. This example reads user primary keys without retaining a list of every result:
 
 ```python
-from django.db import connections
+from django.contrib.auth import get_user_model
 
-with connections['default'].cursor(name='large_query') as cursor:
-    cursor.execute("SELECT * FROM large_table")
-    for row in cursor:
-        process(row)
+User = get_user_model()
+user_ids = User.objects.order_by("pk").values_list("pk", flat=True)
+for user_id in user_ids.iterator(chunk_size=1000):
+    print(user_id)
 ```
 
-This technique is particularly valuable for data processing tasks and ETL pipelines, as described in the [PostgreSQL documentation](https://www.postgresql.org/docs/current/sql-declare.html).
+On PostgreSQL, this uses server-side cursors when `DISABLE_SERVER_SIDE_CURSORS` is `False`. Transaction-pooling connections need the configuration described in [Django's server-side cursor guidance](https://docs.djangoproject.com/en/5.2/ref/databases/#transaction-pooling-server-side-cursors). Backend behavior matters: MySQL's driver loads the result set into memory, so `iterator()` is not a universal streaming guarantee. See the [iterator reference](https://docs.djangoproject.com/en/5.2/ref/models/querysets/#iterator).
+
+For raw SQL, `fetchmany()` limits the rows returned to your Python code per call; it does not by itself guarantee server-side streaming. Verify your driver's buffering behavior before using it for a large export.
 
 ### 4. Transaction Management
 
@@ -122,20 +127,17 @@ with transaction.atomic():
         cursor.execute("UPDATE accounts SET balance = balance + 100 WHERE id = %s", [to_id])
 ```
 
-This ensures that either both updates succeed, or neither does, maintaining data integrity, as explained in the [Django documentation](https://docs.djangoproject.com/en/5.0/topics/db/transactions/).
+The block commits both updates or rolls them back if an exception escapes. It does not validate balances, permissions, or affected-row counts: a missing account may update zero rows without raising an error. Add those business checks separately. See the [Django documentation](https://docs.djangoproject.com/en/5.2/topics/db/transactions/).
 
 ## Comparative Overview: ORM vs. Direct SQL
 
-| Feature                         | Django ORM                | Django Cursors / Raw SQL         |
-|----------------------------------|---------------------------|----------------------------------|
-| Abstraction Level                | High                      | Low                              |
-| Safety (SQL Injection)           | High (automatic)          | Medium (requires care)           |
-| Performance (Complex Queries)    | Good (simple queries)     | Excellent (complex queries)      |
-| Database Portability             | High                      | Medium (SQL dialects differ)     |
-| Access to DB-specific Features   | Limited                   | Full                             |
-| Learning Curve                   | Low                       | High                             |
+- **Abstraction:** the ORM builds SQL from model queries; cursors execute SQL you supply.
+- **Safety:** bind values through parameters in raw SQL. Neither interface makes arbitrary string-built SQL safe.
+- **Performance:** raw SQL is not automatically faster. Compare equivalent queries, indexes, and execution plans on representative data.
+- **Portability:** ORM queries usually need fewer backend-specific changes. Direct SQL gives more control but ties you more closely to a database dialect.
+- **Database features:** the ORM includes expressions and window functions; use raw SQL when the required operation cannot be expressed adequately through those APIs.
 
-**Key Insight:** For most applications, the ORM suffices. However, Django direct SQL access via cursors is indispensable for advanced use cases requiring performance tuning or database-specific features.
+**Key Insight:** Start with the ORM and [profile before optimizing](https://docs.djangoproject.com/en/5.2/topics/db/optimization/). Choose raw SQL for a demonstrated need, not an assumed performance advantage.
 
 ## Integrating Cursors with Django’s Features
 
@@ -157,11 +159,11 @@ def get_custom_objects():
     return [MyModel(**row) for row in results]
 ```
 
-This hybrid approach combines the flexibility of raw SQL with the convenience of Django models.
+These are newly constructed model instances, not objects loaded through an ORM query. Do not treat them as fully hydrated existing records or save them blindly. For SQL that returns model instances, prefer [Manager.raw()](https://docs.djangoproject.com/en/5.2/topics/db/sql/#performing-raw-queries); include the primary key in the selected columns.
 
 ### Logging and Debugging Raw SQL
 
-For maintainability, it’s crucial to log raw SQL queries. Django’s `django.db.connection.queries` provides access to executed queries, aiding in debugging and optimization, as detailed in the [Django documentation](https://docs.djangoproject.com/en/5.0/faq/models/#how-can-i-see-the-raw-sql-queries-django-is-running/).
+With `DEBUG=True`, Django’s `connection.queries` exposes query SQL and timing for debugging. Do not enable production debug mode to collect queries; SQL logs can contain sensitive values. See the [Django documentation](https://docs.djangoproject.com/en/5.2/faq/models/#how-can-i-see-the-raw-sql-queries-django-is-running/).
 
 ## Performance Considerations and Best Practices
 
@@ -186,13 +188,13 @@ Django supports [multiple database backends](https://www.rasulkireev.com/tag/dat
 
 ## Real-World Examples and Use Cases
 
-### Case Study: Bulk Data Import
+### Bulk Data Import
 
-A Django-based analytics platform needed to import millions of records from CSV files. Using the ORM resulted in unacceptable performance. Switching to direct SQL with cursors and batch inserts reduced import time by over 80%, demonstrating the practical value of Django database tips for high-volume operations, as explored by [Real Python](https://realpython.com/django-raw-sql/).
+For a CSV import, compare the ORM's `bulk_create()` with a database-native import method on your own workload. Batch size, indexes, constraints, and transaction boundaries affect the result. There is no universal percentage improvement from replacing the ORM with cursors. Django's [bulk insertion guidance](https://docs.djangoproject.com/en/5.2/topics/db/optimization/#insert-in-bulk) explains where to start.
 
-### Case Study: Leveraging Database Functions
+### Database Window Functions
 
-A fintech application required complex reporting using PostgreSQL’s window functions. By executing custom database queries in Django via cursors, developers accessed advanced SQL features not exposed by the ORM, enabling sophisticated analytics without compromising performance.
+Window functions are not exclusive to raw SQL: Django exposes them through the [`Window` expression](https://docs.djangoproject.com/en/5.2/ref/models/expressions/#window-functions). Check which expressions and frame options your backend supports before deciding that a report requires a cursor. Raw SQL remains an option for unsupported operations, not a prerequisite for window functions.
 
 ## Risks and Limitations
 
@@ -206,7 +208,7 @@ Developers should weigh these trade-offs and document custom queries thoroughly.
 
 ## Connections to Broader Django Ecosystem
 
-The use of Django cursors aligns with the broader trend of [empowering developers with both high-level abstractions and low-level control](https://www.rasulkireev.com/tag/Django/). Platforms like [Built with Django](https://builtwithdjango.com/) exemplify this philosophy, offering both comprehensive Django tutorials and [practical tools for advanced development tasks](https://builtwithdjango.com/uses). By mastering both the ORM and direct SQL techniques, developers can build scalable, performant, and maintainable applications, drawing inspiration from community showcases and leveraging resources such as the [Django Secret Key Generator](https://builtwithdjango.com/tools/secret-key-generator/) and [HTML Formatter](https://builtwithdjango.com/tools/html-formatter/).
+The use of Django cursors aligns with the broader trend of [empowering developers with both high-level abstractions and low-level control](https://www.rasulkireev.com/tag/Django/). Platforms like [Built with Django](https://builtwithdjango.com/) exemplify this philosophy, offering both comprehensive Django tutorials and [practical tools for advanced development tasks](https://builtwithdjango.com/uses). By mastering both the ORM and direct SQL techniques, developers can build scalable, performant, and maintainable applications, drawing inspiration from community showcases and leveraging resources such as the [Django Secret Key Generator](https://builtwithdjango.com/tools/django-secret/) and [HTML Formatter](https://builtwithdjango.com/tools/format-html/).
 
 ## Conclusion
 
