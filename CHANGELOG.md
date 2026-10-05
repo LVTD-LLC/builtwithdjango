@@ -5,6 +5,11 @@ Each `YYYY-MM-DD` heading groups all changes for that day by type, without
 release versions or an Unreleased section. Historical dated entries retain
 their recorded dates; previously undated entries use their Git history dates.
 
+## 2026-10-05
+
+### Changed
+- Clarified the Django secret-key generator's search title and description, aligned its structured metadata, and recorded its content revision date in the sitemap. Tool behavior is unchanged.
+
 ## 2026-10-04
 
 ### Fixed
