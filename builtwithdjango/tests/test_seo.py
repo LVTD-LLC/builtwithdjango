@@ -108,6 +108,20 @@ class PublishedLinkRedirectTests(SimpleTestCase):
 
 
 class SeoSitemapTests(TestCase):
+    def test_static_sitemap_only_dates_the_revised_tool(self):
+        Site.objects.update_or_create(pk=1, defaults={"domain": "builtwithdjango.com", "name": "Built with Django"})
+        Site.objects.clear_cache()
+        response = self.client.get("/sitemap.xml")
+        self.assertEqual(response.status_code, 200)
+        ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+        entries = {
+            node.findtext("sm:loc", namespaces=ns): node.findtext("sm:lastmod", namespaces=ns)
+            for node in ElementTree.fromstring(response.content).findall("sm:url", ns)
+        }
+        self.assertEqual(entries["https://builtwithdjango.com/tools/django-secret/"], "2026-10-05")
+        self.assertIsNone(entries["https://builtwithdjango.com/tools/format-html/"])
+        self.assertIsNone(entries["https://builtwithdjango.com/"])
+
     def test_sitemap_excludes_submission_form_without_changing_login_redirect(self):
         Site.objects.update_or_create(pk=1, defaults={"domain": "builtwithdjango.com", "name": "Built with Django"})
         Site.objects.clear_cache()

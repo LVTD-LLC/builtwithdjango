@@ -1,3 +1,5 @@
+from datetime import date
+
 from django.contrib import sitemaps
 from django.contrib.sitemaps import GenericSitemap
 from django.urls import reverse
@@ -15,6 +17,10 @@ class StaticViewSitemap(sitemaps.Sitemap):
 
     priority = 0.5
     protocol = "https"
+
+    def lastmod(self, item):
+        # Content revision dates, not the date the sitemap is requested or built.
+        return {"generate_django_secret_page": date(2026, 10, 5)}.get(item)
 
     def items(self):
         """Identify items that will be in the Sitemap
