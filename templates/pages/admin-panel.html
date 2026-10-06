@@ -10,8 +10,8 @@
 <div class="px-4 py-8 mx-auto max-w-7xl sm:px-6 lg:px-8">
     <!-- Header -->
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">Admin Panel</h1>
-        <p class="mt-2 text-gray-600">Dashboard overview and administrative actions</p>
+        <h1 class="text-3xl font-bold text-[var(--bw-ink)]">Admin Panel</h1>
+        <p class="mt-2 text-[var(--bw-muted)]">Dashboard overview and administrative actions</p>
     </div>
 
     <!-- Messages -->
@@ -28,7 +28,7 @@
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
         <!-- Confirmed Users -->
-        <div class="overflow-hidden bg-white rounded-lg shadow">
+        <div class="overflow-hidden bg-[var(--bw-surface)] rounded-lg shadow">
             <div class="p-5">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
@@ -41,7 +41,7 @@
                             <dt class="text-sm font-medium text-gray-500 truncate">
                                 Confirmed Users
                             </dt>
-                            <dd class="text-3xl font-semibold text-gray-900">
+                            <dd class="text-3xl font-semibold text-[var(--bw-ink)]">
                                 {{ confirmed_users_count }}
                             </dd>
                         </dl>
@@ -54,7 +54,7 @@
         </div>
 
         <!-- Published Projects -->
-        <div class="overflow-hidden bg-white rounded-lg shadow">
+        <div class="overflow-hidden bg-[var(--bw-surface)] rounded-lg shadow">
             <div class="p-5">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
@@ -67,7 +67,7 @@
                             <dt class="text-sm font-medium text-gray-500 truncate">
                                 Published Projects
                             </dt>
-                            <dd class="text-3xl font-semibold text-gray-900">
+                            <dd class="text-3xl font-semibold text-[var(--bw-ink)]">
                                 {{ published_projects_count }}
                             </dd>
                         </dl>
@@ -80,7 +80,7 @@
         </div>
 
         <!-- Latest Jobs Count -->
-        <div class="overflow-hidden bg-white rounded-lg shadow">
+        <div class="overflow-hidden bg-[var(--bw-surface)] rounded-lg shadow">
             <div class="p-5">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
@@ -93,7 +93,7 @@
                             <dt class="text-sm font-medium text-gray-500 truncate">
                                 Approved Jobs
                             </dt>
-                            <dd class="text-3xl font-semibold text-gray-900">
+                            <dd class="text-3xl font-semibold text-[var(--bw-ink)]">
                                 {{ latest_jobs|length }}
                             </dd>
                         </dl>
@@ -130,9 +130,9 @@
     </div>
 
     <!-- Latest Jobs Table -->
-    <div class="overflow-hidden mb-8 bg-white rounded-lg shadow">
+    <div class="overflow-hidden mb-8 bg-[var(--bw-surface)] rounded-lg shadow">
         <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-xl font-semibold text-gray-900">Latest Jobs</h2>
+            <h2 class="text-xl font-semibold text-[var(--bw-ink)]">Latest Jobs</h2>
         </div>
         <div class="overflow-x-auto">
             {% if latest_jobs %}
@@ -156,18 +156,18 @@
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-[var(--bw-surface)] divide-y divide-gray-200">
                         {% for job in latest_jobs %}
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">
+                                    <div class="text-sm font-medium text-[var(--bw-ink)]">
                                         <a href="{{ job.get_absolute_url }}" class="hover:text-green-600">
                                             {{ job.title }}
                                         </a>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900">{{ job.company_name }}</div>
+                                    <div class="text-sm text-[var(--bw-ink)]">{{ job.company_name }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-500">{{ job.location|default:"Not specified" }}</div>
@@ -201,12 +201,12 @@
     <!-- Admin Actions Grid -->
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <!-- Prepare Newsletter -->
-        <div class="overflow-hidden bg-white rounded-lg shadow">
+        <div class="overflow-hidden bg-[var(--bw-surface)] rounded-lg shadow">
             <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-xl font-semibold text-gray-900">Prepare Newsletter</h2>
+                <h2 class="text-xl font-semibold text-[var(--bw-ink)]">Prepare Newsletter</h2>
             </div>
             <div class="p-6">
-                <p class="mb-4 text-sm text-gray-600">
+                <p class="mb-4 text-sm text-[var(--bw-muted)]">
                     This will queue an async task to prepare and schedule a newsletter with content from the last X days (projects, jobs, blog posts).
                 </p>
 
@@ -222,7 +222,7 @@
                                value="7"
                                min="1"
                                max="365"
-                               class="block px-3 py-2 w-32 text-sm rounded-md border border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                               class="block px-3 py-2 w-32 text-sm rounded-md border border-[var(--bw-border)] shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500">
                         <p class="mt-1 text-xs text-gray-500">Enter number between 1 and 365</p>
                     </div>
 
@@ -244,12 +244,12 @@
         </div>
 
         <!-- Fetch Jobs from TJ Alerts -->
-        <div class="overflow-hidden bg-white rounded-lg shadow">
+        <div class="overflow-hidden bg-[var(--bw-surface)] rounded-lg shadow">
             <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-xl font-semibold text-gray-900">Fetch Jobs from TJ Alerts</h2>
+                <h2 class="text-xl font-semibold text-[var(--bw-ink)]">Fetch Jobs from TJ Alerts</h2>
             </div>
             <div class="p-6">
-                <p class="mb-4 text-sm text-gray-600">
+                <p class="mb-4 text-sm text-[var(--bw-muted)]">
                     This will queue an async task to fetch the latest Django jobs from TJ Alerts API and import them into the database.
                 </p>
 
@@ -274,16 +274,16 @@
 
         <!-- Sponsorship Email Action -->
         {% if latest_job %}
-            <div class="overflow-hidden bg-white rounded-lg shadow">
+            <div class="overflow-hidden bg-[var(--bw-surface)] rounded-lg shadow">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-xl font-semibold text-gray-900">Send Sponsorship Email</h2>
+                    <h2 class="text-xl font-semibold text-[var(--bw-ink)]">Send Sponsorship Email</h2>
                 </div>
                 <div class="p-6">
                     <div class="mb-4">
-                        <p class="mb-2 text-sm text-gray-600">This will queue an async task to send a sponsorship request email for the latest job:</p>
+                        <p class="mb-2 text-sm text-[var(--bw-muted)]">This will queue an async task to send a sponsorship request email for the latest job:</p>
                         <div class="p-4 bg-gray-50 rounded-md">
-                            <p class="text-sm font-medium text-gray-900">{{ latest_job.title }}</p>
-                            <p class="text-sm text-gray-600">at {{ latest_job.company_name }}</p>
+                            <p class="text-sm font-medium text-[var(--bw-ink)]">{{ latest_job.title }}</p>
+                            <p class="text-sm text-[var(--bw-muted)]">at {{ latest_job.company_name }}</p>
                             <p class="mt-1 text-xs text-gray-500">Email: {{ latest_job.email|default:"No email" }}</p>
                             <p class="text-xs text-gray-500">Posted: {{ latest_job.created_datetime|date:"M d, Y" }}</p>
                         </div>
@@ -306,9 +306,9 @@
                 </div>
             </div>
         {% else %}
-            <div class="overflow-hidden bg-white rounded-lg shadow">
+            <div class="overflow-hidden bg-[var(--bw-surface)] rounded-lg shadow">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h2 class="text-xl font-semibold text-gray-900">Send Sponsorship Email</h2>
+                    <h2 class="text-xl font-semibold text-[var(--bw-ink)]">Send Sponsorship Email</h2>
                 </div>
                 <div class="p-6 text-center text-gray-500">
                     No jobs available to send sponsorship emails.

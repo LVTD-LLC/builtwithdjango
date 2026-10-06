@@ -8,7 +8,7 @@ Built with Django serves:
 - Working developers and founders researching what Django can support.
 - Makers who want their products discovered and represented accurately.
 - Hiring teams and candidates looking for Django work and talent.
-- Community members looking for practical guides, podcasts, and resources.
+- Community members looking for practical guides and resources; past podcasts remain archived.
 
 ## Product purpose
 
@@ -26,7 +26,7 @@ surfaces support the site without overwhelming the community content.
 2. Open a project to understand what it does, how it was built, and where to
    learn more.
 3. Sign in, submit a project, and update the linked listing and screenshot.
-4. Learn through practical guides and conversations with Django builders.
+4. Learn through the blog: practical tutorials, articles, and updates.
 5. Discover Django jobs, developers, makers, and relevant community resources.
 6. Use high-intent commercial paths such as job posts, sponsorships,
    advertising, and developer access when relevant.

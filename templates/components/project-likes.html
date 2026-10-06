@@ -15,7 +15,8 @@
             data-analytics-project-title="{{ site.title }}"
             class="bw-icon-button gap-1"
             type="button"
-            aria-label="Like {{ site.title }}">
+            aria-label="Like {{ site.title }}"
+            {% if user.is_authenticated %}aria-pressed="{{ site.user_has_liked|yesno:'true,false' }}"{% endif %}>
       <span class="text-sm font-black" data-like-target="numberOfLikes">{{ site.like_count|default:0 }}</span>
       <i data-like-target="heart"
          class="{% if site.user_has_liked %}text-red-600 las{% else %}lar{% endif %} la-heart block"
@@ -28,50 +29,17 @@
             data-analytics-project-title="{{ site.title }}"
             class="bw-icon-button gap-1"
             type="button"
-            aria-label="Like {{ site.title }}">
+            aria-label="Like {{ site.title }}"
+            {% if user.is_authenticated %}aria-pressed="{{ site.user_has_liked|yesno:'true,false' }}"{% endif %}>
       <span class="text-sm font-black" data-like-target="numberOfLikes">{{ site.like_count|default:0 }}</span>
       <i data-like-target="heart"
          class="{% if site.user_has_liked %}text-red-600 las{% else %}lar{% endif %} la-heart block"
          aria-hidden="true"></i>
     </button>
-    <div data-like-target="modal"
-         class="fixed inset-0 z-50 hidden overflow-y-auto"
-         aria-labelledby="modal-title"
-         role="dialog"
-         aria-modal="true">
-      <div class="flex min-h-screen items-end justify-center px-4 pb-20 pt-4 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-[oklch(20%_0.035_156_/_0.64)] transition-opacity" aria-hidden="true"></div>
-        <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
-        <div class="inline-block w-full max-w-lg transform overflow-hidden rounded-lg bg-[var(--bw-surface)] text-left align-bottom shadow-xl transition-all sm:my-8 sm:align-middle">
-          <div class="p-6">
-            <div class="flex items-start justify-between gap-6">
-              <div>
-                <h3 class="text-xl font-black text-[var(--bw-ink)]" id="modal-title">Sign in to save projects</h3>
-                <p class="mt-2 text-sm leading-6 bw-muted">
-                  Liking projects helps you build a personal shortlist and gives project owners a signal that their work is useful.
-                </p>
-              </div>
-              <button data-action="click->like#toggleModal"
-                      data-like-target="modalButton"
-                      type="button"
-                      class="bw-icon-button shrink-0"
-                      aria-label="Close dialog">
-                <i class="las la-times" aria-hidden="true"></i>
-              </button>
-            </div>
-          </div>
-          <div class="flex flex-col-reverse gap-2 border-t border-[var(--bw-border)] bg-[var(--bw-surface-raised)] p-4 sm:flex-row sm:justify-end">
-            <button data-action="click->like#toggleModal"
-                    data-like-target="modalButton"
-                    type="button"
-                    class="bw-button bw-button-secondary">
-              Keep browsing
-            </button>
-            <a href="{% url 'account_login' %}" class="bw-button bw-button-primary">Sign in</a>
-            <a href="{% url 'account_signup' %}" class="bw-button bw-button-accent">Create account</a>
-          </div>
-        </div>
-      </div>
-    </div>
+    <dialog data-like-target="modal" data-action="close->like#modalClosed" class="bw-auth-dialog" aria-labelledby="like-title-{{ site.id }}">
+      <div class="flex items-start justify-between gap-4"><h2 id="like-title-{{ site.id }}" class="bw-heading-md">Keep your favorites.</h2><button type="button" class="bw-icon-button" data-action="like#toggleModal" aria-label="Close dialog">×</button></div>
+      <p class="bw-muted mt-4 leading-7">Sign in to like projects and show the builders your support.</p>
+      <div class="mt-6 flex flex-wrap gap-3"><a href="{% url 'account_login' %}?next={{ request.path|urlencode }}" class="bw-button bw-button-primary">Sign in</a><a href="{% url 'account_signup' %}" class="bw-button bw-button-secondary">Create account</a><button type="button" class="bw-text-link" data-action="like#toggleModal">Keep browsing</button></div>
+    </dialog>
   {% endif %}
 </div>

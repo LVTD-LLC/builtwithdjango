@@ -1,6 +1,5 @@
 import { Controller } from "@hotwired/stimulus";
 import axios from "axios";
-import { enter, leave } from "el-transition";
 
 export default class extends Controller {
   static targets = ["numberOfLikes", "heart", "modalButton", "modal"];
@@ -48,6 +47,9 @@ export default class extends Controller {
 
   render() {
     this.numberOfLikesTarget.textContent = this.countValue;
+    if (!this.hasModalTarget) {
+      this.element.querySelector("button")?.setAttribute("aria-pressed", String(this.likedValue));
+    }
     this.heartTarget.className = this.likedValue ? "text-red-600 las la-heart block" : "lar la-heart block";
   }
 
@@ -91,20 +93,15 @@ export default class extends Controller {
   }
 
   toggleModal() {
-    if (this.modalTarget.classList.contains("hidden")) {
-      enter(this.modalTarget);
-      if (window.bwdTrack) {
-        window.bwdTrack("project like auth modal opened", {
-          project_id: this.projectIdValue,
-        });
-      }
+    if (this.modalTarget.open) {
+      this.modalTarget.close();
     } else {
-      leave(this.modalTarget);
-      if (window.bwdTrack) {
-        window.bwdTrack("project like auth modal closed", {
-          project_id: this.projectIdValue,
-        });
-      }
+      this.modalTarget.showModal();
+      window.bwdTrack?.("project like auth modal opened", { project_id: this.projectIdValue });
     }
+  }
+
+  modalClosed() {
+    window.bwdTrack?.("project like auth modal closed", { project_id: this.projectIdValue });
   }
 }

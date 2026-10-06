@@ -8,9 +8,10 @@
 {% endblock meta %}
 
 {% block content %}
-    <p class="mt-4 text-blue-700">
+<section class="bw-section"><div class="bw-container bw-reading-width">
+    <p class="mt-4 bw-text-link">
         ←
-        <a href="{% url 'podcast_episodes' %}">back to all episodes</a>
+        <a href="{% url 'podcast_episodes' %}">Back to the podcast archive</a>
     </p>
     <div class="my-10 prose md:mx-auto lg:prose-xl">
         <h1>{{ object.title }}</h1>
@@ -50,6 +51,7 @@
             </div>
         {% endif %}
     </div>
+</div></section>
 {% endblock content %}
 
 {% block schema %}

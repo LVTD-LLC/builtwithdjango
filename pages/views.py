@@ -15,13 +15,12 @@ from django.views import View
 from django.views.generic import CreateView, RedirectView, TemplateView, UpdateView
 from django_q.tasks import async_task
 
-from blog.content import Post, published_posts
+from blog.content import published_posts
 from builtwithdjango.analytics import capture, capture_checkout_return, email_domain, stable_hash
 from jobs.models import Job
 from jobs.tasks import get_latest_jobs_from_tj_alerts, queue_sponsorship_request_email
 from newsletter.tasks import send_buttondown_newsletter
 from newsletter.views import NewsletterSignupForm
-from podcast.models import Episode
 from projects.models import Project
 from projects.querysets import with_like_metadata
 
@@ -42,11 +41,12 @@ class HomeView(TemplateView):
         context = super().get_context_data(**kwargs)
         context["newsletter_form"] = NewsletterSignupForm
         context["projects"] = with_like_metadata(
-            Project.objects.filter(published=True, active=True).order_by("-sponsored", "-date_added"),
+            Project.objects.filter(published=True, active=True, might_be_spam=False).order_by(
+                "-sponsored", "-date_added"
+            ),
             getattr(self.request, "user", None),
         )[:6]
-        context["guides"] = published_posts(Post.TUTORIAL)[:6]
-        context["podcast_episodes"] = Episode.objects.all()[:3]
+        context["guides"] = published_posts()[:6]
         filter_date = timezone.now() - timedelta(days=60)
         context["jobs"] = Job.objects.filter(approved=True, created_datetime__gte=filter_date).order_by(
             "-created_datetime"

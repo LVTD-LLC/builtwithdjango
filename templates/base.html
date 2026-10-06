@@ -253,440 +253,66 @@
       {% include "components/messages.html" with messages=messages %}
     {% endblock default_messages %}
 
-    <header class="bw-site-header" x-data="{ isOn: false }">
-      <nav class="bw-container flex min-h-[4.5rem] items-center justify-between gap-4" aria-label="Primary navigation">
-        <a href="{% url 'home' %}" class="bw-brand">
-          <img src="{% static 'vendors/images/logo.png' %}" width="220" height="234" alt="Built with Django Logo" />
-          <span class="hidden text-lg sm:inline">Built with Django</span>
+    <header class="bw-site-header">
+      <nav class="bw-container bw-navigation" aria-label="Primary navigation">
+        <a href="{% url 'home' %}" class="bw-brand" aria-label="Built with Django home">
+          <span class="bw-brand-mark" aria-hidden="true">bw<span>d.</span></span>
+          <span class="bw-brand-name">Built with Django</span>
         </a>
-
-        <div class="hidden items-center gap-1 lg:flex">
-          <a href="{% url 'projects' %}" class="bw-nav-link" data-analytics-event="nav clicked" data-analytics-nav-item="projects">Projects</a>
-          <a href="{% url 'blog' %}" class="bw-nav-link" data-analytics-event="nav clicked" data-analytics-nav-item="guides">Blog</a>
-          <a href="{% url 'jobs' %}" class="bw-nav-link" data-analytics-event="nav clicked" data-analytics-nav-item="jobs">Jobs</a>
-          <div data-controller="dropdown" class="relative">
-            <button type="button"
-                    data-action="dropdown#toggle click@window->dropdown#hide"
-                    class="bw-nav-link"
-                    aria-expanded="false"
-                    aria-haspopup="true"
-                    aria-controls="resources-menu">
-              Resources
-              <i class="las la-angle-down ml-1 text-sm" aria-hidden="true"></i>
-            </button>
-            <div data-dropdown-target="menu"
-                 id="resources-menu"
-                 data-transition-enter-active="transition ease-out duration-200"
-                 data-transition-enter-from="opacity-0 translate-y-1"
-                 data-transition-enter-to="opacity-100 translate-y-0"
-                 data-transition-leave-active="transition ease-in duration-150"
-                 data-transition-leave-from="opacity-100 translate-y-0"
-                 data-transition-leave-to="opacity-0 translate-y-1"
-                 class="hidden absolute left-1/2 z-20 mt-3 w-80 -translate-x-1/2">
-              <div class="bw-menu-panel p-2">
-                <a href="{% url 'podcast_episodes' %}" class="bw-menu-item">
-                  <span class="bw-menu-icon"><i class="las la-microphone-alt" aria-hidden="true"></i></span>
-                  <span>
-                    <span class="block font-bold">Podcast</span>
-                    <span class="block text-sm bw-muted">Conversations with Django builders.</span>
-                  </span>
-                </a>
-                <a href="{% url 'advertize' %}" class="bw-menu-item">
-                  <span class="bw-menu-icon"><i class="las la-bullhorn" aria-hidden="true"></i></span>
-                  <span>
-                    <span class="block font-bold">Advertise</span>
-                    <span class="block text-sm bw-muted">Reach the Django community.</span>
-                  </span>
-                </a>
-              </div>
-            </div>
-          </div>
-          <div data-controller="dropdown" class="relative">
-            <button type="button"
-                    data-action="dropdown#toggle click@window->dropdown#hide"
-                    class="bw-nav-link"
-                    aria-expanded="false"
-                    aria-haspopup="true"
-                    aria-controls="tools-menu">
-              Tools
-              <i class="las la-angle-down ml-1 text-sm" aria-hidden="true"></i>
-            </button>
-            <div data-dropdown-target="menu"
-                 id="tools-menu"
-                 data-transition-enter-active="transition ease-out duration-200"
-                 data-transition-enter-from="opacity-0 translate-y-1"
-                 data-transition-enter-to="opacity-100 translate-y-0"
-                 data-transition-leave-active="transition ease-in duration-150"
-                 data-transition-leave-from="opacity-100 translate-y-0"
-                 data-transition-leave-to="opacity-0 translate-y-1"
-                 class="hidden absolute left-1/2 z-20 mt-3 w-80 -translate-x-1/2">
-              <div class="bw-menu-panel p-2">
-                <a href="{% url 'generate_django_secret_page' %}" class="bw-menu-item">
-                  <span class="bw-menu-icon"><i class="las la-key" aria-hidden="true"></i></span>
-                  <span>
-                    <span class="block font-bold">Secret key generator</span>
-                    <span class="block text-sm bw-muted">Generate a Django secret key quickly.</span>
-                  </span>
-                </a>
-                <a href="{% url 'format_html_view' %}" class="bw-menu-item">
-                  <span class="bw-menu-icon"><i class="las la-code" aria-hidden="true"></i></span>
-                  <span>
-                    <span class="block font-bold">Template formatter</span>
-                    <span class="block text-sm bw-muted">Clean up Django HTML templates.</span>
-                  </span>
-                </a>
-              </div>
-            </div>
-          </div>
+        <div class="bw-nav-primary">
+          <a href="{% url 'projects' %}" class="bw-nav-link" {% if request.resolver_match.app_name == 'projects' or '/projects/' in request.path %}aria-current="page"{% endif %} data-analytics-event="nav clicked" data-analytics-nav-item="projects">Projects</a>
+          <a href="{% url 'blog' %}" class="bw-nav-link" {% if '/blog/' in request.path %}aria-current="page"{% endif %} data-analytics-event="nav clicked" data-analytics-nav-item="guides">Blog</a>
         </div>
-
-        <div class="hidden items-center gap-2 md:flex">
-          <a href="{% url 'submit_project' %}"
-             class="bw-button bw-button-accent"
-             data-analytics-event="cta clicked"
-             data-analytics-cta="submit project"
-             data-analytics-location="header">Submit project</a>
+        <div class="bw-nav-account">
+          <a href="{% url 'submit_project' %}" class="bw-button bw-button-primary bw-submit-nav" data-analytics-event="cta clicked" data-analytics-cta="submit project" data-analytics-location="header">Submit project <span aria-hidden="true">+</span></a>
           {% if user.is_authenticated %}
-            <div data-controller="dropdown" class="relative">
-              <button type="button"
-                      data-action="dropdown#toggle click@window->dropdown#hide"
-                      class="inline-flex h-11 w-11 items-center justify-center overflow-hidden rounded-md border border-[var(--bw-border)] bg-[var(--bw-surface)]"
-                      aria-expanded="false"
-                      aria-haspopup="true"
-                      aria-controls="user-menu">
-                <span class="sr-only">Open user menu</span>
-                {% include "components/profile-image.html" %}
-              </button>
-              <div data-dropdown-target="menu"
-                   data-transition-enter-active="transition ease-out duration-100"
-                   data-transition-enter-from="transform opacity-0 scale-95"
-                   data-transition-enter-to="transform opacity-100 scale-100"
-                   data-transition-leave-active="transition ease-in duration-75"
-                   data-transition-leave-from="transform opacity-100 scale-100"
-                   data-transition-leave-to="transform opacity-0 scale-95"
-                   id="user-menu"
-                   class="bw-menu-panel hidden absolute right-0 z-20 mt-3 w-56 p-2"
-                   role="menu">
-                <p class="px-3 py-2 text-sm font-bold bw-muted">{{ user.username }}</p>
-                <a href="{% url 'update-profile' %}" class="bw-menu-item" role="menuitem">Update profile</a>
-                {% if user.is_superuser %}
-                  <a href="{% url 'admin-panel' %}" class="bw-menu-item" role="menuitem">Admin panel</a>
-                {% endif %}
-                <a href="{% url 'account_logout' %}" class="bw-menu-item" role="menuitem">Sign out</a>
+            <details class="bw-account-menu">
+              <summary class="bw-nav-link">Account <span aria-hidden="true">⌄</span></summary>
+              <div class="bw-menu-panel">
+                <a href="{% url 'update-profile' %}" class="bw-menu-item">Your profile</a>
+                {% if user.is_superuser %}<a href="{% url 'admin-panel' %}" class="bw-menu-item">Admin panel</a>{% endif %}
+                <a href="{% url 'account_logout' %}" class="bw-menu-item">Sign out</a>
               </div>
-            </div>
+            </details>
           {% else %}
-            <a href="{% url 'account_login' %}"
-               class="bw-button bw-button-secondary"
-               data-analytics-event="cta clicked"
-               data-analytics-cta="sign in"
-               data-analytics-location="header">Sign in</a>
+            <a href="{% url 'account_login' %}" class="bw-nav-link" data-analytics-event="cta clicked" data-analytics-cta="sign in" data-analytics-location="header">Sign in</a>
           {% endif %}
         </div>
-
-        <button type="button"
-                @click="isOn = !isOn"
-                :aria-expanded="isOn.toString()"
-                class="bw-icon-button md:hidden"
-                aria-controls="mobile-menu">
-          <span class="sr-only">Open main menu</span>
-          <i :class="{'hidden': isOn, 'block': !isOn }" class="las la-bars text-2xl" aria-hidden="true"></i>
-          <i :class="{'block': isOn, 'hidden': !isOn }" class="las la-times text-2xl" aria-hidden="true"></i>
-        </button>
       </nav>
-
-      <div :class="{'block': isOn, 'hidden': !isOn }" class="bw-mobile-menu hidden md:hidden" id="mobile-menu">
-        <div class="bw-container py-3">
-          <div class="grid gap-5">
-            <div>
-              <p class="mb-2 text-xs font-black uppercase tracking-wider bw-muted">Browse</p>
-              <a href="{% url 'projects' %}" class="bw-mobile-link">Projects <i class="las la-arrow-right" aria-hidden="true"></i></a>
-              <a href="{% url 'blog' %}" class="bw-mobile-link">Blog <i class="las la-arrow-right" aria-hidden="true"></i></a>
-              <a href="{% url 'jobs' %}" class="bw-mobile-link">Jobs <i class="las la-arrow-right" aria-hidden="true"></i></a>
-            </div>
-            <div>
-              <p class="mb-2 text-xs font-black uppercase tracking-wider bw-muted">Tools and community</p>
-              <a href="{% url 'generate_django_secret_page' %}" class="bw-mobile-link">Secret key generator <i class="las la-arrow-right" aria-hidden="true"></i></a>
-              <a href="{% url 'format_html_view' %}" class="bw-mobile-link">Template formatter <i class="las la-arrow-right" aria-hidden="true"></i></a>
-              <a href="{% url 'podcast_episodes' %}" class="bw-mobile-link">Podcast <i class="las la-arrow-right" aria-hidden="true"></i></a>
-              <a href="{% url 'advertize' %}" class="bw-mobile-link">Advertise <i class="las la-arrow-right" aria-hidden="true"></i></a>
-            </div>
-            <div class="grid grid-cols-1 gap-2 pb-2 sm:grid-cols-2">
-              <a href="{% url 'submit_project' %}"
-                 class="bw-button bw-button-accent"
-                 data-analytics-event="cta clicked"
-                 data-analytics-cta="submit project"
-                 data-analytics-location="mobile menu">Submit project</a>
-              {% if user.is_authenticated %}
-                <a href="{% url 'update-profile' %}"
-                   class="bw-button bw-button-secondary"
-                   data-analytics-event="cta clicked"
-                   data-analytics-cta="your profile"
-                   data-analytics-location="mobile menu">Your profile</a>
-                {% if user.is_superuser %}
-                  <a href="{% url 'admin-panel' %}" class="bw-button bw-button-secondary">Admin panel</a>
-                {% endif %}
-              {% else %}
-                <a href="{% url 'account_login' %}"
-                   class="bw-button bw-button-secondary"
-                   data-analytics-event="cta clicked"
-                   data-analytics-cta="sign in"
-                   data-analytics-location="mobile menu">Sign in</a>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-      </div>
     </header>
 
-    <main id="main-content" class="min-h-screen">
-      {% block content %}{% endblock content %}
+    <main id="main-content" class="bw-main">
+      {% block content_shell %}{% block content %}{% endblock content %}{% endblock content_shell %}
     </main>
 
     <footer class="bw-footer">
-      <div class="bw-container grid gap-10 py-12 md:grid-cols-[1.2fr_0.8fr_0.8fr] lg:py-16">
+      <div class="bw-container bw-footer-grid">
         <div>
-          <a href="{% url 'home' %}" class="bw-footer-brand">
-            <img class="h-10 w-10" src="{% static 'vendors/images/logo.png' %}" width="220" height="234" alt="Built with Django Logo" />
-            <span>Built with Django</span>
-          </a>
-          <p class="mt-4 max-w-md text-sm leading-6 text-[oklch(82%_0.03_126)]">
-            A community showcase for Django projects, guides, jobs, and the ecosystem around them.
-          </p>
-          <p class="mt-6 text-xs text-[oklch(70%_0.025_126)]">
-            &copy; 2026 <a href="https://lvtd.dev">LVTD, LLC</a>. Curated by <a href="https://rasulkireev.com">Rasul Kireev</a>.
-          </p>
+          <a href="{% url 'home' %}" class="bw-footer-brand">Built with Django<span aria-hidden="true">.</span></a>
+          <p class="mt-3 max-w-xs text-sm leading-6 bw-muted">Real projects. Practical knowledge.<br>A place for people building with Django.</p>
+          <p class="mt-5 text-sm bw-muted">Curated by <a class="bw-text-link" href="https://rasulkireev.com">Rasul Kireev</a>.</p>
         </div>
-        <div>
-          <h2 class="text-sm font-black uppercase tracking-wider text-[oklch(94%_0.025_126)]">Explore</h2>
-          <div class="mt-4 grid gap-3 text-sm">
-            <a href="{% url 'projects' %}" class="bw-footer-link">Projects</a>
-            <a href="{% url 'blog' %}" class="bw-footer-link">Blog</a>
-            <a href="{% url 'jobs' %}" class="bw-footer-link">Jobs</a>
-            <a href="{% url 'podcast_episodes' %}" class="bw-footer-link">Podcast</a>
-          </div>
+        <div><h2 class="bw-footer-title">Discover</h2>
+          <a href="{% url 'projects' %}" class="bw-footer-link">Projects</a>
+          <a href="{% url 'blog' %}" class="bw-footer-link">Blog</a>
+          <a href="{% url 'jobs' %}" class="bw-footer-link">Django jobs</a>
+          <a href="{% url 'developers' %}" class="bw-footer-link">Developers</a>
+          <a href="{% url 'makers' %}" class="bw-footer-link">Makers</a>
         </div>
-        <div>
-          <h2 class="text-sm font-black uppercase tracking-wider text-[oklch(94%_0.025_126)]">Build with us</h2>
-          <div class="mt-4 grid gap-3 text-sm">
-            <a href="{% url 'submit_project' %}" class="bw-footer-link">Submit a project</a>
-            <a href="{% url 'post_job' %}" class="bw-footer-link">Post a job</a>
-            <a href="{% url 'advertize' %}" class="bw-footer-link">Advertise</a>
-            <a href="https://github.com/LVTD-LLC/builtwithdjango" class="bw-footer-link">GitHub</a>
-            <a href="https://x.com/rasulkireev" class="bw-footer-link">X</a>
-          </div>
+        <div><h2 class="bw-footer-title">Resources</h2>
+          <a href="{% url 'generate_django_secret_page' %}" class="bw-footer-link">Secret key generator</a>
+          <a href="{% url 'format_html_view' %}" class="bw-footer-link">Template formatter</a>
+          <a href="{% url 'podcast_episodes' %}" class="bw-footer-link">Podcast archive</a>
+          <a href="https://djangowebring.com/" class="bw-footer-link">Django Webring</a>
+        </div>
+        <div><h2 class="bw-footer-title">Contribute</h2>
+          <a href="{% url 'submit_project' %}" class="bw-footer-link">Submit a project</a>
+          <a href="{% url 'post_job' %}" class="bw-footer-link">Post a job</a>
+          <a href="{% url 'advertize' %}" class="bw-footer-link">Advertise</a>
+          <a href="https://github.com/LVTD-LLC/builtwithdjango" class="bw-footer-link">GitHub</a>
         </div>
       </div>
-      <div class="bw-webring-shell">
-        <div class="bw-webring-panel" role="region" aria-labelledby="bw-webring-title">
-          <div class="bw-webring-copy">
-            <p class="bw-webring-label">Django Webring</p>
-            <h2 id="bw-webring-title">Independent Django sites, one stop away</h2>
-            <p>Follow the ring to visit a previous, random, or next member site from the Django community.</p>
-          </div>
-          <div class="bw-webring-widget" role="navigation" aria-label="Django Webring navigation">
-            {% if app_environment == "prod" %}
-              <webring-css site="https://builtwithdjango.com"></webring-css>
-            {% else %}
-              <div class="bw-webring-fallback">
-                <a href="https://djangowebring.com/" target="_blank" rel="noopener">
-                  <span>Visit the ring</span>
-                  <span>Django Webring directory</span>
-                </a>
-              </div>
-            {% endif %}
-          </div>
-        </div>
-        {% if app_environment == "prod" %}
-          <script src="https://djangowebring.com/static/webring.js" defer></script>
-          <script>
-          function restyleDjangoWebring() {
-            const host = document.querySelector('.bw-webring-widget webring-css');
-            if (!host) return;
-
-            const styleId = 'builtwithdjango-webring-restyle';
-            const normalizeContent = () => {
-              const root = host.shadowRoot;
-              if (!root) return false;
-
-              const content = root.querySelector('.django-webring__content');
-              if (!content || !content.children.length) return false;
-
-              const subheading = content.querySelector('h2');
-              if (subheading && subheading.textContent.trim() === 'The Great Django Webring') {
-                subheading.textContent = 'Choose a route';
-              }
-
-              const labels = {
-                '[Prev]': 'Previous',
-                '[Random]': 'Random',
-                '[Next]': 'Next',
-                '[Visit a member site]': 'Visit a member site',
-              };
-
-              content.querySelectorAll('a').forEach((link) => {
-                const currentLabel = link.textContent.trim();
-                if (labels[currentLabel]) {
-                  const destinationHost = (() => {
-                    try {
-                      return new URL(link.href).hostname.replace(/^www\./, '');
-                    } catch (error) {
-                      return labels[currentLabel];
-                    }
-                  })();
-                  const siteName = link.getAttribute('title') || destinationHost;
-
-                  link.textContent = labels[currentLabel];
-                  link.dataset.webringSite = siteName;
-                  link.setAttribute('aria-label', `${labels[currentLabel]} Django Webring site: ${siteName}`);
-                }
-              });
-
-              return true;
-            };
-
-            const applyStyle = () => {
-              if (!host.shadowRoot) return false;
-              if (!host.bwdWebringObserver) {
-                host.bwdWebringObserver = new MutationObserver(normalizeContent);
-                host.bwdWebringObserver.observe(host.shadowRoot, { childList: true, subtree: true });
-              }
-              const contentReady = normalizeContent();
-              if (host.shadowRoot.getElementById(styleId)) return contentReady;
-
-              const style = document.createElement('style');
-              style.id = styleId;
-              style.textContent = `
-                :host {
-                  display: block;
-                  width: 100%;
-                }
-
-                .django-webring {
-                  display: block !important;
-                  border: 0 !important;
-                  border-radius: 0 !important;
-                  background: transparent !important;
-                  box-shadow: none !important;
-                  padding: 0 !important;
-                  color: oklch(90% 0.025 126) !important;
-                  font-family: inherit !important;
-                  text-align: left !important;
-                }
-
-                .django-webring__icon {
-                  display: none !important;
-                }
-
-                .django-webring__content {
-                  display: grid !important;
-                  gap: 0.85rem !important;
-                }
-
-                .django-webring__content h1 {
-                  display: none !important;
-                }
-
-                .django-webring__content h2 {
-                  margin: 0 !important;
-                  color: oklch(83% 0.055 126) !important;
-                  font-size: 0.82rem !important;
-                  font-weight: 900 !important;
-                  letter-spacing: 0 !important;
-                  line-height: 1.2 !important;
-                }
-
-                .django-webring__content p {
-                  display: grid !important;
-                  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-                  gap: 0.55rem !important;
-                  margin: 0 !important;
-                }
-
-                .django-webring__content a {
-                  display: inline-flex !important;
-                  min-width: 0 !important;
-                  min-height: 3.25rem !important;
-                  flex-direction: column !important;
-                  align-items: flex-start !important;
-                  justify-content: center !important;
-                  gap: 0.18rem !important;
-                  margin: 0 !important;
-                  border: 1px solid oklch(43% 0.05 150) !important;
-                  border-radius: 8px !important;
-                  background: oklch(17% 0.032 151) !important;
-                  color: oklch(93% 0.025 126) !important;
-                  padding: 0.7rem 0.78rem !important;
-                  overflow: hidden !important;
-                  font-size: 0.86rem !important;
-                  font-weight: 900 !important;
-                  line-height: 1.05 !important;
-                  text-decoration: none !important;
-                  transition:
-                    background-color 160ms cubic-bezier(0.22, 1, 0.36, 1),
-                    border-color 160ms cubic-bezier(0.22, 1, 0.36, 1),
-                    color 160ms cubic-bezier(0.22, 1, 0.36, 1),
-                    transform 160ms cubic-bezier(0.22, 1, 0.36, 1) !important;
-                }
-
-                .django-webring__content a::after {
-                  display: block !important;
-                  width: 100% !important;
-                  overflow: hidden !important;
-                  color: oklch(70% 0.025 126) !important;
-                  content: attr(data-webring-site) !important;
-                  font-size: 0.7rem !important;
-                  font-weight: 750 !important;
-                  line-height: 1.1 !important;
-                  text-overflow: ellipsis !important;
-                  white-space: nowrap !important;
-                }
-
-                .django-webring__content a:hover,
-                .django-webring__content a:focus-visible {
-                  border-color: oklch(76% 0.15 92) !important;
-                  background: oklch(23% 0.052 151) !important;
-                  color: oklch(97% 0.018 116) !important;
-                  transform: translateY(-1px) !important;
-                }
-
-                .django-webring__content a:hover::after,
-                .django-webring__content a:focus-visible::after {
-                  color: oklch(83% 0.07 92) !important;
-                }
-
-                @media (max-width: 600px) {
-                  .django-webring__content {
-                    gap: 0.7rem !important;
-                  }
-
-                  .django-webring__content p {
-                    grid-template-columns: 1fr !important;
-                  }
-
-                  .django-webring__content a {
-                    width: 100% !important;
-                  }
-                }
-              `;
-              host.shadowRoot.appendChild(style);
-              return contentReady;
-            };
-
-            let attempts = 0;
-            const interval = window.setInterval(() => {
-              attempts += 1;
-              if (applyStyle() || attempts > 40) {
-                window.clearInterval(interval);
-              }
-            }, 100);
-          }
-
-          document.addEventListener('DOMContentLoaded', restyleDjangoWebring);
-          document.addEventListener('turbo:load', restyleDjangoWebring);
-          </script>
-        {% endif %}
-      </div>
+      <div class="bw-container bw-footer-bottom"><span>&copy; {% now "Y" %} <a href="https://lvtd.dev">LVTD, LLC</a> · <a href="{% url 'terms-of-service' %}">Terms</a></span><span>An independent community resource. Not affiliated with the Django Software Foundation.</span></div>
     </footer>
 
     {% include "components/bottom-right-corner-ad.html" %}

@@ -9,67 +9,18 @@
 
 {% block content %}
 {% url 'submit_project' as submit_project_url %}
-{% include "components/page-hero.html" with kicker="Project directory" title="Django projects worth studying" description="Browse real products, side projects, open source apps, and businesses built with Django. Use them for inspiration, research, and proof that Django can ship." cta_url=submit_project_url cta_label="Submit a project" %}
+{% include "components/page-hero.html" with kicker="Project directory" title="Discover what Django can do." description="Real products, open-source apps, and side projects. Find your next source of inspiration." cta_url=submit_project_url cta_label="Submit a project" %}
 
 <section class="pb-16">
   <div class="bw-container">
-    <div class="bw-toolbar bw-surface mb-6">
-      <div class="flex flex-col gap-3 md:flex-row md:items-center">
-        <div data-controller="dropdown" class="relative">
-          <button type="button"
-                  data-action="dropdown#toggle click@window->dropdown#hide"
-                  class="bw-button bw-button-secondary w-full md:w-auto"
-                  id="menu-button"
-                  aria-expanded="false"
-                  aria-haspopup="true">
-            <i class="las la-filter" aria-hidden="true"></i>
-            Filter
-          </button>
-          <div data-dropdown-target="menu"
-               data-transition-enter-active="transition ease-out duration-100"
-               data-transition-enter-from="transform opacity-0 scale-95"
-               data-transition-enter-to="transform opacity-100 scale-100"
-               data-transition-leave-active="transition ease-in duration-75"
-               data-transition-leave-from="transform opacity-100 scale-100"
-               data-transition-leave-to="transform opacity-0 scale-95"
-               class="bw-menu-panel hidden absolute left-0 z-20 mt-2 w-[min(22rem,calc(100vw-2rem))] p-4"
-               role="menu"
-               aria-orientation="vertical"
-               aria-labelledby="menu-button">
-            <form class="grid gap-4" action="" method="get">
-              <div>
-                <label class="bw-form-label">Open source</label>
-                {% render_field filter.form.is_open_source class="bw-form-input mt-1 text-sm" %}
-              </div>
-              <div>
-                {% with order_by=request.GET.order_by|default:'updated_date' %}
-                  <label for="order_by" class="bw-form-label">Sort by</label>
-                  <select id="order_by" name="order_by" class="bw-form-input mt-1 text-sm">
-                    <option value="updated_date" {% if order_by == 'updated_date' %}selected{% endif %}>Recently updated</option>
-                    <option value="like" {% if order_by == 'like' %}selected{% endif %}>Most liked</option>
-                  </select>
-                {% endwith %}
-              </div>
-              <button type="submit" data-action="dropdown#toggle" class="bw-button bw-button-primary">Apply filters</button>
-            </form>
-          </div>
-        </div>
-
-        <div data-controller="search"
-             data-search-url-value="/api/v1/search/projects/"
-             class="relative">
-          <label for="project-search" class="sr-only">Search projects</label>
-          <input id="project-search"
-                 type="text"
-                 data-search-target="input"
-                 data-action="input->search#onInput"
-                 placeholder="Search projects. Press / to focus."
-                 class="bw-search-input" />
-          <div data-search-target="results" class="bw-menu-panel hidden absolute left-0 z-20 mt-2 w-[min(28rem,calc(100vw-2rem))] overflow-hidden"></div>
-        </div>
-      </div>
-      <p class="text-sm bw-muted">Featured listings appear first. Search is fast when you already know the project or category.</p>
-    </div>
+    <form class="bw-discovery-form" method="get" role="search" aria-label="Find projects">
+      <div class="bw-search-field"><label for="project-search" class="bw-form-label">Search projects</label><input id="project-search" type="search" name="q" value="{{ request.GET.q }}" placeholder="A project, idea, or technology…" class="bw-form-input" maxlength="200"></div>
+      <div><label for="id_is_open_source" class="bw-form-label">Source code</label>{% render_field filter.form.is_open_source class="bw-form-input" %}</div>
+      <div><label for="order_by" class="bw-form-label">Sort by</label><select id="order_by" name="order_by" class="bw-form-input"><option value="updated_date">Recently updated</option><option value="like" {% if request.GET.order_by == 'like' %}selected{% endif %}>Most liked</option></select></div>
+      <button class="bw-button bw-button-primary" type="submit">Find projects</button>
+      {% if request.GET %}<a class="bw-text-link" href="{% url 'projects' %}">Reset</a>{% endif %}
+    </form>
+    <div class="bw-results-summary"><p>{{ paginator.count }} project{{ paginator.count|pluralize }}</p><p>Featured projects appear first.</p></div>
 
     {% if page_obj %}
       <div class="bw-project-grid">
@@ -82,6 +33,7 @@
         <h2 class="text-2xl font-black">No projects match those filters</h2>
         <p class="mx-auto mt-3 max-w-md bw-muted">Try a broader search or submit a Django project that should be here.</p>
         <a href="{% url 'submit_project' %}" class="bw-button bw-button-accent mt-6">Submit a project</a>
+        <a href="{% url 'projects' %}" class="bw-button bw-button-secondary mt-6">Clear filters</a>
       </div>
     {% endif %}
 

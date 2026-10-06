@@ -5,6 +5,7 @@
     {% include "components/seo_meta.html" with title="Django Makers | Built with Django" description="Meet the makers behind projects built with Django." canonical_path="/makers/" twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 {% block content %}
+<div class="bw-container bw-section">
     <div class="bw-surface mx-auto my-4 p-4 sm:p-6">
         <h1 class="bw-heading-md">
             Django Makers
@@ -59,7 +60,7 @@
     <div class="grid grid-cols-1 gap-4 mb-10 sm:grid-cols-4">
         {% for maker in object_list %}
             {% if maker.projects.all.count > 0 %}
-                <div class="flex relative items-center px-4 py-5 space-x-3 bg-white rounded-lg border border-gray-300 border-solid shadow-sm hover:bg-gray-100 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                <div class="flex relative items-center px-4 py-5 space-x-3 bg-[var(--bw-surface)] rounded-lg border border-[var(--bw-border)] border-solid shadow-sm hover:bg-gray-100 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
                     {% if user.is_authenticated and maker.maker_email == user.email and maker.user == None %}
                         <form class="absolute right-0 bottom-0 p-2"
                               action="{% url 'claim_account' maker.pk %}"
@@ -108,7 +109,7 @@
                         {% endif %}
                         {% if maker.first_name or maker.last_name %}
                             <div class="ml-3">
-                                <p class="text-lg font-medium text-gray-900">
+                                <p class="text-lg font-medium text-[var(--bw-ink)]">
                                     {% if maker.first_name %}{{ maker.first_name }}{% endif %}
                                     {% if maker.last_name %}{{ maker.last_name }}{% endif %}
                                 </p>
@@ -149,6 +150,7 @@
             </div>
         {% endfor %}
     </div>
+</div>
 {% endblock content %}
 {% block schema %}
     <script type="application/ld+json">

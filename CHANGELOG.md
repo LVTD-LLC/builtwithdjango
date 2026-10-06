@@ -8,10 +8,16 @@ their recorded dates; previously undated entries use their Git history dates.
 ## 2026-10-06
 
 ### Changed
+- Redesigned the app with a cream-and-green editorial system, framed project screenshots, readable blog layouts, consistent forms, and responsive navigation focused on Projects and Blog.
+- Simplified the homepage to projects, recent posts, and newsletter signup; moved jobs, tools, and the podcast archive to footer navigation while retaining existing URLs.
+- Replaced floating advertisements with an in-flow labeled sponsor strip and the scripted webring panel with a simple directory link.
+- Added server-rendered project and blog search, post-type filtering, clear reset controls, and result counts.
 - Unified all published post categories under `/blog/`; redirected the legacy articles index to it and removed duplicate navigation and sitemap links.
 - Unpublished the 12 owner-selected articles from public pages, RSS, and the sitemap while preserving their Markdown sources as drafts. Kept all 13 requested tutorials and the three unlisted monthly updates unchanged.
 
 ### Fixed
+- Improved keyboard focus for code blocks and native like dialogs, corrected code contrast, and styled password-recovery screens consistently.
+- Applied the public non-spam project boundary to homepage listings, removed the tablet navigation gap, and corrected project form label associations.
 - Displayed the corrected article’s comparisons as readable lists in the existing Markdown renderer.
 - Corrected the ContentTypes, signals, and query-expression article: document primary-key and integrity limits, use a swappable-user signal receiver, and distinguish F updates from Q predicates and transaction guarantees.
 

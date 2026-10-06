@@ -8,12 +8,12 @@
 
 {% block content %}
     <div class="flex justify-center items-center px-4 py-12 my-4 sm:px-6 lg:px-8">
-        <div class="space-y-8 w-full max-w-md">
+        <div class="bw-surface space-y-8 w-full max-w-md p-6 sm:p-8">
             <div>
-                <h1 class="mt-6 text-3xl font-black text-center text-[var(--bw-ink)]">
+                <h1 class="bw-heading-md">
                     Sign in to your account
                 </h1>
-                <p class="mt-2 text-sm text-center bw-muted">
+                <p class="mt-2 text-sm bw-muted">
                     Or
                     <a href="{% url 'account_signup' %}" class="font-bold text-[var(--bw-primary-dark)] underline-offset-2 hover:underline">
                         sign up if you don't have one yet.
@@ -24,16 +24,16 @@
                 {% csrf_token %}
                 {{ form.non_field_errors | safe }}
                 <input type="hidden" name="remember" value="true" />
-                <div class="-space-y-px rounded-md shadow-sm">
+                <div class="space-y-5">
                     <div>
                         {{ form.login.errors | safe }}
-                        <label for="username" class="sr-only">Username</label>
-                        {% render_field form.login placeholder="Username" id="username" name="username" type="text" autocomplete="username" required=True class="block relative min-h-[2.75rem] px-3 py-2 w-full placeholder:text-[var(--bw-muted)] text-[var(--bw-ink)] bg-[var(--bw-surface)] rounded-none rounded-t-md border border-[var(--bw-border)] appearance-none focus:outline-none focus:ring-[var(--bw-primary)] focus:border-[var(--bw-primary)] focus:z-10 sm:text-sm" %}
+                        <label for="username" class="bw-form-label">Username</label>
+                        {% render_field form.login placeholder="Username" id="username" name="username" type="text" autocomplete="username" required=True class="bw-form-input" %}
                     </div>
                     <div>
                         {{ form.password.errors | safe }}
-                        <label for="password" class="sr-only">Password</label>
-                        {% render_field form.password id="password" name="password" type="password" autocomplete="current-password" required="True" class="block relative min-h-[2.75rem] px-3 py-2 w-full placeholder:text-[var(--bw-muted)] text-[var(--bw-ink)] bg-[var(--bw-surface)] rounded-none rounded-b-md border border-[var(--bw-border)] appearance-none focus:outline-none focus:ring-[var(--bw-primary)] focus:border-[var(--bw-primary)] focus:z-10 sm:text-sm" placeholder="Password" %}
+                        <label for="password" class="bw-form-label">Password</label>
+                        {% render_field form.password id="password" name="password" type="password" autocomplete="current-password" required="True" class="bw-form-input" placeholder="Password" %}
                     </div>
                 </div>
                 <div>
@@ -55,14 +55,15 @@
                     </button>
                 </div>
             </form>
+            <a href="{% url 'account_reset_password' %}" class="bw-text-link">Forgot your password?</a>
             {% if has_social_providers %}
             <div class="mt-6">
                 <div class="relative">
                     <div class="flex absolute inset-0 items-center">
-                        <div class="w-full border-t border-gray-300 border-solid"></div>
+                        <div class="w-full border-t border-[var(--bw-border)] border-solid"></div>
                     </div>
                     <div class="flex relative justify-center text-sm">
-                        <span class="px-2 text-gray-500 bg-white">Or continue with</span>
+                        <span class="px-2 text-gray-500 bg-[var(--bw-surface)]">Or continue with</span>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-3 mt-6">

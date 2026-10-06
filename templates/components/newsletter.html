@@ -2,12 +2,12 @@
 
 <section class="bw-section">
   <div class="bw-container">
-    <div class="grid gap-8 rounded-lg border border-[var(--bw-border)] bg-[var(--bw-primary-dark)] p-6 text-[oklch(98%_0.01_118)] shadow-lg md:grid-cols-[1fr_0.9fr] md:p-8 lg:p-10">
+    <div class="bw-newsletter">
       <div>
-        <p class="text-sm font-black uppercase tracking-wider text-[var(--bw-accent)]">Newsletter</p>
-        <h2 class="mt-3 text-3xl font-black leading-tight sm:text-4xl">Get useful Django projects, jobs, and guides in your inbox.</h2>
-        <p class="mt-4 max-w-2xl text-base leading-7 text-[oklch(88%_0.035_135)]">
-          A practical digest for people learning, hiring, or building with Django. No generic startup noise.
+        <p class="bw-kicker">Newsletter</p>
+        <h2 class="bw-heading-md mt-3">A good reason to open your inbox.</h2>
+        <p class="mt-4 max-w-2xl text-sm leading-7 bw-muted">
+          Projects worth exploring and practical Django reading. Join the free newsletter.
         </p>
       </div>
       <div class="self-center">
@@ -22,7 +22,7 @@
           <label for="email-address" class="sr-only">Email address</label>
           {% render_field newsletter_form.user_email id="email-address" name="email-address" type="email" autocomplete="email" required=True class="min-h-[3rem] w-full rounded-md border border-[oklch(92%_0.035_135)] bg-[oklch(99%_0.008_118)] px-4 py-3 text-[var(--bw-ink)] placeholder:text-[var(--bw-muted)] focus:border-[var(--bw-accent)] focus:ring-[var(--bw-accent)]" placeholder="you@example.com" %}
           <button type="submit"
-                  class="bw-button bw-button-accent"
+                  class="bw-button bw-button-primary"
                   data-analytics-event="newsletter submit clicked"
                   data-analytics-source="newsletter component">Join free</button>
         </form>
