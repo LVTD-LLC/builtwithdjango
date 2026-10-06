@@ -36,8 +36,8 @@ Keep data and forms in sans-serif. Avoid decorative gradients and motion.
   height.
 - Avoid generic SaaS gradients, glassmorphism, excessive pills, decorative
   metric cards, and repetitive feature grids.
-- Avoid overusing uppercase kickers. They should orient a section, not precede
-  every heading.
+- Do not add decorative eyebrow labels or repeated arrow glyphs. Use direct
+  headings; keep useful metadata and advertising disclosure in normal text.
 
 ## Layout
 
@@ -53,7 +53,8 @@ Keep data and forms in sans-serif. Avoid decorative gradients and motion.
 
 ## Components
 
-- **Header:** sticky, opaque, separated by a border; navigation
+- **Header:** use the original Django hexagon logo, not a text monogram.
+  Sticky, opaque, separated by a border; navigation
   must remain keyboard- and mobile-accessible.
 - **Buttons:** use `bw-button` with the existing primary, secondary, or accent
   variants. Destructive actions need an explicit, accessible danger treatment;
@@ -65,7 +66,9 @@ Keep data and forms in sans-serif. Avoid decorative gradients and motion.
 - **Forms:** visible labels, high-contrast focus state, helpful validation, and
   no placeholder-only instructions.
 - **Empty states:** explain what is missing and offer the next useful action.
-- **Status and sponsorship:** label state in text; never rely on color alone.
+- **Status and sponsorship:** featured project cards use a pale-green surface,
+  green outline, and high-contrast Featured badge. Label state in text; never
+  rely on color alone.
 
 ## Interaction and accessibility
 

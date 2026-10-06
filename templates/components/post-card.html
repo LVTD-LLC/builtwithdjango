@@ -2,5 +2,5 @@
   <div class="bw-post-meta"><span>{{ item.get_type_display|title }}</span><span>{{ item.created|date:"M j, Y" }}</span></div>
   <h2><a href="{% url 'post' item.slug %}">{{ item.title }}</a></h2>
   <p class="bw-muted">{{ item.description|truncatechars:170 }}</p>
-  <div class="bw-post-card-bottom">{% if item.level %}<span>{{ item.get_level_display|title }}</span>{% else %}<span>Django &amp; the web</span>{% endif %}<a href="{% url 'post' item.slug %}" aria-label="Read {{ item.title }}">Read post <span aria-hidden="true">↗</span></a></div>
+  <div class="bw-post-card-bottom">{% if item.level %}<span>{{ item.get_level_display|title }}</span>{% else %}<span>Django &amp; the web</span>{% endif %}<a href="{% url 'post' item.slug %}" aria-label="Read {{ item.title }}">Read post</a></div>
 </article>

@@ -278,7 +278,8 @@
 
   .bw-brand img {
     width: 2.55rem;
-    height: 2.55rem;
+    height: auto;
+    object-fit: contain;
   }
 
   .bw-nav-link {
@@ -707,8 +708,6 @@
   .bw-lede { font-size: 1.075rem; line-height: 1.75; max-width: 42rem; color: var(--bw-muted); }
   .bw-navigation { display: flex; align-items: center; gap: 2rem; min-height: 5rem; }
   .bw-brand { gap: 0.75rem; margin-right: auto; font-size: 0.95rem; }
-  .bw-brand-mark { font-family: Georgia, serif; font-size: 1.85rem; font-weight: 700; letter-spacing: -0.12em; }
-  .bw-brand-mark span { color: var(--bw-primary); }
   .bw-nav-primary, .bw-nav-account { display: flex; align-items: center; gap: 0.25rem; }
   .bw-nav-link { font-size: 0.9rem; font-weight: 500; gap: 0.5rem; }
   .bw-nav-link[aria-current] { color: var(--bw-primary-dark); background: var(--bw-primary-soft); }
@@ -724,7 +723,10 @@
   .bw-section-ruled { border-top: 1px solid var(--bw-border); }
   .bw-section-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 1.5rem; }
   .bw-text-link { display: inline-flex; align-items: center; gap: 0.5rem; min-height: 2.75rem; color: var(--bw-primary-dark); font-size: 0.9rem; font-weight: 600; text-decoration: underline; text-underline-offset: 0.25em; text-decoration-thickness: 1px; }
-  .bw-project-card { border: 0; background: transparent; box-shadow: none; overflow: visible; }
+  .bw-project-card { padding: 1rem; border: 1px solid transparent; background: transparent; box-shadow: none; overflow: visible; }
+  .bw-project-card--sponsored { border-color: var(--bw-primary); background: var(--bw-primary-soft); }
+  .bw-featured-badge { flex-shrink: 0; padding: 0.35rem 0.65rem; border-radius: 0.25rem; background: var(--bw-primary); color: white; font-size: 0.75rem; line-height: 1.4; font-weight: 600; }
+  .bw-sponsor-label { font-weight: 600; color: var(--bw-muted); }
   .bw-project-card:hover { box-shadow: none; }
   .bw-project-card__media { padding: 0.6rem; background: var(--bw-surface); border: 1px solid var(--bw-border); border-radius: var(--bw-radius); transition: border-color 160ms; }
   .bw-project-card:hover .bw-project-card__media { border-color: var(--bw-border-strong); }
