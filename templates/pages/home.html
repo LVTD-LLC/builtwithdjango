@@ -2,27 +2,27 @@
 {% block content %}
 <section class="bw-home-hero">
   <div class="bw-container bw-home-intro">
-    <div><p class="bw-kicker">The Django community, on display</p>
-      <h1 class="bw-heading-xl mt-5">Good things are<br>built with <em>Django.</em></h1>
+    <div>
+      <h1 class="bw-heading-xl">Django, out<br>in the wild.</h1>
     </div>
-    <div class="bw-home-intro-copy"><p class="bw-lede">Discover real projects. Learn how they’re built. Find inspiration for your next idea.</p>
-      <div class="mt-6 flex flex-wrap gap-3"><a href="{% url 'projects' %}" class="bw-button bw-button-primary">Explore projects <span aria-hidden="true">↗</span></a><a href="{% url 'blog' %}" class="bw-button bw-button-secondary">Read the blog</a></div>
+    <div class="bw-home-intro-copy"><p class="bw-lede">Websites, apps, and side projects made with Django. Browse the projects or read how they’re built.</p>
+      <div class="mt-6 flex flex-wrap gap-3"><a href="{% url 'projects' %}" class="bw-button bw-button-primary">Explore projects</a><a href="{% url 'blog' %}" class="bw-button bw-button-secondary">Read the blog</a></div>
     </div>
   </div>
 </section>
 <section class="bw-section bw-section-ruled">
   <div class="bw-container">
-    <div class="bw-section-heading"><div><p class="bw-kicker">The showcase</p><h2 class="bw-heading-md mt-2">Made with Django.</h2></div><a href="{% url 'projects' %}" class="bw-text-link">View all projects <span aria-hidden="true">↗</span></a></div>
+    <div class="bw-section-heading"><h2 class="bw-heading-md">Projects</h2><a href="{% url 'projects' %}" class="bw-text-link">View all projects</a></div>
     <div class="bw-project-grid mt-8">
       {% for project in projects %}{% include "components/project-card.html" with site=project %}
       {% empty %}<div class="bw-empty-state"><h3 class="text-xl font-bold">Your project could be first.</h3><p class="bw-muted mt-2">Share something you’ve built with Django.</p><a class="bw-button bw-button-primary mt-4" href="{% url 'submit_project' %}">Submit a project</a></div>{% endfor %}
     </div>
-    <div class="bw-contribute-note"><p>Building something with Django? <span class="bw-muted">We’d love to see it.</span></p><a href="{% url 'submit_project' %}" class="bw-text-link">Submit your project <span aria-hidden="true">↗</span></a></div>
+    <div class="bw-contribute-note"><p>Made something with Django? Add it to the directory.</p><a href="{% url 'submit_project' %}" class="bw-text-link">Submit your project</a></div>
   </div>
 </section>
 <section class="bw-section bw-section-ruled">
   <div class="bw-container">
-    <div class="bw-section-heading"><div><p class="bw-kicker">From the blog</p><h2 class="bw-heading-md mt-2">A little knowledge. A better build.</h2></div><a href="{% url 'blog' %}" class="bw-text-link">All posts <span aria-hidden="true">↗</span></a></div>
+    <div class="bw-section-heading"><h2 class="bw-heading-md">Latest from the blog</h2><a href="{% url 'blog' %}" class="bw-text-link">All posts</a></div>
     <div class="bw-post-grid mt-8">{% for guide in guides %}{% include "components/post-card.html" with item=guide %}{% empty %}<p class="bw-muted">New writing is on its way.</p>{% endfor %}</div>
   </div>
 </section>

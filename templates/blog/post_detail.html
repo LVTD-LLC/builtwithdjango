@@ -16,13 +16,12 @@
       All posts
     </a>
     <div class="mt-8 max-w-4xl">
-      <p class="bw-kicker">{{ object.get_type_display|title }}</p>
       <h1 class="bw-heading-lg mt-3">{{ object.title }}</h1>
       {% if object.description %}
         <p class="bw-lede mt-5">{{ object.description }}</p>
       {% endif %}
     </div>
-    <p class="bw-article-byline">By Rasul Kireev <span aria-hidden="true">·</span> Updated <time datetime="{{ object.modified|date:'c' }}">{{ object.modified|date:"F j, Y" }}</time></p>
+    <p class="bw-article-byline">{{ object.get_type_display|title }} <span aria-hidden="true">·</span> By Rasul Kireev <span aria-hidden="true">·</span> Updated <time datetime="{{ object.modified|date:'c' }}">{{ object.modified|date:"F j, Y" }}</time></p>
   </div>
 </section>
 
@@ -39,7 +38,7 @@
     </div>
   </section>
 </div>
-<section class="bw-section bw-section-ruled"><div class="bw-container bw-reading-width"><h2 class="bw-heading-md">Keep exploring.</h2><div class="mt-5 flex flex-wrap gap-3"><a href="{% url 'blog' %}" class="bw-button bw-button-secondary">More from the blog</a><a href="{% url 'projects' %}" class="bw-button bw-button-primary">See Django in action</a></div></div></section>
+<section class="bw-section bw-section-ruled"><div class="bw-container bw-reading-width"><h2 class="bw-heading-md">More from Built with Django</h2><div class="mt-5 flex flex-wrap gap-3"><a href="{% url 'blog' %}" class="bw-button bw-button-secondary">More from the blog</a><a href="{% url 'projects' %}" class="bw-button bw-button-primary">Browse projects</a></div></div></section>
 {% endblock content %}
 
 {% block schema %}
