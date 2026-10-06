@@ -13,14 +13,15 @@ adding page-specific Tailwind combinations.
 
 ## Direction
 
-Built with Django should feel like a warm, independent community publication:
-friendly and lively, but still credible enough to demonstrate that Django
-supports serious products. Real project screenshots, builder stories, guides,
-jobs, and people are the visual proof.
+An independent editorial directory: OpenAlternative's discovery structure,
+Typewolf's screenshot-led publication, and Supabase's restrained light UI.
+Projects and the blog lead; jobs, tools, and the podcast archive live in the
+footer. Reference rationale and measurement limits: `docs/redesign-2026-10.md`.
 
-The current system uses botanical greens, warm light surfaces, dark green ink,
-and a restrained yellow accent. Rounded shapes are compact rather than pill
-heavy. Depth comes from borders, small shadows, and slight card movement.
+Use a warm cream canvas, white screenshot frames, charcoal-green text, fine
+neutral borders, and one dark-green action color. Georgia supplies editorial
+headlines without a font download; system sans-serif serves body and controls.
+Keep data and forms in sans-serif. Avoid decorative gradients and motion.
 
 ## Visual principles
 
@@ -30,9 +31,8 @@ heavy. Depth comes from borders, small shadows, and slight card movement.
   do not introduce a new palette for one page.
 - Prefer bordered surfaces and restrained shadows. Reserve stronger elevation
   for menus and meaningful hover states.
-- Use green for navigation, primary actions, and identity; use yellow accent
-  for featured or high-attention actions, not as general decoration.
-- Keep headings bold and compact, with readable body copy and generous line
+- Use green for navigation, primary actions, and identity; use pale green for quiet emphasis and featured labels.
+- Keep headings measured and editorial, with readable body copy and generous line
   height.
 - Avoid generic SaaS gradients, glassmorphism, excessive pills, decorative
   metric cards, and repetitive feature grids.
@@ -53,7 +53,7 @@ heavy. Depth comes from borders, small shadows, and slight card movement.
 
 ## Components
 
-- **Header:** sticky, lightly translucent, separated by a border; navigation
+- **Header:** sticky, opaque, separated by a border; navigation
   must remain keyboard- and mobile-accessible.
 - **Buttons:** use `bw-button` with the existing primary, secondary, or accent
   variants. Destructive actions need an explicit, accessible danger treatment;

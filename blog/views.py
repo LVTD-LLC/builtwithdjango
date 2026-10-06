@@ -4,18 +4,26 @@ from django.views.generic import DetailView, ListView
 from builtwithdjango.analytics import capture
 from newsletter.forms import NewsletterSignupForm
 
-from .content import published_posts
+from .content import Post, published_posts
 
 
 class PostListView(ListView):
     template_name = "blog/all_posts.html"
 
     def get_queryset(self):
-        return published_posts()
+        posts = published_posts()
+        query = self.request.GET.get("q", "").strip()[:200].casefold()
+        kind = self.request.GET.get("type", "")
+        if kind in {Post.TUTORIAL, Post.ARTICLE, Post.UPDATE, Post.INTERVIEW}:
+            posts = [post for post in posts if post.type == kind]
+        if query:
+            posts = [post for post in posts if query in f"{post.title} {post.description}".casefold()]
+        return posts
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["newsletter_form"] = NewsletterSignupForm
+        context["robots"] = "noindex,follow" if self.request.GET else ""
 
         return context
 

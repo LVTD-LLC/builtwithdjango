@@ -110,3 +110,62 @@ class HomeViewTests(TestCase):
         home_project = context["projects"][0]
         self.assertEqual(home_project.like_count, 1)
         self.assertTrue(home_project.user_has_liked)
+
+
+class RedesignDiscoveryTests(TestCase):
+    def test_home_excludes_spam_and_keeps_secondary_destinations_in_footer(self):
+        Project.objects.create(
+            title="Hidden spam",
+            slug="hidden-spam",
+            url="https://spam.example",
+            published=True,
+            active=True,
+            might_be_spam=True,
+        )
+        response = self.client.get("/")
+        html = response.content.decode()
+        header = html.split("<header", 1)[1].split("</header>", 1)[0]
+        footer = html.split("<footer", 1)[1].split("</footer>", 1)[0]
+        self.assertNotContains(response, "Hidden spam")
+        for path in ("/tools/django-secret/", "/tools/format-html/", "/podcast/", "/jobs/"):
+            self.assertNotIn('href="' + path + '"', header)
+            self.assertIn('href="' + path + '"', footer)
+        self.assertNotContains(response, "Django teams are hiring")
+
+    def test_project_search_is_server_rendered_and_preserves_visibility(self):
+        for title, spam in [("Django Maps", False), ("Django Maps Spam", True), ("Other product", False)]:
+            Project.objects.create(
+                title=title,
+                url="https://" + title.lower().replace(" ", "-") + ".example.com",
+                published=True,
+                active=True,
+                might_be_spam=spam,
+            )
+        response = self.client.get("/projects/", {"q": "Maps"})
+        titles = [p.title for p in response.context["page_obj"]]
+        self.assertEqual(titles, ["Django Maps"])
+        self.assertContains(response, "noindex,follow")
+
+    def test_blog_search_and_type_filters_keep_drafts_private(self):
+        for title, kind, status in [
+            ("Learn Django", Post.TUTORIAL, Post.PUBLISHED),
+            ("Django news", Post.ARTICLE, Post.PUBLISHED),
+            ("Secret Django", Post.TUTORIAL, Post.DRAFT),
+        ]:
+            make_post(self, title=title, slug=title.lower().replace(" ", "-"), type=kind, status=status, content="Body")
+        response = self.client.get("/blog/", {"q": "Django", "type": Post.TUTORIAL})
+        self.assertEqual([p.title for p in response.context["object_list"]], ["Learn Django"])
+        self.assertContains(response, "noindex,follow")
+
+    def test_account_recovery_uses_shared_shell(self):
+        response = self.client.get("/users/password/reset/")
+        self.assertContains(response, "Primary navigation")
+        self.assertContains(response, "bw-auth-content")
+        self.assertContains(response, "noindex,nofollow")
+
+    def test_search_with_no_results_has_reset_path(self):
+        for path in ("/projects/", "/blog/"):
+            response = self.client.get(path, {"q": "nonexistent-redesign-test-9876"})
+            self.assertEqual(response.status_code, 200)
+            self.assertContains(response, "Reset")
+            self.assertContains(response, "noindex,follow")

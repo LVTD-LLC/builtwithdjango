@@ -4,20 +4,27 @@
 {% load cloudinary %}
 
 {% block meta %}
-    {% include "components/seo_meta.html" with title="Django Blog | Built with Django" description="Django tutorials, articles, and updates for people building real products." canonical_path="/blog/" twitter_card="summary" image_alt="Built with Django logo" %}
+    {% include "components/seo_meta.html" with title="Django Blog | Built with Django" description="Django tutorials, articles, and updates for people building real products." canonical_path="/blog/" robots=robots twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 
 {% block content %}
-{% include "components/page-hero.html" with kicker="Django blog" title="Learn Django by building" description="Tutorials, articles, and updates for developers building with Django." %}
+{% include "components/page-hero.html" with kicker="Django blog" title="Notes for your next build." description="Tutorials, articles, and updates for developers building with Django." %}
 
 <section class="pb-16">
   <div class="bw-container">
-    <div class="grid gap-4 md:grid-cols-2">
+    <form class="bw-discovery-form" method="get" role="search" aria-label="Find blog posts">
+      <div class="bw-search-field"><label for="blog-search" class="bw-form-label">Search the blog</label><input id="blog-search" type="search" name="q" value="{{ request.GET.q }}" maxlength="200" placeholder="Authentication, deployment, databases…" class="bw-form-input"></div>
+      <div><label for="post-type" class="bw-form-label">Post type</label><select id="post-type" name="type" class="bw-form-input"><option value="">All posts</option><option value="TUTORIAL" {% if request.GET.type == 'TUTORIAL' %}selected{% endif %}>Tutorials</option><option value="ARTICLE" {% if request.GET.type == 'ARTICLE' %}selected{% endif %}>Articles</option><option value="UPDATE" {% if request.GET.type == 'UPDATE' %}selected{% endif %}>Updates</option><option value="INTERVIEW" {% if request.GET.type == 'INTERVIEW' %}selected{% endif %}>Interviews</option></select></div>
+      <button type="submit" class="bw-button bw-button-primary">Find posts</button>
+      {% if request.GET %}<a href="{% url 'blog' %}" class="bw-text-link">Reset</a>{% endif %}
+    </form>
+    <p class="bw-results-summary">{{ object_list|length }} post{{ object_list|length|pluralize }}</p>
+    <div class="bw-post-grid">
       {% for post in object_list %}
         {% include "components/post-card.html" with item=post %}
       {% empty %}
         <div class="bw-surface p-8 text-center md:col-span-2">
-          <p class="text-lg font-bold bw-muted">No posts yet. Check back soon.</p>
+          <p class="text-lg font-bold bw-muted">No posts match your search.</p><a href="{% url 'blog' %}" class="bw-text-link mt-4">Browse all posts</a>
         </div>
       {% endfor %}
     </div>

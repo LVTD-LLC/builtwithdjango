@@ -44,32 +44,11 @@ class ProjectUpdateViewForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(ProjectUpdateViewForm, self).__init__(*args, **kwargs)
 
-        for fieldname in [
-            "title",
-            "url",
-            "short_description",
-            "sale_link",
-        ]:
-            self.fields[fieldname].help_text = None
-            self.fields[fieldname].widget.attrs.update(
-                {"class": "max-w-lg block w-full shadow-sm focus:ring-indigo-500 focus:border-indigo-500 \
-                          sm:max-w-xs sm:text-sm border-gray-300 rounded-md"}
-            )
-
-        for fieldname in ["description", "technology_suggestions_by_user"]:
-            self.fields[fieldname].help_text = None
-            self.fields[fieldname].widget.attrs.update(
-                {
-                    "class": "block w-full max-w-lg border border-gray-300 rounded-md shadow-sm \
-                          focus:ring-green-500 focus:border-green-500 sm:text-sm",
-                    "rows": 6,
-                }
-            )
-
-        self.fields["is_for_sale"].help_text = None
-        self.fields["is_for_sale"].widget.attrs.update(
-            {"class": "focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"}
-        )
+        for name, field in self.fields.items():
+            field.help_text = None
+            field.widget.attrs["class"] = "bw-form-checkbox" if name == "is_for_sale" else "bw-form-input"
+            if name in {"description", "technology_suggestions_by_user"}:
+                field.widget.attrs["rows"] = 6
 
     class Meta:
         model = Project

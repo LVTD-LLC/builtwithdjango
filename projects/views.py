@@ -31,6 +31,10 @@ class ProjectListView(FilterView):
             getattr(self.request, "user", None),
         )
 
+        query = self.request.GET.get("q", "").strip()[:200]
+        if query:
+            queryset = queryset.filter(Q(title__icontains=query) | Q(short_description__icontains=query))
+
         if self.request.GET.get("order_by"):
             ordering = self.request.GET.get("order_by")
 

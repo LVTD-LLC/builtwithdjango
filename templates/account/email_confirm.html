@@ -1,36 +1,14 @@
 {% extends "base.html" %}
-{% load socialaccount %}
-{% load widget_tweaks %}
-
-{% block meta %}
-  {% include "components/seo_meta.html" with title="Confirm Email | Built with Django" description="Confirm your Built with Django email address." robots="noindex,nofollow" twitter_card="summary" image_alt="Built with Django logo" %}
-{% endblock meta %}
-
+{% block meta %}{% include "components/seo_meta.html" with title="Confirm email | Built with Django" robots="noindex,nofollow" %}{% endblock %}
 {% block content %}
-<div class="bg-white lg:min-w-0 md:pt-10 lg:flex-1">
-  <div class="pt-2 pl-6 mt-6 sm:mt-0">
-    {% if confirmation %}
-      <p class="py-4">
-        Please confirm that
-        <span class="font-semibold">
-          {{ confirmation.email_address.email }}
-        </span>
-        is your main e-mail address.
-      </p>
-
-      <form method="post" action="{% url 'account_confirm_email' confirmation.key %}">
-      {% csrf_token %}
-          <button
-            class="inline-flex items-center px-4 py-2 text-base font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
-            type="submit"
-          >
-            Confirm
-          </button>
-      </form>
-    {% else %}
-      <p>This e-mail confirmation link expired or is invalid. Please <a href="{% url 'account_email' }">issue a new e-mail confirmation request</a>.</p>
-    {% endif %}
-
-  </div>
-</div>
-{% endblock content %}
+<section class="bw-section"><div class="bw-container"><div class="bw-surface mx-auto max-w-lg p-6 sm:p-8">
+  <h1 class="bw-heading-md">Confirm your email.</h1>
+  {% if confirmation %}
+    <p class="mt-4 leading-7 bw-muted">Please confirm that <strong>{{ confirmation.email_address.email }}</strong> is your email address.</p>
+    <form method="post" action="{% url 'account_confirm_email' confirmation.key %}" class="mt-6">{% csrf_token %}<button type="submit" class="bw-button bw-button-primary">Confirm email</button></form>
+  {% else %}
+    <p class="mt-4 leading-7 bw-muted">This confirmation link has expired or is invalid.</p>
+    <a href="{% url 'account_email' %}" class="bw-text-link mt-4">Request a new confirmation email</a>
+  {% endif %}
+</div></div></section>
+{% endblock %}

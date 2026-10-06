@@ -1,19 +1,8 @@
 {% extends "base.html" %}
-{% block meta %}
-    {% include "components/seo_meta.html" with title="Sign Out | Built with Django" description="Sign out of Built with Django." canonical_path="/users/logout/" robots="noindex,nofollow" twitter_card="summary" image_alt="Built with Django logo" %}
-{% endblock meta %}
+{% block meta %}{% include "components/seo_meta.html" with title="Sign out | Built with Django" robots="noindex,nofollow" %}{% endblock %}
 {% block content %}
-    <div class="mx-auto my-4 prose md:my-10 lg:prose-lg">
-        <h1 class="text-center">Please confirm Sign Out</h1>
-        <form method="post" class="flex flex-row justify-center" action="{% url 'account_logout' %}">
-            {% csrf_token %}
-            {% if redirect_field_value %}
-                <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}"/>
-            {% endif %}
-            <button class="inline-flex items-center px-6 py-3 text-base font-medium text-white bg-red-600 border border-transparent border-solid rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                    type="submit">
-                Sign Out
-            </button>
-        </form>
-    </div>
-{% endblock content %}
+<section class="bw-section"><div class="bw-container"><div class="bw-surface mx-auto max-w-md p-8">
+  <h1 class="bw-heading-md">Ready to sign out?</h1><p class="mt-4 bw-muted">You can keep browsing projects and reading the blog.</p>
+  <form method="post" action="{% url 'account_logout' %}" class="mt-6 flex flex-wrap gap-3">{% csrf_token %}{% if redirect_field_value %}<input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">{% endif %}<button class="bw-button bw-button-primary" type="submit">Sign out</button><a class="bw-button bw-button-secondary" href="{% url 'home' %}">Keep browsing</a></form>
+</div></div></section>
+{% endblock %}

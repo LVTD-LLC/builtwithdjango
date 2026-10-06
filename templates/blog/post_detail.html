@@ -10,27 +10,26 @@
 
 {% block content %}
 <section class="bw-page-hero pb-8">
-  <div class="bw-container">
+  <div class="bw-container bw-reading-width">
     <a href="{% url 'blog' %}" class="inline-flex items-center gap-2 text-sm font-black text-[var(--bw-primary-dark)]">
       <i class="las la-arrow-left" aria-hidden="true"></i>
-      All guides
+      All posts
     </a>
     <div class="mt-8 max-w-4xl">
-      <p class="bw-kicker">Django guide</p>
+      <p class="bw-kicker">{{ object.get_type_display|title }}</p>
       <h1 class="bw-heading-lg mt-3">{{ object.title }}</h1>
       {% if object.description %}
         <p class="bw-lede mt-5">{{ object.description }}</p>
       {% endif %}
     </div>
+    <p class="bw-article-byline">By Rasul Kireev <span aria-hidden="true">·</span> Updated <time datetime="{{ object.modified|date:'c' }}">{{ object.modified|date:"F j, Y" }}</time></p>
   </div>
 </section>
 
-{# djlint:off #}
-<div data-controller="exit-intent" data-action="mouseout@document->exit-intent#openModal">
-{# djlint:on #}
+<div>
   <section class="pb-16">
-    <div class="bw-container">
-      <article class="bw-surface max-w-4xl p-5 sm:p-8">
+    <div class="bw-container bw-reading-width">
+      <article class="bw-article">
         <div class="bw-prose prose max-w-none md:prose-lg">
           <div class="blog-post">
             {{ object.content | markdown | safe }}
@@ -40,6 +39,7 @@
     </div>
   </section>
 </div>
+<section class="bw-section bw-section-ruled"><div class="bw-container bw-reading-width"><h2 class="bw-heading-md">Keep exploring.</h2><div class="mt-5 flex flex-wrap gap-3"><a href="{% url 'blog' %}" class="bw-button bw-button-secondary">More from the blog</a><a href="{% url 'projects' %}" class="bw-button bw-button-primary">See Django in action</a></div></div></section>
 {% endblock content %}
 
 {% block schema %}

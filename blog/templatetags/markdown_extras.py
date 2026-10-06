@@ -14,7 +14,7 @@ extension_configs = {
 @register.filter()
 @stringfilter
 def markdown(value):
-    return md.markdown(
+    html = md.markdown(
         value,
         extensions=[
             "markdown.extensions.codehilite",
@@ -24,4 +24,10 @@ def markdown(value):
             "markdown.extensions.tables",
         ],
         extension_configs=extension_configs,
+    )
+
+    # Generated code blocks and tables can scroll horizontally on narrow screens.
+    # Make them keyboard reachable without changing their semantic elements.
+    return html.replace("<pre>", '<pre tabindex="0" aria-label="Code example">').replace(
+        "<table>", '<table tabindex="0">'
     )

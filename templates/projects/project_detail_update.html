@@ -7,16 +7,14 @@
 {% endblock meta %}
 {% block content %}
     {% if user == object.maker.user or user == object.logged_in_maker %}
-        <div class="max-w-5xl mx-auto my-10">
-            <div class="px-6 pt-6 overflow-hidden bg-white rounded-lg shadow">
+        <div class="bw-container bw-section">
+            <div class="bw-surface p-6 sm:p-8">
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     {{ form.non_field_errors }}
                     <div class="space-y-8 divide-y divide-gray-200 sm:space-y-5">
                         <div>
-                            <h3 class="text-lg font-medium leading-6 text-gray-900">
-                                Profile
-                            </h3>
+                            <h1 class="bw-heading-md">Edit project</h1>
                             <p class="max-w-2xl mt-1 text-sm text-gray-500">
                                 This information will be displayed publicly so be careful what you share.
                             </p>
@@ -44,7 +42,7 @@
                             </div>
                             <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
                                 {{ form.short_description.errors | safe }}
-                                <label for="short_description"
+                                <label for="{{ form.short_description.id_for_label }}"
                                        class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
                                     Short Description
                                 </label>
@@ -75,40 +73,40 @@
                             </div>
                             <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
                                 {{ form.description.errors | safe }}
-                                <label for="description"
+                                <label for="{{ form.description.id_for_label }}"
                                        class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
                                     Description (Optional)
                                 </label>
                                 <div class="mt-1 sm:mt-0 sm:col-span-2">
                                     {{ form.description }}
                                     <p class="mt-2 text-sm text-gray-500">
-                                        This is a longer descirption of your project / product (Markdown is cool 😎).
+                                        Describe your project in more detail. Markdown is supported.
                                     </p>
                                 </div>
                             </div>
                             <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
                                 {{ form.twitter_url.errors | safe }}
-                                <label for="twitter_url"
+                                <label for="{{ form.twitter_url.id_for_label }}"
                                        class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
                                     Twitter URL (Optional)
                                 </label>
                                 <div class="mt-1 sm:mt-0 sm:col-span-2">
-                                  {% render_field form.twitter_url class="block w-full max-w-lg border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm" placeholder="https://twitter.com/rasulkireev" %}
+                                  {% render_field form.twitter_url class="block w-full max-w-lg border-[var(--bw-border)] rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm" placeholder="https://twitter.com/rasulkireev" %}
                                 </div>
                             </div>
                             <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
                                 {{ form.github_url.errors | safe }}
-                                <label for="github_url"
+                                <label for="{{ form.github_url.id_for_label }}"
                                        class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
                                     Github URL (Optional)
                                 </label>
                                 <div class="mt-1 sm:mt-0 sm:col-span-2">
-                                  {% render_field form.github_url class="block w-full max-w-lg border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm" placeholder="https://github.com/rasulkireev" %}
+                                  {% render_field form.github_url class="block w-full max-w-lg border-[var(--bw-border)] rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:max-w-xs sm:text-sm" placeholder="https://github.com/rasulkireev" %}
                                 </div>
                             </div>
                             <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
                                 {{ form.technology_suggestions_by_user.errors | safe }}
-                                <label for="technology_suggestions_by_user"
+                                <label for="{{ form.technology_suggestions_by_user.id_for_label }}"
                                        class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
                                     Technologies Used
                                 </label>
@@ -126,7 +124,7 @@
                         </div>
                         <div class="pt-8 space-y-6 sm:pt-10 sm:space-y-5">
                             <div>
-                                <h3 class="text-lg font-medium leading-6 text-gray-900">
+                                <h3 class="text-lg font-medium leading-6 text-[var(--bw-ink)]">
                                     Sale Info (Optional)
                                 </h3>
                                 <p class="max-w-2xl mt-1 text-sm text-gray-500">
@@ -135,7 +133,7 @@
                             </div>
                             <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
                                 {{ form.is_for_sale.errors | safe }}
-                                <label for="is_for_sale"
+                                <label for="{{ form.is_for_sale.id_for_label }}"
                                        class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
                                     Is your project for sale?
                                 </label>
@@ -145,7 +143,7 @@
                             </div>
                             <div class="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
                                 {{ form.sale_link.errors | safe }}
-                                <label for="sale_link"
+                                <label for="{{ form.sale_link.id_for_label }}"
                                        class="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2">
                                     Link to the place you are selling at.
                                 </label>
@@ -158,7 +156,7 @@
                     <div class="pt-5">
                         <div class="flex justify-end">
                             <button type="submit"
-                                    class="inline-flex justify-center px-4 py-2 ml-3 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                    class="bw-button bw-button-primary">
                                 Save
                             </button>
                         </div>
@@ -167,7 +165,7 @@
             </div>
         </div>
     {% else %}
-        <div class="max-w-5xl mx-auto my-10">
+        <div class="bw-container bw-section">
             You need to be the owner of this project to edit it.
         </div>
     {% endif %}

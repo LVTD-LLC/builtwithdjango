@@ -275,6 +275,8 @@ TEMPLATES = [
         "DIRS": [os.path.join(BASE_DIR, "templates")],
         "APP_DIRS": True,
         "OPTIONS": {
+            # Resolve duplicate legacy tag names deterministically.
+            "libraries": {"markdown_extras": "blog.templatetags.markdown_extras"},
             "builtins": [
                 "django_component.templatetags",
                 "pages.templatetags.seo",

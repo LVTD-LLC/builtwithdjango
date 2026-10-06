@@ -8,10 +8,10 @@
 
 {% block content %}
 
-    <div class="px-6 py-20 bg-white sm:py-24 lg:px-8">
+    <div class="px-6 py-20 bg-[var(--bw-surface)] sm:py-24 lg:px-8">
       <div class="max-w-2xl mx-auto text-center">
-        <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">Django Jobs</h1>
-        <p class="mt-6 text-lg leading-8 prose text-gray-600">Advertise your jobs to people who want to work with Django.</p>
+        <h1 class="text-4xl font-bold tracking-tight text-[var(--bw-ink)] sm:text-6xl">Django Jobs</h1>
+        <p class="mt-6 text-lg leading-8 prose text-[var(--bw-muted)]">Advertise your jobs to people who want to work with Django.</p>
       </div>
       <div class="flex flex-wrap items-center justify-between mt-8 sm:flex-nowrap">
           <div class="mx-auto">
@@ -29,7 +29,7 @@
       <div class="grid items-start grid-cols-1 gap-4 lg:grid-cols-4 lg:gap-8">
         <div class="grid grid-cols-1 gap-4 lg:col-span-4">
           <div class="grid grid-cols-1 border border-gray-200 shadow sm:rounded-xl lg:col-span-3">
-            <ul role="list" class="overflow-hidden bg-white divide-y divide-gray-100 shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
+            <ul role="list" class="overflow-hidden bg-[var(--bw-surface)] divide-y divide-gray-100 shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
               {% for job in object_list %}
                     {% include "components/job-item.html" with job=job %}
               {% endfor %}

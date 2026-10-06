@@ -26,17 +26,17 @@
           <div class="grid gap-5">
             <div>
               {{ form.title.errors | safe }}
-              <label for="title" class="bw-form-label">Project title</label>
+              <label for="{{ form.title.id_for_label }}" class="bw-form-label">Project title</label>
               {% render_field form.title class="bw-form-input text-base" placeholder="My Django App" %}
             </div>
             <div>
               {{ form.url.errors | safe }}
-              <label for="url" class="bw-form-label">Project URL</label>
+              <label for="{{ form.url.id_for_label }}" class="bw-form-label">Project URL</label>
               {% render_field form.url class="bw-form-input text-base" placeholder="https://example.com" %}
             </div>
             <div>
               {{ form.short_description.errors | safe }}
-              <label for="short_description" class="bw-form-label">Short description</label>
+              <label for="{{ form.short_description.id_for_label }}" class="bw-form-label">Short description</label>
               {% render_field form.short_description class="bw-form-input text-base" placeholder="What does it do, and who is it for?" %}
               <p class="mt-2 text-sm bw-muted">A few useful sentences, up to 200 characters.</p>
             </div>
@@ -51,18 +51,18 @@
             <div class="grid gap-5 sm:grid-cols-2">
               <div>
                 {{ form.twitter_url.errors | safe }}
-                <label for="twitter_url" class="bw-form-label">X/Twitter URL</label>
+                <label for="{{ form.twitter_url.id_for_label }}" class="bw-form-label">X/Twitter URL</label>
                 {% render_field form.twitter_url class="bw-form-input text-base" placeholder="https://twitter.com/builtwithdjango" %}
               </div>
               <div>
                 {{ form.github_url.errors | safe }}
-                <label for="github_url" class="bw-form-label">GitHub URL</label>
+                <label for="{{ form.github_url.id_for_label }}" class="bw-form-label">GitHub URL</label>
                 {% render_field form.github_url class="bw-form-input text-base" placeholder="https://github.com/example/repo" %}
               </div>
             </div>
             <div>
               {{ form.technology_suggestions_by_user.errors | safe }}
-              <label for="technology_suggestions_by_user" class="bw-form-label">Technologies used</label>
+              <label for="{{ form.technology_suggestions_by_user.id_for_label }}" class="bw-form-label">Technologies used</label>
               {% render_field form.technology_suggestions_by_user class="bw-form-input text-base" rows=5 placeholder="Django, HTMX, Tailwind, Postgres..." %}
             </div>
           </div>

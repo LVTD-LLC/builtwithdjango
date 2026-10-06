@@ -7,14 +7,14 @@
 {% block content %}
     {% if user == object.user %}
         <div class="max-w-5xl mx-auto my-10">
-            <div class="px-6 pt-6 overflow-hidden bg-white rounded-lg shadow">
+            <div class="px-6 pt-6 overflow-hidden bg-[var(--bw-surface)] rounded-lg shadow">
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     {{ form.non_field_errors }}
                     <div class="space-y-8 divide-y divide-gray-200 sm:space-y-5">
                         <div>
                             <div>
-                                <h3 class="text-lg font-medium leading-6 text-gray-900">
+                                <h3 class="text-lg font-medium leading-6 text-[var(--bw-ink)]">
                                     Profile
                                 </h3>
                                 <p class="max-w-2xl mt-1 text-sm text-gray-500">

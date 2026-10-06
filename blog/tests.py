@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 from django.contrib import admin
 from django.core.exceptions import ImproperlyConfigured
+from django.template import Context, Template
 from django.test import RequestFactory, SimpleTestCase, override_settings
 from django.urls import reverse
 
@@ -15,6 +16,16 @@ from builtwithdjango.sitemaps import BlogSitemap
 
 
 class RepositoryPostTests(SimpleTestCase):
+    def test_scrollable_markdown_is_keyboard_reachable(self):
+        html = markdown("```python\nprint('example')\n```\n\n| A | B |\n|---|---|\n| 1 | 2 |")
+        self.assertIn('<pre tabindex="0" aria-label="Code example">', html)
+        self.assertIn('<table tabindex="0">', html)
+        self.assertIn("example", html)
+        rendered = Template("{% load markdown_extras %}{{ content|markdown|safe }}").render(
+            Context({"content": "```python\nprint(1)\n```"})
+        )
+        self.assertIn('<pre tabindex="0" aria-label="Code example">', rendered)
+
     def test_real_content_inventory_is_valid_and_has_no_db_dependency(self):
         posts = all_posts()
         self.assertGreaterEqual(len(posts), 28)

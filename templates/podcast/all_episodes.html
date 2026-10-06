@@ -7,17 +7,12 @@
 
 {% block content %}
 
-    <div class="px-6 py-20 bg-white sm:py-24 lg:px-8">
-      <div class="max-w-2xl mx-auto text-center">
-        <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">Built with Django Podcast</h1>
-        <p class="mt-6 text-lg leading-8 prose text-gray-600">Practical stories from the Django community</p>
-      </div>
-    </div>
-
+{% include "components/page-hero.html" with kicker="From the archive" title="Conversations worth keeping." description="The podcast is no longer in production. Listen to past conversations with people building with Django." %}
+<div class="bw-container">
     <div class="grid grid-cols-1 gap-6 mb-10 lg:grid-cols-3 md:grid-cols-2">
         {% for episode in object_list %}
-            <article class="flex flex-col justify-start bg-white border border-solid rounded shadow">
-                <header class="border-b border-gray-300 border-solid rounded-t-lg">
+            <article class="bw-card flex flex-col">
+                <header class="border-b border-[var(--bw-border)] border-solid rounded-t-lg">
                     <a href="{% url 'episode_details' episode.slug %}">
                         <img class="object-cover object-left-top w-full h-auto border-0 rounded-t"
                              src="{% get_media_prefix %}{{ episode.thumbnail }}"
@@ -25,7 +20,7 @@
                     </a>
                 </header>
                 <div class="flex-auto h-full p-4">
-                    <h2 class="mb-2 text-lg font-semibold text-gray-900">
+                    <h2 class="mb-2 text-lg font-semibold text-[var(--bw-ink)]">
                         <a href="{% url 'episode_details' episode.slug %}">{{ episode.title }}</a>
                     </h2>
                     <p class="text-sm leading-normal text-grey-700">
@@ -34,6 +29,7 @@
                 </div>
         </article>
     {% endfor %}
+</div>
 </div>
 {% include "components/newsletter.html" with newsletter_form=newsletter_form %}
 
