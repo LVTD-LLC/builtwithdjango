@@ -8,6 +8,7 @@ their recorded dates; previously undated entries use their Git history dates.
 ## 2026-10-06
 
 ### Changed
+- Applied the selected Rubik headings and Nunito Sans body/UI typography across the app, using locally hosted variable fonts with bundled open-font licenses.
 - Restored the original navbar logo, removed decorative eyebrow labels and repetitive homepage slogans/arrows, and made featured projects more visible with a green panel and clear badge.
 - Redesigned the app with a cream-and-green editorial system, framed project screenshots, readable blog layouts, consistent forms, and responsive navigation focused on Projects and Blog.
 - Simplified the homepage to projects, recent posts, and newsletter signup; moved jobs, tools, and the podcast archive to footer navigation while retaining existing URLs.

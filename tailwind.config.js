@@ -17,6 +17,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Nunito Sans', 'Segoe UI', 'system-ui', 'sans-serif'],
+      },
       maxWidth: {
         '1/3': '33.333333%'
       }
