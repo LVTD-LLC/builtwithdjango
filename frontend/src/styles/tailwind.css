@@ -1,3 +1,4 @@
+@import "fonts.css";
 @import "pygments-default.css";
 @import "admonitions.css";
 @import "blog-post.css";
@@ -8,6 +9,8 @@
 
 @layer base {
   :root {
+    --bw-font-heading: "Rubik", "Segoe UI", system-ui, sans-serif;
+    --bw-font-body: "Nunito Sans", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     --bw-bg: #f8f7f3;
     --bw-bg-warm: #f2f0e9;
     --bw-surface: #ffffff;
@@ -42,7 +45,7 @@
     min-height: 100%;
     background: var(--bw-bg);
     color: var(--bw-ink);
-    font-family: "Avenir Next", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: var(--bw-font-body);
     font-kerning: normal;
   }
 
@@ -58,6 +61,7 @@
   h1,
   h2,
   h3 {
+    font-family: var(--bw-font-heading);
     text-wrap: balance;
   }
 
@@ -690,13 +694,13 @@
   }
 }
 
-/* Editorial publication + directory: native controls, no display-font download. */
+/* Community directory: selected Rubik + Nunito Sans typography. */
 @layer components {
   .bw-main { min-height: 55vh; }
   .bw-heading-xl, .bw-heading-lg, .bw-heading-md {
-    font-family: Georgia, "Times New Roman", serif;
-    font-weight: 400;
-    letter-spacing: -0.045em;
+    font-family: var(--bw-font-heading);
+    font-weight: 600;
+    letter-spacing: -0.035em;
     line-height: 1.08;
     overflow-wrap: anywhere;
   }
@@ -732,7 +736,7 @@
   .bw-project-card:hover .bw-project-card__media { border-color: var(--bw-border-strong); }
   .bw-project-card__media img { border: 1px solid var(--bw-border); border-radius: 2px; }
   .bw-project-card__body { padding: 1.25rem 0 0.75rem; }
-  .bw-project-card__title { font-size: 1.15rem; line-height: 1.4; font-weight: 600; overflow-wrap: anywhere; }
+  .bw-project-card__title { font-family: var(--bw-font-body); font-size: 1.15rem; line-height: 1.4; font-weight: 600; overflow-wrap: anywhere; }
   .bw-project-card__actions { padding: 0.6rem 0; border-color: var(--bw-border); }
   .bw-project-card__actions .bw-icon-button { background: transparent; border-color: transparent; }
   .bw-project-card__actions .bw-icon-button:hover { background: var(--bw-primary-soft); }
@@ -741,7 +745,7 @@
   .bw-post-card { min-width: 0; padding: 1.7rem 0; border-top: 1px solid var(--bw-border); display: flex; flex-direction: column; gap: 0.85rem; }
   .bw-post-meta { display: flex; flex-wrap: wrap; gap: 1rem; font-size: 0.75rem; color: var(--bw-muted); }
   .bw-post-meta span:first-child { color: var(--bw-primary-dark); }
-  .bw-post-card h2 { font-family: Georgia, serif; font-weight: 400; font-size: 1.65rem; line-height: 1.25; letter-spacing: -0.025em; }
+  .bw-post-card h2 { font-family: var(--bw-font-heading); font-weight: 600; font-size: 1.65rem; line-height: 1.25; letter-spacing: -0.035em; }
   .bw-post-card h2 a:hover { color: var(--bw-primary); text-decoration: underline; text-underline-offset: 0.15em; }
   .bw-post-card > p { font-size: 0.9rem; line-height: 1.7; }
   .bw-post-card-bottom { display: flex; justify-content: space-between; gap: 1rem; margin-top: auto; padding-top: 0.4rem; font-size: 0.75rem; color: var(--bw-muted); }
@@ -754,7 +758,7 @@
   .bw-article { border-top: 1px solid var(--bw-border); padding-top: 2rem; }
   .bw-article-byline { font-size: 0.8rem; color: var(--bw-muted); margin-top: 1.75rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
   .bw-prose { overflow-wrap: anywhere; }
-  .bw-prose :where(h2,h3) { font-family: Georgia, serif; font-weight: 400; letter-spacing: -0.025em; scroll-margin-top: 7rem; }
+  .bw-prose :where(h2,h3) { font-family: var(--bw-font-heading); font-weight: 600; letter-spacing: -0.025em; scroll-margin-top: 7rem; }
   .bw-prose pre { max-width: 100%; overflow-x: auto; font-size: 0.85rem; }
   .bw-prose table { display: block; max-width: 100%; overflow-x: auto; }
   .bw-prose iframe { max-width: 100%; }
@@ -762,7 +766,7 @@
   .errorlist { color: var(--bw-danger); font-size: 0.9rem; margin-block: 0.5rem; }
   .bw-footer { background: var(--bw-bg-warm); color: var(--bw-ink); }
   .bw-footer-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 2rem; padding-block: 3.5rem; }
-  .bw-footer-brand { font-family: Georgia, serif; font-size: 1.5rem; font-weight: 400; letter-spacing: -0.04em; }
+  .bw-footer-brand { font-family: var(--bw-font-heading); font-size: 1.5rem; font-weight: 600; letter-spacing: -0.035em; }
   .bw-footer-brand span { color: var(--bw-primary); }
   .bw-footer-title { font-size: 0.75rem; font-weight: 600; color: var(--bw-muted); margin-bottom: 0.8rem; }
   .bw-footer-link { min-height: 2.75rem; font-size: 0.85rem; }
@@ -794,7 +798,7 @@
   .bw-footer-bottom { padding-bottom: 1.5rem; }
 }
 @layer components {
-  .bw-auth-content h1 { font-family: Georgia, serif; font-size: 2rem; line-height: 1.15; margin-bottom: 1rem; }
+  .bw-auth-content h1 { font-family: var(--bw-font-heading); font-weight: 600; font-size: 2rem; line-height: 1.15; margin-bottom: 1rem; }
   .bw-auth-content p { color: var(--bw-muted); margin-block: 1rem; line-height: 1.65; }
   .bw-auth-content label { display: block; font-weight: 600; font-size: 0.875rem; margin-bottom: 0.5rem; }
   .bw-auth-content input:not([type=hidden]):not([type=checkbox]):not([type=radio]) { width: 100%; min-height: 2.75rem; background: var(--bw-surface); }

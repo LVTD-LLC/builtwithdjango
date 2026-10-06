@@ -19,9 +19,11 @@ Projects and the blog lead; jobs, tools, and the podcast archive live in the
 footer. Reference rationale and measurement limits: `docs/redesign-2026-10.md`.
 
 Use a warm cream canvas, white screenshot frames, charcoal-green text, fine
-neutral borders, and one dark-green action color. Georgia supplies editorial
-headlines without a font download; system sans-serif serves body and controls.
-Keep data and forms in sans-serif. Avoid decorative gradients and motion.
+neutral borders, and one dark-green action color. Self-hosted Rubik (600) supplies
+playful headings; Nunito Sans serves body text, forms and controls (option 5,
+selected by Rasul). Keep code in monospace. Font provenance and OFL licenses
+are in `frontend/src/fonts/`; reuse the font tokens, never a remote font embed.
+Avoid decorative gradients and motion.
 
 ## Visual principles
 

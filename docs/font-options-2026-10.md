@@ -1,7 +1,8 @@
 # October 6 typography comparison
 
 Rasul requested six homepage font options after the initial redesign. These are
-preview-only; production retains Georgia/system sans until a choice is made.
+historical previews. Rasul selected option 5 (Rubik + Nunito Sans) on October 6;
+it is now the implementation target. All other options remain unselected.
 The previews use the same homepage, logo, content, colors, and featured-card
 styling, changing only heading/body fonts, heading weight and tracking.
 
