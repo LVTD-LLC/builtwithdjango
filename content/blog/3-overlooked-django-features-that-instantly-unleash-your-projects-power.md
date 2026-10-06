@@ -4,7 +4,7 @@ created: '2025-12-23 11:39:23.515402+00:00'
 modified: '2026-10-06 07:13:23.899275+00:00'
 title: 'Django ContentTypes, Signals, F and Q: Uses and Trade-offs'
 slug: 3-overlooked-django-features-that-instantly-unleash-your-projects-power
-status: PB
+status: DR
 description: 'Use Django generic relations, signals, and F/Q expressions with clear examples, primary-key constraints, and practical testing advice.'
 unsplashID: ''
 icon: ''

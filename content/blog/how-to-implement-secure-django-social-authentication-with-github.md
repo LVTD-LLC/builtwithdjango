@@ -4,7 +4,7 @@ created: '2025-12-09 18:39:19.817409+00:00'
 modified: '2025-12-09 18:39:19.817409+00:00'
 title: How to Implement Secure Django Social Authentication with GitHub
 slug: how-to-implement-secure-django-social-authentication-with-github
-status: PB
+status: DR
 description: Master Django social authentication. This guide provides step-by-step instructions to securely integrate
   GitHub login into your Django applications.
 unsplashID: ''

@@ -21,7 +21,7 @@ class RepositoryPostTests(SimpleTestCase):
         self.assertEqual(len({p.id for p in posts}), len(posts))
         self.assertTrue(all(p.get_absolute_url() == f"/blog/{p.slug}" for p in posts))
 
-    def test_published_social_auth_references_resolve_to_existing_guide(self):
+    def test_archived_social_auth_references_resolve_to_existing_guide(self):
         target = next(post for post in published_posts() if post.slug == "github-auth")
         self.assertEqual(target.status, "PB")
         sources = (
@@ -31,7 +31,7 @@ class RepositoryPostTests(SimpleTestCase):
         )
         for slug in sources:
             with self.subTest(slug=slug):
-                post = next(post for post in published_posts() if post.slug == slug)
+                post = next(post for post in all_posts() if post.slug == slug)
                 html = markdown(post.content)
                 self.assertIn('href="https://builtwithdjango.com/blog/github-auth"', html)
                 self.assertNotIn("https://builtwithdjango.com/guides/social-auth", html)

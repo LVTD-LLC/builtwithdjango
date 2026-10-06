@@ -4,7 +4,7 @@ created: '2025-12-19 08:39:40.580344+00:00'
 modified: '2025-12-19 08:39:40.580344+00:00'
 title: Boost Your Django Workflow with Cursor AI IDE [Guide]
 slug: boost-your-django-workflow-with-cursor-ai-ide-guide
-status: PB
+status: DR
 description: Learn how to significantly boost your Django project development workflow using the Cursor AI IDE.
   Discover essential tips and best practices for greater efficiency.
 unsplashID: ''

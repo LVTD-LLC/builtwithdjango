@@ -24,9 +24,6 @@
     "paths": [
       "content/blog/5-hidden-django-secrets-senior-developers-use-lightning-fast-code.md"
     ],
-    "urls": [
-      "https://builtwithdjango.com/blog/5-hidden-django-secrets-senior-developers-use-lightning-fast-code"
-    ],
     "must_match": [],
     "must_not_match": [
       "django-cdn-performance-study",
@@ -37,9 +34,6 @@
     "claim": "Power-features article does not present unsupported survey or outcome percentages",
     "paths": [
       "content/blog/3-django-power-features-youre-ignoring-build-unstoppable-projects.md"
-    ],
-    "urls": [
-      "https://builtwithdjango.com/blog/3-django-power-features-youre-ignoring-build-unstoppable-projects"
     ],
     "must_match": [],
     "must_not_match": [
@@ -55,9 +49,6 @@
     "claim": "Frontend comparison distinguishes verified site architecture from optional integrations",
     "paths": [
       "content/blog/7-top-frontend-frameworks-for-seamless-django-integration.md"
-    ],
-    "urls": [
-      "https://builtwithdjango.com/blog/7-top-frontend-frameworks-for-seamless-django-integration"
     ],
     "must_match": [
       "rather than a React SPA",
@@ -75,9 +66,6 @@
     "paths": [
       "content/blog/django-cursors-advanced-database-access-techniques-guide.md"
     ],
-    "urls": [
-      "https://builtwithdjango.com/blog/django-cursors-advanced-database-access-techniques-guide"
-    ],
     "must_match": [
       "does not accept a",
       "DISABLE_SERVER_SIDE_CURSORS",
@@ -94,9 +82,6 @@
     "claim": "Overlooked features guide states relation and query guarantees precisely",
     "paths": [
       "content/blog/3-overlooked-django-features-that-instantly-unleash-your-projects-power.md"
-    ],
-    "urls": [
-      "https://builtwithdjango.com/blog/3-overlooked-django-features-that-instantly-unleash-your-projects-power"
     ],
     "must_match": [
       "primary-key types",

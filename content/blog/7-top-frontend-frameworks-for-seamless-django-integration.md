@@ -4,7 +4,7 @@ created: '2025-12-08 17:37:33.433413+00:00'
 modified: '2026-09-30 07:00:00+00:00'
 title: 7 Top Frontend Frameworks for Seamless Django Integration
 slug: 7-top-frontend-frameworks-for-seamless-django-integration
-status: PB
+status: DR
 description: Explore 7 top frontend frameworks that integrate seamlessly with Django. Discover powerful options
   to build robust and modern web applications with your Django backend.
 unsplashID: ''

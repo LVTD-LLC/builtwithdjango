@@ -4,7 +4,7 @@ created: '2025-12-18 07:39:36.252861+00:00'
 modified: '2026-10-04 07:00:00+00:00'
 title: 'Django Cursors: Advanced Database Access Techniques [Guide]'
 slug: django-cursors-advanced-database-access-techniques-guide
-status: PB
+status: DR
 description: Unlock powerful database control in your Django projects. Explore advanced techniques for using database
   cursors and direct SQL queries with this comprehensive guide.
 unsplashID: ''

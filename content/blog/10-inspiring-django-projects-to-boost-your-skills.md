@@ -4,7 +4,7 @@ created: '2025-12-11 20:38:59.925205+00:00'
 modified: '2025-12-11 20:38:59.925205+00:00'
 title: 10 Inspiring Django Projects to Boost Your Skills
 slug: 10-inspiring-django-projects-to-boost-your-skills
-status: PB
+status: DR
 description: Discover 10 inspiring Django projects that demonstrate real-world applications. Get ideas and level
   up your coding abilities with practical examples.
 unsplashID: ''
