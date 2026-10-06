@@ -262,7 +262,7 @@
 
         <div class="hidden items-center gap-1 lg:flex">
           <a href="{% url 'projects' %}" class="bw-nav-link" data-analytics-event="nav clicked" data-analytics-nav-item="projects">Projects</a>
-          <a href="{% url 'blog' %}" class="bw-nav-link" data-analytics-event="nav clicked" data-analytics-nav-item="guides">Guides</a>
+          <a href="{% url 'blog' %}" class="bw-nav-link" data-analytics-event="nav clicked" data-analytics-nav-item="guides">Blog</a>
           <a href="{% url 'jobs' %}" class="bw-nav-link" data-analytics-event="nav clicked" data-analytics-nav-item="jobs">Jobs</a>
           <div data-controller="dropdown" class="relative">
             <button type="button"
@@ -401,7 +401,7 @@
             <div>
               <p class="mb-2 text-xs font-black uppercase tracking-wider bw-muted">Browse</p>
               <a href="{% url 'projects' %}" class="bw-mobile-link">Projects <i class="las la-arrow-right" aria-hidden="true"></i></a>
-              <a href="{% url 'blog' %}" class="bw-mobile-link">Guides <i class="las la-arrow-right" aria-hidden="true"></i></a>
+              <a href="{% url 'blog' %}" class="bw-mobile-link">Blog <i class="las la-arrow-right" aria-hidden="true"></i></a>
               <a href="{% url 'jobs' %}" class="bw-mobile-link">Jobs <i class="las la-arrow-right" aria-hidden="true"></i></a>
             </div>
             <div>
@@ -461,8 +461,7 @@
           <h2 class="text-sm font-black uppercase tracking-wider text-[oklch(94%_0.025_126)]">Explore</h2>
           <div class="mt-4 grid gap-3 text-sm">
             <a href="{% url 'projects' %}" class="bw-footer-link">Projects</a>
-            <a href="{% url 'blog' %}" class="bw-footer-link">Guides</a>
-            <a href="{% url 'articles' %}" class="bw-footer-link">Articles</a>
+            <a href="{% url 'blog' %}" class="bw-footer-link">Blog</a>
             <a href="{% url 'jobs' %}" class="bw-footer-link">Jobs</a>
             <a href="{% url 'podcast_episodes' %}" class="bw-footer-link">Podcast</a>
           </div>

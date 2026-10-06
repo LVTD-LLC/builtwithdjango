@@ -38,7 +38,6 @@ class StaticViewSitemap(sitemaps.Sitemap):
             "developers",
             "podcast_episodes",
             "blog",
-            "articles",
             "jobs",
             "post_job",
             "newsletter_home",
