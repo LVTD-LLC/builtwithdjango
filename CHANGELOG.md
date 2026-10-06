@@ -5,6 +5,11 @@ Each `YYYY-MM-DD` heading groups all changes for that day by type, without
 release versions or an Unreleased section. Historical dated entries retain
 their recorded dates; previously undated entries use their Git history dates.
 
+## 2026-10-06
+
+### Fixed
+- Corrected the ContentTypes, signals, and query-expression article: document primary-key and integrity limits, use a swappable-user signal receiver, and distinguish F updates from Q predicates and transaction guarantees.
+
 ## 2026-10-05
 
 ### Changed
