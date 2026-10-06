@@ -74,3 +74,12 @@ There is no data migration or content deletion to reverse.
 Automated accessibility checks are bounded checks, not a claim of full WCAG
 certification. Production rollout and final live verification are recorded in
 this PR's delivery report.
+- Final secondary-page sweep: 16 additional desktop/mobile checks (makers,
+  advertising, terms, support, newsletter, job submission, developer pricing,
+  invalid email confirmation) passed status, layout, and axe checks.
+- Local authenticated flows passed: login, project submission validation, owner
+  edit form, profile, logout confirmation, password change, reversible like
+  toggle, and dialog Escape/focus restoration. No production writes used.
+- CI initially exposed a test-fixture dependency on a locally built Webpack
+  manifest. The new Python rendering tests now stub bundle tags like an
+  isolated backend test; real assets remain verified by build/browser checks.

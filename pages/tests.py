@@ -113,6 +113,13 @@ class HomeViewTests(TestCase):
 
 
 class RedesignDiscoveryTests(TestCase):
+    def setUp(self):
+        # Python-only CI deliberately has no compiled frontend manifest.
+        # Real asset loading is covered by the frontend build and browser checks.
+        bundles = patch("webpack_boilerplate.utils.get_as_tags", return_value=[])
+        bundles.start()
+        self.addCleanup(bundles.stop)
+
     def test_home_excludes_spam_and_keeps_secondary_destinations_in_footer(self):
         Project.objects.create(
             title="Hidden spam",
