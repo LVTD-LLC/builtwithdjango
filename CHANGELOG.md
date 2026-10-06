@@ -8,6 +8,7 @@ their recorded dates; previously undated entries use their Git history dates.
 ## 2026-10-06
 
 ### Fixed
+- Displayed the corrected article’s comparisons as readable lists in the existing Markdown renderer.
 - Corrected the ContentTypes, signals, and query-expression article: document primary-key and integrity limits, use a swappable-user signal receiver, and distinguish F updates from Q predicates and transaction guarantees.
 
 ## 2026-10-05
