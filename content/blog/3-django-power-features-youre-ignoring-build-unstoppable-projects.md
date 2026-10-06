@@ -4,7 +4,7 @@ created: '2025-12-24 12:39:30.529440+00:00'
 modified: '2026-09-29 07:00:00+00:00'
 title: Django Signals, Management Commands, and Generic Relations
 slug: 3-django-power-features-youre-ignoring-build-unstoppable-projects
-status: PB
+status: DR
 description: Learn when to use Django signals, custom management commands, and generic relations, with runnable examples, documented limitations, and simpler alternatives.
 unsplashID: ''
 icon: ''
