@@ -4,21 +4,20 @@
 {% load cloudinary %}
 
 {% block meta %}
-    {% include "components/seo_meta.html" with title="Django Guides | Built with Django" description="Practical Django guides for people building real products." canonical_path="/blog/" twitter_card="summary" image_alt="Built with Django logo" %}
+    {% include "components/seo_meta.html" with title="Django Blog | Built with Django" description="Django tutorials, articles, and updates for people building real products." canonical_path="/blog/" twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 
 {% block content %}
-{% url 'articles' as articles_url %}
-{% include "components/page-hero.html" with cta_url=articles_url cta_label="Explore Django articles" cta_class="bw-button bw-button-secondary" kicker="Django guides" title="Learn Django by building" description="Tutorials and notes for developers who want practical patterns, not abstract framework tours." %}
+{% include "components/page-hero.html" with kicker="Django blog" title="Learn Django by building" description="Tutorials, articles, and updates for developers building with Django." %}
 
 <section class="pb-16">
   <div class="bw-container">
     <div class="grid gap-4 md:grid-cols-2">
-      {% for guide in object_list %}
-        {% include "components/post-card.html" with item=guide %}
+      {% for post in object_list %}
+        {% include "components/post-card.html" with item=post %}
       {% empty %}
         <div class="bw-surface p-8 text-center md:col-span-2">
-          <p class="text-lg font-bold bw-muted">No guides yet. Check back soon.</p>
+          <p class="text-lg font-bold bw-muted">No posts yet. Check back soon.</p>
         </div>
       {% endfor %}
     </div>
@@ -33,8 +32,8 @@
     "@type": "CollectionPage",
     "name": "Built with Django | Blog",
     "about": "Blog",
-    "description": "Practical Django guides for people building real products.",
-    "abstract": "Practical Django guides for people building real products.",
+    "description": "Django tutorials, articles, and updates for people building real products.",
+    "abstract": "Django tutorials, articles, and updates for people building real products.",
     "thumbnailUrl": "{% absolute_url '/static/vendors/images/logo.png' %}",
     "url": "{% canonical_url '/blog/' %}",
     "author": {

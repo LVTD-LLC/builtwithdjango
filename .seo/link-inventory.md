@@ -4,8 +4,7 @@
 |---|---|
 | / | Community homepage |
 | /projects/ | Curated Django examples |
-| /blog/ | Practical guides |
-| /blog/articles/ | Articles |
+| /blog/ | All published tutorials, articles, updates, and interviews |
 | /tools/django-secret/ | Secret-key generator |
 | /tools/format-html/ | HTML formatter |
 | /developers/ | Developer directory |

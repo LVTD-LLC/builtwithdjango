@@ -4,27 +4,14 @@ from django.views.generic import DetailView, ListView
 from builtwithdjango.analytics import capture
 from newsletter.forms import NewsletterSignupForm
 
-from .content import Post, published_posts
+from .content import published_posts
 
 
 class PostListView(ListView):
     template_name = "blog/all_posts.html"
 
     def get_queryset(self):
-        return published_posts(Post.TUTORIAL)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["newsletter_form"] = NewsletterSignupForm
-
-        return context
-
-
-class ArticleListView(ListView):
-    template_name = "blog/all_articles.html"
-
-    def get_queryset(self):
-        return published_posts(Post.ARTICLE)
+        return published_posts()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

@@ -8,6 +8,7 @@ their recorded dates; previously undated entries use their Git history dates.
 ## 2026-10-06
 
 ### Changed
+- Unified all published post categories under `/blog/`; redirected the legacy articles index to it and removed duplicate navigation and sitemap links.
 - Unpublished the 12 owner-selected articles from public pages, RSS, and the sitemap while preserving their Markdown sources as drafts. Kept all 13 requested tutorials and the three unlisted monthly updates unchanged.
 
 ### Fixed

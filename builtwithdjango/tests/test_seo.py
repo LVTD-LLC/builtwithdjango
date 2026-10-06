@@ -148,7 +148,8 @@ class SeoSitemapTests(TestCase):
         self.assertIn("projects", items)
         self.assertIn("makers", items)
         self.assertIn("developers", items)
-        self.assertIn("articles", items)
+        self.assertIn("blog", items)
+        self.assertNotIn("articles", items)
         self.assertIn("newsletter_home", items)
 
     def test_content_sitemaps_only_include_indexable_records(self):
@@ -274,35 +275,34 @@ class SeoPageRenderTests(TestCase):
             password="test-pass",
         )
 
-    def test_article_index_is_reachable_from_home_and_guides_without_exposing_drafts(self):
+    def test_blog_index_is_reachable_and_legacy_articles_redirect_without_exposing_drafts(self):
         article = make_post(self, slug="community-note", type="ARTICLE", author=self.author)
         guide = make_post(self, slug="practical-guide", type="TUTORIAL", author=self.author)
         draft = make_post(self, slug="draft-note", type="ARTICLE", status="DR", author=self.author)
-        article_index = reverse("articles")
+        blog_index = reverse("blog")
 
-        for path in (reverse("home"), reverse("blog")):
+        for path in (reverse("home"), blog_index):
             with self.subTest(path=path):
                 response = self.client.get(path)
                 self.assertEqual(response.status_code, 200)
                 html = response.content.decode()
                 footer = html.split('<footer class="bw-footer">', 1)[1].split("</footer>", 1)[0]
-                self.assertIn(f'href="{article_index}"', footer)
-                if path == reverse("blog"):
-                    main = html.split('<main id="main-content"', 1)[1].split("</main>", 1)[0]
-                    self.assertIn(f'href="{article_index}"', main)
-                    self.assertIn("Explore Django articles", main)
-                    self.assertIn(f'href="{guide.get_absolute_url()}"', main)
+                self.assertIn(f'href="{blog_index}"', footer)
+                self.assertNotIn('href="/blog/articles/"', html)
 
-        response = self.client.get(article_index)
-        self.assertEqual(response.status_code, 200)
+        response = self.client.get(blog_index)
         html = response.content.decode()
         self.assertIn(f'href="{article.get_absolute_url()}"', html)
+        self.assertIn(f'href="{guide.get_absolute_url()}"', html)
         self.assertNotIn(f'href="{draft.get_absolute_url()}"', html)
-        self.assertNotIn(f'href="{guide.get_absolute_url()}"', html)
-        self.assertIn(f'<link rel="canonical" href="http://localhost:8000{article_index}" />', html)
-        self.assertNotIn('<meta name="robots"', html)
+        self.assertIn(f'<link rel="canonical" href="http://localhost:8000{blog_index}" />', html)
         self.assertEqual(html.count("<h1 "), 1)
         self.assertIn('"@type": "CollectionPage"', html)
+        self.assertRedirects(self.client.get(reverse("articles")), blog_index, status_code=301)
+        self.assertRedirects(
+            self.client.get(reverse("articles") + "?utm_source=legacy"),
+            blog_index + "?utm_source=legacy", status_code=301,
+        )
 
     def test_blog_post_detail_renders_article_metadata(self):
         post = make_post(
@@ -506,11 +506,11 @@ class SeoPageRenderTests(TestCase):
         self.assertIn('<meta name="robots" content="noindex,follow" />', html)
         self.assertIn('"validThrough":', html)
 
-    def test_article_listing_excludes_tutorials(self):
+    def test_blog_listing_includes_every_published_category(self):
         tutorial = make_post(
             self,
             title="Tutorial Listing Overlap",
-            description="A tutorial that should stay on the guides page.",
+            description="A published tutorial.",
             author=self.author,
             slug="tutorial-listing-overlap",
             content="Tutorial content",
@@ -520,7 +520,7 @@ class SeoPageRenderTests(TestCase):
         article = make_post(
             self,
             title="Article Listing Result",
-            description="An article that belongs on the articles page.",
+            description="A published article.",
             author=self.author,
             slug="article-listing-result",
             content="Article content",
@@ -530,7 +530,7 @@ class SeoPageRenderTests(TestCase):
         update = make_post(
             self,
             title="Update Listing Result",
-            description="A non-article update that should stay out of the articles page.",
+            description="A published update.",
             author=self.author,
             slug="update-listing-result",
             content="Update content",
@@ -538,13 +538,15 @@ class SeoPageRenderTests(TestCase):
             type=Post.UPDATE,
         )
 
-        response = self.client.get("/blog/articles/")
+        interview = make_post(self, slug="interview-result", title="Interview Result", type=Post.INTERVIEW)
+        response = self.client.get("/blog/")
 
         self.assertEqual(response.status_code, 200)
         html = response.content.decode()
         self.assertIn(article.title, html)
-        self.assertNotIn(update.title, html)
-        self.assertNotIn(tutorial.title, html)
+        self.assertIn(update.title, html)
+        self.assertIn(tutorial.title, html)
+        self.assertIn(interview.title, html)
 
     def test_podcast_detail_uses_default_website_og_type(self):
         episode = Episode.objects.create(
