@@ -1,7 +1,7 @@
 ---
 id: 154
 created: '2025-12-23 11:39:23.515402+00:00'
-modified: '2026-10-06 07:00:00+00:00'
+modified: '2026-10-06 07:13:23.899275+00:00'
 title: 'Django ContentTypes, Signals, F and Q: Uses and Trade-offs'
 slug: 3-overlooked-django-features-that-instantly-unleash-your-projects-power
 status: PB
@@ -68,11 +68,9 @@ A generic relation trades a fixed target model for flexibility. It does not crea
 
 #### Comparative Table: Traditional vs. ContentTypes Approach
 
-| Decision | Normal ForeignKey | Generic Relation |
-|----------|-------------------|------------------|
-| Target types | One declared model | Multiple compatible models |
-| Referential integrity | Database constraint by default | No constraint to the target object |
-| Querying | Direct field lookups | Filter by content type and object ID |
+- **Target types:** a normal foreign key names one model; a generic relation can reference multiple compatible models.
+- **Integrity:** a normal foreign key has a database constraint by default; a generic relation has none to the target object.
+- **Querying:** use direct field lookups for a foreign key; use content type and object ID for a generic relation.
 
 These are design differences, not a ranking of code quality. See our [reusable model guide](/blog/reusable-models) for another way to share model behavior without a generic relation.
 
@@ -110,11 +108,9 @@ Signals can help an app react to events emitted elsewhere. They also hide a call
 
 #### Comparative Table: Manual vs. Signal-Based Logic
 
-| Decision | Explicit Function Call | Signal Receiver |
-|----------|------------------------|-----------------|
-| Finding the call path | Visible at the call site | Requires checking registered receivers |
-| Integration point | Code you control | A signal the sender emits |
-| Testing | Call the function and test its caller | Test registration and the actual emitting operation |
+- **Finding the call path:** an explicit function is visible at the call site; a signal requires checking the registered receivers.
+- **Integration point:** call a function from code you control, or connect a receiver to a signal the sender emits.
+- **Testing:** test an explicit function and its caller; for a signal, also test registration and the operation that emits it.
 
 For onboarding you control, create the account and profile through an explicit function and define its transaction boundary. If you use the receiver instead, test normal creation, subsequent saves, fixture loading, and missing-profile recovery. Consult the [user authentication guide](/blog/user-authentication) before changing an existing registration flow.
 
@@ -162,12 +158,10 @@ Assuming `Product` has the shown fields, this query retrieves products where eit
 
 #### Comparative Table: ORM Basics vs. F and Q Objects
 
-| Need | Appropriate Technique |
-|------|-----------------------|
-| A straightforward equality filter | Keyword arguments to `filter()` |
-| OR or negation in a filter | `Q` objects |
-| Increment a stored value without a Python read | `F` inside `update()` |
-| Coordinate multiple writes | A transaction and suitable constraints/locking |
+- **Straightforward equality filter:** keyword arguments to `filter()`.
+- **OR or negation in a filter:** `Q` objects.
+- **Increment without a Python read:** `F` inside `update()`.
+- **Coordinate multiple writes:** a transaction and suitable constraints or locking.
 
 Ordinary ORM queries can also participate in transactions. `Q` supplies boolean logic, not an atomicity guarantee.
 
