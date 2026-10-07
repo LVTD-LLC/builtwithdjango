@@ -1,7 +1,7 @@
 ---
 id: 5
 created: '2022-06-18 15:55:37.856000+00:00'
-modified: '2024-08-06 08:56:17.419506+00:00'
+modified: '2026-10-07 07:00:00+00:00'
 title: User Authentication in Django
 slug: user-authentication
 status: PB
@@ -62,16 +62,19 @@ This will tell our Django app that we are using a Custom User Model. You might b
 Head over to the `models.py` file under the `users` folder and add the following code:
 
 ```python
- from django.contrib.auth.models import AbstractUser
- from django.db import models
+from django.contrib.auth.models import AbstractUser
+from django.db import models
 
- class CustomUser(AbstractUser):
-     first_name = models.CharField(max_length=20, blank=True)
-     last_name = models.CharField(max_length=20, blank=True)
-     twitter_handle = models.CharField(max_length=20, blank=True)
+
+class CustomUser(AbstractUser):
+    first_name = models.CharField(max_length=20, blank=True)
+    last_name = models.CharField(max_length=20, blank=True)
+    twitter_handle = models.CharField(max_length=20, blank=True)
 ```
 
-Here we are creating a model (a table in our future database) that inherits all the fields from the `AbstractUser` class (that's the built-in model that has fields like username, email, password, etc.), but we are also adding a couple of fields that aren't there. In this example, we are adding "First Name", "Last Name" and "Twitter Handle" fields.
+`AbstractUser` already includes `first_name` and `last_name`. This example overrides their maximum length to 20 characters and adds `twitter_handle`; it does not introduce three new fields. If you do not need shorter names, omit those two overrides and keep Django's defaults. See the [Django 5.2 user fields reference](https://docs.djangoproject.com/en/5.2/ref/contrib/auth/#user-model).
+
+Set `AUTH_USER_MODEL` before the first migration, and create `CustomUser` in the users app's initial migration. If you have already migrated a project with Django's default user, do not simply change this setting: follow the [custom-user migration guide](/blog/custom-user-model-migration-mid-project-django). Django explains the distinction in its [custom user model documentation](https://docs.djangoproject.com/en/5.2/topics/auth/customizing/#substituting-a-custom-user-model).
 
 Once you are done setting this up, you can add more stuff, like Date of Birth, Profile Picture, other social links, or anything that your heart desires.
 
@@ -113,7 +116,7 @@ Alright, now we are done with building the `Users` app. Now let's build the logi
 
 Run `poetry add django-allauth`.
 
-Follow instructions from [django-allauth site](https://django-allauth.readthedocs.io/en/latest/installation.html). 
+The settings below use Django 5.2 and django-allauth 65.19.7. Check the [allauth quickstart](https://docs.allauth.org/en/latest/installation/quickstart.html) when using a different release. 
 
 We are not going to do a social authentication, only email, and username, so no need to add `'allauth.socialaccount.providers.{app}',` to `INSTALLED_APPS`. 
 
@@ -130,7 +133,8 @@ INSTALLED_APPS = [
     "django.contrib.sites",
     "allauth",  # new
     "allauth.account",   # new
-    ...
+    "users.apps.UsersConfig",
+    # Keep your other project apps here.
 ]
 ```
 
@@ -164,101 +168,50 @@ LOGIN_REDIRECT_URL = "home"
 ACCOUNT_LOGOUT_REDIRECT_URL = "home"
 
 ACCOUNT_USER_MODEL_USERNAME_FIELD = "username"
-ACCOUNT_AUTHENTICATION_METHOD = "username"
-ACCOUNT_USERNAME_REQUIRED = True
-ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_LOGIN_METHODS = {"username"}
+ACCOUNT_SIGNUP_FIELDS = ["username*", "email*", "password1*", "password2*"]
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_SESSION_REMEMBER = True
 ```
 
 `AUTHENTICATION_BACKENDS` is required to tell our application to use `django-allauth` for authentication.
 
-`EMAIL_BACKEND` will tell our application to use the terminal to "send email" to confirm new signups. You can turn off email confirmation by adding the [following line](https://django-allauth.readthedocs.io/en/latest/configuration.html?highlight=confirmation#configuration) in `settings.py`:
-
+The console email backend prints messages locally; it does not deliver email. Configure a real sending backend before deployment. Choose email verification deliberately:
 
 ```python
-ACCOUNT_EMAIL_VERIFICATION = "none" 
-# default is "optinal
-# another option is "mandatory"
+ACCOUNT_EMAIL_VERIFICATION = "optional"
+# Use "mandatory" to require verification before login, or "none" to disable it.
 ```
 
-`LOGIN_REDIRECT_URL`, and `ACCOUNT_LOGOUT_REDIRECT_URL` are there to tell Django where to redirect the user after login and logout. Here you can use the values you specify in `urls.py`. For example, you could use `about` if your `urls.py` looked like the code below:
+The required `email*` signup field asks for an address; it does not prove ownership. The `*` suffix marks required fields. See [allauth account configuration](https://docs.allauth.org/en/latest/account/configuration.html) for signup, login and verification settings.
+
+Keep `django.template.context_processors.request` in `TEMPLATES[0]["OPTIONS"]["context_processors"]`, as in Django's generated settings. Along with `AccountMiddleware`, this is part of the [allauth installation requirements](https://docs.allauth.org/en/latest/installation/quickstart.html).
+
+`LOGIN_REDIRECT_URL` and `ACCOUNT_LOGOUT_REDIRECT_URL` point to the named `home` route from the earlier setup tutorial. Keep that route. In your project's root `urls.py`, add the account routes alongside it:
 
 ```python
-from django.urls import path
-from .views import HomeView
+from django.contrib import admin
+from django.urls import include, path
 
 urlpatterns = [
- path("", HomeView.as_view(), name="home"),
- path("", AboutView.as_view(), name="about"),
+    path("admin/", admin.site.urls),
+    path("accounts/", include("allauth.urls")),
+    path("", include("pages.urls")),
 ]
-```    
+```
 
-But why would you :shrug:
-
-The rest of the lines are pretty self-explanatory. For other `django-allauth` configurations check out [this page](https://django-allauth.readthedocs.io/en/latest/configuration.html?highlight=confirmation#configuration).
+Here `pages.urls` is the existing URL module that defines the named `home` view; use your own app's module if you named it differently. The account include supplies the `account_login`, `account_signup` and `account_logout` names used below. Defining a redirect setting alone does not create those routes.
     
+
 ## Database
 
 You should finally be ready to run the migrations and create your database. If you recall we have avoided it in the previous tutorials.
 
 Run `poetry run python manage.py makemigrations` and then run `poetry run python manage.py migrate`.
 
-You should see something like this:
+Django should create `users/0001_initial.py` with `CustomUser`, then apply the installed apps' migrations. The exact list varies by Django and allauth version. Run `poetry run python manage.py check` afterward; resolve errors before continuing.
 
-```
-➜  basic-django git:(main) ✗ poetry run python manage.py makemigrations
-Migrations for 'users':
-  users/migrations/0001_initial.py
-	- Create model CustomUser
-➜  basic-django git:(main) ✗ poetry run python manage.py migrate       
-Operations to perform:
-  Apply all migrations: account, admin, auth, contenttypes, sessions, sites, socialaccount, users
-Running migrations:
-  Applying contenttypes.0001_initial... OK
-  Applying contenttypes.0002_remove_content_type_name... OK
-  Applying auth.0001_initial... OK
-  Applying auth.0002_alter_permission_name_max_length... OK
-  Applying auth.0003_alter_user_email_max_length... OK
-  Applying auth.0004_alter_user_username_opts... OK
-  Applying auth.0005_alter_user_last_login_null... OK
-  Applying auth.0006_require_contenttypes_0002... OK
-  Applying auth.0007_alter_validators_add_error_messages... OK
-  Applying auth.0008_alter_user_username_max_length... OK
-  Applying auth.0009_alter_user_last_name_max_length... OK
-  Applying auth.0010_alter_group_name_max_length... OK
-  Applying auth.0011_update_proxy_permissions... OK
-  Applying auth.0012_alter_user_first_name_max_length... OK
-  Applying users.0001_initial... OK
-  Applying account.0001_initial... OK
-  Applying account.0002_email_max_length... OK
-  Applying admin.0001_initial... OK
-  Applying admin.0002_logentry_remove_auto_add... OK
-  Applying admin.0003_logentry_add_action_flag_choices... OK
-  Applying sessions.0001_initial... OK
-  Applying sites.0001_initial... OK
-  Applying sites.0002_alter_domain_unique... OK
-  Applying socialaccount.0001_initial... OK
-  Applying socialaccount.0002_token_max_lengths... OK
-  Applying socialaccount.0003_extra_data_default_dict... OK
-```
-
-Once this is done we will create a superuser, who would be able to log into the admin panel. Run `poetry run python manage.py createsuperuser` to create an admin that we can log in with to our admin dashboard. You will be asked for a few prompts:
-
-```
-➜  basic-django git:(main) ✗ poetry run python manage.py createsuperuser
-Username: admin
-Email address: admin@example.com
-Password: 
-Password (again): 
-The password is too similar to the username.
-This password is too short. It must contain at least 8 characters.
-This password is too common.
-Bypass password validation and create user anyway? [y/N]: y
-Superuser created successfully.
-```
-
-I used username `admin` and password `admin`, which is why Django told me that it is bad and I had to overwrite it. This is fine for local development, but certainly not for production. So be mindful of that.
+Once this is done we will create a superuser, who would be able to log into the admin panel. Run `poetry run python manage.py createsuperuser` to create an admin that we can log in with to our admin dashboard. Choose a unique password that passes Django's validators, even for local development. If Django rejects it, choose another password rather than bypassing validation. See the [Django management command reference](https://docs.djangoproject.com/en/5.2/ref/django-admin/#createsuperuser).
 
 Once the admin user is created run `poetry run python manage.py runserver` and head over to `http://127.0.0.1:8000/admin/` in your browser. Enter credentials you just created. If all is good congrats! If not, let me know.
 
@@ -287,6 +240,6 @@ We are telling our template engine to display links to `login` and `signup` page
 
 And you're pretty much done.
 
-If you spin up the server with `poetry run python manage.py runserer` you'll see new links. Try going to them and creating a user.
+Start the development server with `poetry run python manage.py runserver`. Open the signup link, create a test account, then test login and the logout confirmation screen. The logout link opens a confirmation page; it does not log the user out on GET. Django's [runserver documentation](https://docs.djangoproject.com/en/5.2/ref/django-admin/#runserver) covers this development-only command.
 
 In the next post, we are going to integrate TailwindCSS into our app.

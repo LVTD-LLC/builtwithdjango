@@ -5,6 +5,11 @@ Each `YYYY-MM-DD` heading groups all changes for that day by type, without
 release versions or an Unreleased section. Historical dated entries retain
 their recorded dates; previously undated entries use their Git history dates.
 
+## 2026-10-07
+
+### Fixed
+- Corrected the authentication tutorial’s custom-user explanation, account URL wiring, allauth settings, migration guidance, and development command; replaced the weak-password walkthrough with validator-respecting instructions.
+
 ## 2026-10-06
 
 ### Changed
