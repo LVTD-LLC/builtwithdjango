@@ -94,5 +94,28 @@
       "preventing data corruption in concurrent environments",
       "from django.contrib.auth.models import User"
     ]
+  },
+  {
+    "claim": "Authentication tutorial uses executable account routes and current configuration",
+    "paths": [
+      "content/blog/user-authentication.md"
+    ],
+    "urls": [
+      "https://builtwithdjango.com/blog/user-authentication"
+    ],
+    "must_match": [
+      "ACCOUNT_LOGIN_METHODS",
+      "ACCOUNT_SIGNUP_FIELDS",
+      "include.*allauth.urls",
+      "AccountMiddleware",
+      "already includes",
+      "runserver"
+    ],
+    "must_not_match": [
+      "runserer",
+      "AboutView",
+      "ACCOUNT_AUTHENTICATION_METHOD",
+      "Bypass password validation"
+    ]
   }
 ]
