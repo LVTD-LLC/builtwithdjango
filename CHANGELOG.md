@@ -5,6 +5,11 @@ Each `YYYY-MM-DD` heading groups all changes for that day by type, without
 release versions or an Unreleased section. Historical dated entries retain
 their recorded dates; previously undated entries use their Git history dates.
 
+## 2026-10-08
+
+### Changed
+- Made open-source projects and practical guides easier to discover from the project directory, clarified source-code filter options, and added a short workflow for learning from a real project's code.
+
 ## 2026-10-07
 
 ### Fixed

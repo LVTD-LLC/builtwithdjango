@@ -20,6 +20,11 @@
       <button class="bw-button bw-button-primary" type="submit">Find projects</button>
       {% if request.GET %}<a class="bw-text-link" href="{% url 'projects' %}">Reset</a>{% endif %}
     </form>
+    <p class="mt-4 text-sm bw-muted">
+      Want code you can study?
+      <a class="bw-text-link" href="{% url 'projects' %}?is_open_source=true" data-analytics-event="cta clicked" data-analytics-cta="browse open source" data-analytics-location="project directory">Browse open-source Django projects</a>
+      or <a class="bw-text-link" href="{% url 'blog' %}" data-analytics-event="cta clicked" data-analytics-cta="read django guides" data-analytics-location="project directory">follow a practical Django guide</a>.
+    </p>
     <div class="bw-results-summary"><p>{{ paginator.count }} project{{ paginator.count|pluralize }}</p><p>Featured projects appear first.</p></div>
 
     {% if page_obj %}
@@ -64,6 +69,17 @@
         </div>
       </nav>
     {% endif %}
+    {% if not request.GET %}
+      <section class="mt-10 max-w-3xl" aria-labelledby="learn-from-projects">
+        <h2 id="learn-from-projects" class="text-2xl font-black">Learn from a real Django project</h2>
+        <p class="mt-3 bw-muted">Use this directory to explore what people build with Django, then pick one small feature to understand. A live product shows the result; an open-source repository lets you study the implementation.</p>
+        <ol class="mt-4 list-decimal space-y-3 pl-6 bw-muted">
+          <li><strong>Choose a familiar problem.</strong> Search for a product you understand, such as a blog, shop, or monitoring tool. You do not need to understand the entire codebase.</li>
+          <li><strong>Check the repository before running it.</strong> Where a listing has a GitHub link, read its README, license, supported versions, and setup instructions. Check recent activity; being listed here is not a maintenance or security guarantee.</li>
+          <li><strong>Trace one feature.</strong> Follow a request through its URL, view, model, and template or API response. Read the related tests, then try a small change locally using test data, not production credentials.</li>
+        </ol>
+      </section>
+    {% endif %}
   </div>
 </section>
 {% endblock content %}
@@ -74,6 +90,7 @@
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     "name": "Projects Built with Django",
+    "dateModified": "2026-10-08",
     "description": "Discover real projects and apps built with Django.",
     "thumbnailUrl": "{% absolute_url '/static/vendors/images/logo.png' %}",
     "url": "{% canonical_url '/projects/' %}",
