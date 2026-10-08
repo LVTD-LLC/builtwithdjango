@@ -24,6 +24,7 @@ from django.views.generic import RedirectView, TemplateView
 from users.views import CustomSignupView
 from users.webhooks import stripe_webhook
 
+from .indexnow_views import indexnow_key
 from .sitemaps import sitemaps
 from .views import robots_txt
 
@@ -57,6 +58,7 @@ urlpatterns = (
             name="django.contrib.sitemaps.views.sitemap",
         ),
         path("robots.txt", robots_txt, name="robots_txt"),
+        path("indexnow-key.txt", indexnow_key, name="indexnow_key"),
     ]
     + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
     + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

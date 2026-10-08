@@ -68,7 +68,7 @@ class CurrentJobSitemap(sitemaps.Sitemap):
         return Job.objects.filter(approved=True, created_datetime__gte=Job.current_cutoff())
 
     def lastmod(self, obj):
-        return obj.created_datetime
+        return obj.updated_datetime
 
 
 class BlogSitemap(sitemaps.Sitemap):
@@ -88,14 +88,14 @@ sitemaps = {
     "projects": GenericSitemap(
         {
             "queryset": Project.objects.filter(published=True, active=True, might_be_spam=False),
-            "date_field": "date_added",
+            "date_field": "updated_date",
         },
         priority=0.85,
         protocol="https",
     ),
     "jobs": CurrentJobSitemap,
     "podcast": GenericSitemap(
-        {"queryset": Episode.objects.all(), "date_field": "created_datetime"}, priority=0.8, protocol="https"
+        {"queryset": Episode.objects.all(), "date_field": "updated_datetime"}, priority=0.8, protocol="https"
     ),
     "makers": GenericSitemap(
         {
