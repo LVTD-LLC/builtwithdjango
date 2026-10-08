@@ -153,6 +153,40 @@ class RedesignDiscoveryTests(TestCase):
         self.assertEqual(titles, ["Django Maps"])
         self.assertContains(response, "noindex,follow")
 
+    def test_open_source_discovery_preserves_filter_and_public_boundaries(self):
+        for title, is_open_source, published, active, spam in [
+            ("Public open source", True, True, True, False),
+            ("Other public project", False, True, True, False),
+            ("Unpublished source", True, False, True, False),
+            ("Inactive source", True, True, False, False),
+            ("Spam source", True, True, True, True),
+        ]:
+            Project.objects.create(
+                title=title,
+                url="https://" + title.lower().replace(" ", "-") + ".example.com",
+                is_open_source=is_open_source,
+                published=published,
+                active=active,
+                might_be_spam=spam,
+            )
+
+        response = self.client.get("/projects/")
+        self.assertContains(response, 'href="/projects/?is_open_source=true"')
+        self.assertContains(response, "Learn from a real Django project")
+        self.assertContains(response, '>All projects</option>')
+
+        for value, expected in [
+            ("true", {"Public open source"}),
+            ("false", {"Other public project"}),
+            ("unknown", {"Public open source", "Other public project"}),
+        ]:
+            with self.subTest(value=value):
+                response = self.client.get("/projects/", {"is_open_source": value})
+                self.assertEqual({p.title for p in response.context["page_obj"]}, expected)
+                self.assertContains(response, "noindex,follow")
+                self.assertEqual(response.context["canonical_path"], "/projects/")
+                self.assertNotContains(response, 'id="learn-from-projects"')
+
     def test_blog_search_and_type_filters_keep_drafts_private(self):
         for title, kind, status in [
             ("Learn Django", Post.TUTORIAL, Post.PUBLISHED),
