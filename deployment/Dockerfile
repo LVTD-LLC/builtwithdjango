@@ -17,6 +17,8 @@ COPY --from=build /app/frontend/build/ ./frontend/build/
 
 RUN pip install --no-cache-dir -r requirements.txt
 
+ARG DEPLOYMENT_REVISION=local
+ENV DEPLOYMENT_REVISION=${DEPLOYMENT_REVISION}
 ENV DJANGO_SETTINGS_MODULE=builtwithdjango.settings
 ARG APP_PROCESS_TYPE=server
 ENV APP_PROCESS_TYPE=${APP_PROCESS_TYPE}

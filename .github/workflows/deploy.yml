@@ -41,6 +41,8 @@ jobs:
           context: .
           file: deployment/Dockerfile
           push: true
+          build-args: |
+            DEPLOYMENT_REVISION=${{ github.sha }}
           tags: |
             ${{ steps.image.outputs.image_name }}:latest
             ${{ steps.image.outputs.image_name }}:${{ github.sha }}
@@ -53,6 +55,7 @@ jobs:
           push: true
           build-args: |
             APP_PROCESS_TYPE=worker
+            DEPLOYMENT_REVISION=${{ github.sha }}
           tags: |
             ${{ steps.image.outputs.image_name }}:worker-latest
             ${{ steps.image.outputs.image_name }}:worker-${{ github.sha }}

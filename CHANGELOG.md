@@ -7,6 +7,9 @@ their recorded dates; previously undated entries use their Git history dates.
 
 ## 2026-10-08
 
+### Added
+- Enabled IndexNow ownership verification and automatic public URL notifications after deployment and hourly, with retryable change/removal checkpoints and full sitemap timestamps.
+
 ### Changed
 - Made open-source projects and practical guides easier to discover from the project directory, clarified source-code filter options, and added a short workflow for learning from a real project's code.
 

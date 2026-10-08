@@ -774,3 +774,8 @@ OPENROUTER_API_KEY = env("OPENROUTER_API_KEY")
 PYDANTIC_AI_MODEL = env("PYDANTIC_AI_MODEL", default="openrouter:deepseek/deepseek-v4-flash")
 
 READWISE_API_TOKEN = env("READWISE_API_TOKEN")
+
+# Public ownership proof, unrelated to application credentials.
+with open(os.path.join(BASE_DIR, "indexnow-key.txt"), encoding="utf-8") as key_file:
+    INDEXNOW_KEY = key_file.read().strip()
+DEPLOYMENT_REVISION = os.environ.get("DEPLOYMENT_REVISION", "local")

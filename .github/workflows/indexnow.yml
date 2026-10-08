@@ -1,0 +1,40 @@
+name: IndexNow public URL changes
+on:
+  schedule:
+    - cron: '47 * * * *'
+  workflow_dispatch:
+  workflow_run:
+    workflows: [Deploy Prod]
+    types: [completed]
+    branches: [master]
+permissions:
+  contents: read
+concurrency:
+  group: builtwithdjango-indexnow
+  cancel-in-progress: false
+jobs:
+  notify:
+    if: >-
+      github.repository == 'LVTD-LLC/builtwithdjango' &&
+      (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/cache/restore@v4
+        with:
+          path: indexnow-state.json
+          key: indexnow-v1-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: indexnow-v1-
+      - name: Notify IndexNow after verifying the live revision
+        env:
+          EXPECTED_REVISION: ${{ github.event.workflow_run.head_sha || github.sha }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          flags=()
+          if [ "$EVENT_NAME" = workflow_run ]; then flags+=(--force); fi
+          python builtwithdjango/indexnow.py --site-url https://builtwithdjango.com --state indexnow-state.json --expected-revision "$EXPECTED_REVISION" "${flags[@]}"
+      - uses: actions/cache/save@v4
+        with:
+          path: indexnow-state.json
+          key: indexnow-v1-${{ github.run_id }}-${{ github.run_attempt }}
