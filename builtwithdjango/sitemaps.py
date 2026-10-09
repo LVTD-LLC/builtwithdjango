@@ -21,7 +21,7 @@ class StaticViewSitemap(sitemaps.Sitemap):
     def lastmod(self, item):
         # Content revision dates, not the date the sitemap is requested or built.
         return {
-            "generate_django_secret_page": date(2026, 10, 5),
+            "generate_django_secret_page": date(2026, 10, 9),
             "projects": date(2026, 10, 8),
         }.get(item)
 
