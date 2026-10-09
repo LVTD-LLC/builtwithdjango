@@ -118,7 +118,7 @@ class SeoSitemapTests(TestCase):
             node.findtext("sm:loc", namespaces=ns): node.findtext("sm:lastmod", namespaces=ns)
             for node in ElementTree.fromstring(response.content).findall("sm:url", ns)
         }
-        self.assertEqual(entries["https://builtwithdjango.com/tools/django-secret/"], "2026-10-05")
+        self.assertEqual(entries["https://builtwithdjango.com/tools/django-secret/"], "2026-10-09")
         self.assertIsNone(entries["https://builtwithdjango.com/tools/format-html/"])
         self.assertIsNone(entries["https://builtwithdjango.com/"])
 

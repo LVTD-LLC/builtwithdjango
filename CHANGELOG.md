@@ -5,6 +5,11 @@ Each `YYYY-MM-DD` heading groups all changes for that day by type, without
 release versions or an Unreleased section. Historical dated entries retain
 their recorded dates; previously undated entries use their Git history dates.
 
+## 2026-10-09
+
+### Changed
+- Added practical setup, local generation, and key-rotation guidance to the Django secret-key tool, and linked it from the environment variables tutorial.
+
 ## 2026-10-08
 
 ### Added

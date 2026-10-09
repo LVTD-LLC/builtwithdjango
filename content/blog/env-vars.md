@@ -1,7 +1,7 @@
 ---
 id: 11
 created: '2024-08-06 08:39:55.810329+00:00'
-modified: '2024-08-16 09:28:13.708382+00:00'
+modified: '2026-10-09 08:45:00+00:00'
 title: Setting up Environment Variables in Django
 slug: env-vars
 status: PB
@@ -44,6 +44,8 @@ Before committing stuff to your repo, make sure that you have a `.gitignore` fil
 
 ## Let's get to business
 
+Use the [Django secret key generator](/tools/django-secret/) for a new development key, or follow its local-generation instructions for production.
+
 - In you project directory run `poetry add django-environ` to install the environment dependency.
 
 - Create `.env` file to the root directory of your project.
@@ -53,7 +55,7 @@ Before committing stuff to your repo, make sure that you have a `.gitignore` fil
 ```env
 DEBUG=on
 
-# Generate the key here: https://djecrety.ir/
+# Generate a fresh key: https://builtwithdjango.com/tools/django-secret/
 SECRET_KEY="$wuy#b00i7rj="  # This is just an example, replace with your generated key. Make sure it is in quotes, otherwise there might be parsing issues.
 ```
 
