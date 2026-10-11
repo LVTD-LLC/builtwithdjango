@@ -56,10 +56,14 @@ def format_html_endpoint(request):
             temp_file_path = temp_file.name
             temp_file.write(html_string)
 
-        logger.info("[Format HTML] Created tmp file. Running djlint.", file_path=temp_file_path)
+        logger.info("[Format HTML] Running djlint")
 
-        command = f"djlint {temp_file_path} --reformat --profile=django"
-        subprocess.run(command, shell=True)
+        command = ["djlint", temp_file_path, "--reformat", "--profile=django"]
+        # djLint prints a source diff by default. Never send submitted code to logs.
+        result = subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=10)
+        # djLint returns 1 when reformatting changes a file; that is success here.
+        if result.returncode not in (0, 1):
+            raise subprocess.CalledProcessError(result.returncode, command)
 
         logger.info("[Format HTML] Finished Running djlint")
         with open(temp_file_path, "r") as file:
@@ -76,8 +80,13 @@ def format_html_endpoint(request):
         )
         return JsonResponse({"formatted_html": formatted_html})
 
+    except subprocess.TimeoutExpired:
+        logger.warning("[Format HTML] Formatter timed out")
+        capture(request, "html formatter failed server", properties={"reason": "timeout"})
+        return JsonResponse({"error": "Formatting timed out. Try a smaller template or format it locally."}, status=504)
+
     except subprocess.CalledProcessError as e:
-        logger.error("[Format HTML] Subprocess Error", error=str(e))
+        logger.error("[Format HTML] Subprocess Error", returncode=e.returncode)
         capture(
             request,
             "html formatter failed server",
@@ -86,10 +95,10 @@ def format_html_endpoint(request):
                 "input_length": len(html_string),
             },
         )
-        return JsonResponse({"error": f"djlint error: {str(e)}"}, status=500)
+        return JsonResponse({"error": "Could not format this template. Try formatting it locally."}, status=500)
 
     except Exception as e:
-        logger.error("[Format HTML] Error", error=str(e))
+        logger.error("[Format HTML] Error", exception_type=e.__class__.__name__)
         capture(
             request,
             "html formatter failed server",
@@ -99,11 +108,11 @@ def format_html_endpoint(request):
                 "exception_type": e.__class__.__name__,
             },
         )
-        return JsonResponse({"error": f"Unexpected error: {str(e)}"}, status=500)
+        return JsonResponse({"error": "Formatting is unavailable. Please try again later."}, status=500)
 
     finally:
         if "temp_file_path" in locals():
             try:
                 os.unlink(temp_file_path)
             except Exception as e:
-                logger.error(f"[Format HTML] Error deleting temporary file: {str(e)}")
+                logger.error("[Format HTML] Error deleting temporary file", exception_type=e.__class__.__name__)

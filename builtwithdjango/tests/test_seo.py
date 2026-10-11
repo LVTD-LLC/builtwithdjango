@@ -119,7 +119,7 @@ class SeoSitemapTests(TestCase):
             for node in ElementTree.fromstring(response.content).findall("sm:url", ns)
         }
         self.assertEqual(entries["https://builtwithdjango.com/tools/django-secret/"], "2026-10-09")
-        self.assertIsNone(entries["https://builtwithdjango.com/tools/format-html/"])
+        self.assertEqual(entries["https://builtwithdjango.com/tools/format-html/"], "2026-10-11")
         self.assertIsNone(entries["https://builtwithdjango.com/"])
 
     def test_sitemap_excludes_submission_form_without_changing_login_redirect(self):

@@ -5,6 +5,15 @@ Each `YYYY-MM-DD` heading groups all changes for that day by type, without
 release versions or an Unreleased section. Historical dated entries retain
 their recorded dates; previously undated entries use their Git history dates.
 
+## 2026-10-11
+
+### Improved
+- Added tested Django-template examples, local djLint commands, server-processing guidance, and tutorial discovery to the HTML formatter.
+
+### Fixed
+- Restored the missing production djLint dependency so formatting changes templates instead of returning unchanged input as success.
+- Suppressed formatter source diffs in server output and added bounded, neutral handling for failed or timed-out formatting.
+
 ## 2026-10-09
 
 ### Changed
