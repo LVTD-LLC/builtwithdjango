@@ -9,8 +9,16 @@
 <section data-controller="html-formatter" class="bw-section">
   <div class="bw-container-wide">
     <h1 class="bw-heading-md text-center">Django HTML Template Formatter</h1>
+    <p class="mx-auto mt-3 max-w-2xl text-center bw-muted">
+      Format Django HTML templates with djLint's Django profile. Paste a non-sensitive snippet, select Format HTML,
+      then review and copy the result. The formatter adjusts layout without rendering your template variables.
+      For private code or whole projects, use the local commands below instead of sending templates to this server.
+    </p>
     <p data-html-formatter-target="status" class="mx-auto mt-3 max-w-2xl text-center text-sm bw-muted" role="status" aria-live="polite">
       Paste a Django template, format it, then copy the result.
+    </p>
+    <p class="mx-auto mt-3 max-w-2xl text-center text-sm bw-muted">
+      Formatting runs on our server, not only in your browser. Do not paste secrets, customer data, or confidential templates.
     </p>
     <div class="mt-8 flex flex-col gap-6 md:flex-row">
         <div class="min-w-0 flex-1">
@@ -54,6 +62,51 @@
   </div>
 </section>
 
+<section class="bw-section pt-0" aria-labelledby="formatter-guide-heading">
+  <div class="bw-container prose prose-lg max-w-3xl">
+    <h2 id="formatter-guide-heading">Format a Django template, not its rendered output</h2>
+    <p>Use the source from your <code>.html</code> template, including Django tags and variables.
+      HTML copied from a browser's page source has already been rendered and cannot recover the original template logic.
+      This tool runs djLint with <code>--reformat --profile=django</code>; it does not run your Django view,
+      look up context variables, or execute template tags.</p>
+    <h3>A small before-and-after example</h3>
+    <p>This example uses Django 5.2's <a href="https://docs.djangoproject.com/en/5.2/ref/templates/builtins/#for">for and empty tags</a>.
+      The output below was checked with djLint 1.36.4 on October 11, 2026. Paste the input into the tool to try it.</p>
+    <p><strong>Before</strong></p>
+    {% verbatim %}<pre class="overflow-x-auto"><code>&lt;ul&gt;{% for project in projects %}&lt;li&gt;{{ project.name }}&lt;/li&gt;{% empty %}&lt;li&gt;No projects yet.&lt;/li&gt;{% endfor %}&lt;/ul&gt;</code></pre>{% endverbatim %}
+    <p><strong>After</strong></p>
+    {% verbatim %}<pre class="overflow-x-auto"><code>&lt;ul&gt;
+    {% for project in projects %}
+        &lt;li&gt;{{ project.name }}&lt;/li&gt;
+    {% empty %}
+        &lt;li&gt;No projects yet.&lt;/li&gt;
+    {% endfor %}
+&lt;/ul&gt;</code></pre>{% endverbatim %}
+    <p>The loop and variable remain template source; the formatter does not replace them with project names.
+      Check the diff before using the result. In particular, review whitespace around inline elements and in
+      whitespace-sensitive content, then render the template in your application.</p>
+    <h2>Format private templates locally</h2>
+    <p>For a file on your own computer, use djLint's
+      <a href="https://djlint.com/docs/formatter/">check and reformat commands</a> with its
+      <a href="https://djlint.com/docs/languages/django/">Django profile</a>.
+      These commands use the same tested version as the example and require <code>uv</code> to be installed.</p>
+    <pre class="overflow-x-auto"><code>uvx --from djlint==1.36.4 djlint templates/example.html --check --profile=django
+uvx --from djlint==1.36.4 djlint templates/example.html --reformat --profile=django</code></pre>
+    <p>Replace <code>templates/example.html</code> with your file path. The first command shows proposed changes;
+      the second rewrites the file. Run them from your project directory so djLint can read your configuration.
+      The first run may download djLint; formatting happens locally, without uploading the template to this tool.
+      When you are ready to automate it, follow the djLint section of our
+      <a href="/blog/improve-your-code-with-pre-commit#djlint">Django pre-commit guide</a>.</p>
+    <h2>Does formatting prove a template is correct?</h2>
+    <p>No. djLint's formatter is not an HTML parser or syntax validator. A formatted result does not prove that
+      a custom tag exists, a context variable is present, or the page is accessible or secure.
+      Review the output and run your application's tests. For template setup, start with our
+      <a href="/blog/basic-django-setup">basic Django setup tutorial</a>; for examples of real applications,
+      browse <a href="/projects/?is_open_source=true">open-source Django projects</a>.</p>
+    <p class="text-sm bw-muted">Usage guidance updated <time datetime="2026-10-11">October 11, 2026</time>.</p>
+  </div>
+</section>
+
 {% include "components/newsletter.html" with newsletter_form=newsletter_form %}
 
 {% endblock content %}
@@ -63,6 +116,7 @@
     {
         "@context": "https://schema.org",
         "@type": "WebPage",
+        "dateModified": "2026-10-11",
         "name": "Django HTML Template Formatter | Built with Django",
         "description": "Format Django templates in seconds.",
         "abstract": "Format Django templates in seconds.",

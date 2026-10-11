@@ -1,7 +1,7 @@
 ---
 id: 8
 created: '2023-03-31 17:35:13.533963+00:00'
-modified: '2023-04-05 12:03:37.685143+00:00'
+modified: '2026-10-11 08:45:00+00:00'
 title: Improve your Django Code with pre-commit
 slug: improve-your-code-with-pre-commit
 status: PB
@@ -382,6 +382,8 @@ If you encounter those error, at setup or at commit don't worry. Spend some time
 Comment below, if something is not working for you. I'll try to help. 
 
 ### djlint ([^](#table-of-contents))
+
+Want to try a small, non-sensitive template before adding a hook? Use the [Django HTML template formatter](/tools/format-html/) for a before-and-after example. Formatting runs on the server; keep private templates local with the djLint commands shown there.
 
 For Django users, which you presumably are, this will be a God send! Check out [the repo](https://github.com/Riverside-Healthcare/djLint). This is an HTML linter... but for Django templates 🤯
 
