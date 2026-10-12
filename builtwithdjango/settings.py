@@ -779,3 +779,8 @@ READWISE_API_TOKEN = env("READWISE_API_TOKEN")
 with open(os.path.join(BASE_DIR, "indexnow-key.txt"), encoding="utf-8") as key_file:
     INDEXNOW_KEY = key_file.read().strip()
 DEPLOYMENT_REVISION = os.environ.get("DEPLOYMENT_REVISION", "local")
+
+# Public double-opt-in endpoint; no Listmonk administrator credentials in the app.
+NEWSLETTER_LISTMONK_URL = env("NEWSLETTER_LISTMONK_URL", default="")
+NEWSLETTER_LIST_UUID = env("NEWSLETTER_LIST_UUID", default="")
+NEWSLETTER_TRUST_PROXY = env.bool("NEWSLETTER_TRUST_PROXY", default=False)

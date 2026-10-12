@@ -63,7 +63,7 @@
              action="{% url 'newsletter_home' %}"
              method="post"
              enctype="multipart/form-data">
-           {% csrf_token %} {{ newsletter_form.non_field_errors }}
+           {% csrf_token %} {{ newsletter_form.company }} {{ newsletter_form.non_field_errors }}
            <label for="modal-newsletter-email" class="sr-only">Email address</label>
            <div class="bw-inline-form">
                <span class="min-w-0 flex-1">

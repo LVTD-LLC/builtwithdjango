@@ -7,6 +7,11 @@ their recorded dates; previously undated entries use their Git history dates.
 
 ## 2026-10-12
 
+### Added
+
+- Dedicated Listmonk newsletter signup with email confirmation, shared rate limiting, and recoverable delivery errors. Existing Buttondown subscribers and archive remain untouched.
+
+
 ### Improved
 - Added contextual homepage links to the secret-key generator and Django template formatter, with clear use cases and a local option for private code. Projects, blog, and existing navigation retain their priority.
 
