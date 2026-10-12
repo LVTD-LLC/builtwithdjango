@@ -92,6 +92,8 @@ from newsletter.models import Emails
 class ListmonkSignupTests(TestCase):
     def setUp(self):
         cache.clear()
+        # Python CI has no asset build; frontend CI and browser checks cover assets.
+        patch("webpack_boilerplate.utils.get_as_tags", return_value=[]).start()
         self.provider = patch("newsletter.views.requests.post").start()
         self.addCleanup(patch.stopall)
         self.provider.return_value = Mock(status_code=200)
