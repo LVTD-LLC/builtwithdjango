@@ -5,6 +5,11 @@ Each `YYYY-MM-DD` heading groups all changes for that day by type, without
 release versions or an Unreleased section. Historical dated entries retain
 their recorded dates; previously undated entries use their Git history dates.
 
+## 2026-10-12
+
+### Improved
+- Added contextual homepage links to the secret-key generator and Django template formatter, with clear use cases and a local option for private code. Projects, blog, and existing navigation retain their priority.
+
 ## 2026-10-11
 
 ### Improved

@@ -26,5 +26,21 @@
     <div class="bw-post-grid mt-8">{% for guide in guides %}{% include "components/post-card.html" with item=guide %}{% empty %}<p class="bw-muted">New writing is on its way.</p>{% endfor %}</div>
   </div>
 </section>
+<section class="bw-section bw-section-ruled" aria-labelledby="home-tools-heading">
+  <div class="bw-container">
+    <h2 id="home-tools-heading" class="bw-heading-md">Tools for your next Django project</h2>
+    <p class="bw-muted mt-3">Two free utilities for the code you’re working on. No account needed.</p>
+    <div class="mt-8 grid gap-8 md:grid-cols-2">
+      <div>
+        <h3 class="text-xl font-bold"><a href="{% url 'generate_django_secret_page' %}" class="bw-text-link" data-analytics-event="cta clicked" data-analytics-cta="open secret key generator" data-analytics-location="homepage tools">Django secret key generator</a></h3>
+        <p class="bw-muted mt-3">Generate a key for a new project, or follow the local-generation, environment-variable, and rotation instructions.</p>
+      </div>
+      <div>
+        <h3 class="text-xl font-bold"><a href="{% url 'format_html_view' %}" class="bw-text-link" data-analytics-event="cta clicked" data-analytics-cta="open template formatter" data-analytics-location="homepage tools">Django template formatter</a></h3>
+        <p class="bw-muted mt-3">Format HTML with Django template tags using djLint. Try the example, or use the local commands for private code.</p>
+      </div>
+    </div>
+  </div>
+</section>
 {% include "components/newsletter.html" with newsletter_form=newsletter_form %}
 {% endblock content %}
