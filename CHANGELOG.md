@@ -13,6 +13,7 @@ their recorded dates; previously undated entries use their Git history dates.
 
 
 ### Improved
+- Branded the Listmonk newsletter with the website’s cream-and-green editorial styling, Django logo, responsive email layout, and accessible unsubscribe links; versioned its template and maintenance guidance.
 - Added contextual homepage links to the secret-key generator and Django template formatter, with clear use cases and a local option for private code. Projects, blog, and existing navigation retain their priority.
 
 ## 2026-10-11

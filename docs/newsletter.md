@@ -64,3 +64,38 @@ in the control-plane service inventory; no automatic upgrades.
 Rollback website signup by reverting this PR or disabling the configuration
 (recoverable unavailable response). Preserve Listmonk data and old Buttondown
 state; do not destroy volumes or downgrade an already migrated database.
+
+## Newsletter appearance
+
+The default Listmonk campaign template (ID 1, `Built with Django — editorial`)
+uses the versioned source in `ops/newsletter/campaign.html`. It matches the
+website's cream/green palette, original hexagon logo, and editorial typography.
+It wraps HTML/Markdown campaign content; it does not change Buttondown archives,
+confirmation emails, transactional templates, audiences, or sending schedules.
+
+- Rubik/Nunito Sans are progressive enhancements from the site's self-hosted
+  assets. Gmail/Outlook may use Segoe UI/Arial instead. Keep the fallback stack.
+- Layout uses presentation tables, inline structural styles, a 600px maximum
+  reading width, and a mobile padding adjustment. Content headings/links are
+  styled by the template; avoid campaign body styles that override the palette.
+- Preserve `{{ template "content" . }}`, `{{ UnsubscribeURL }}`, and
+  `{{ MessageURL }}`. No tracking pixel is added by this template.
+- Keep essential information as live text, not images. The logo remains optional
+  when a recipient blocks images. Use absolute HTTPS image URLs and alt text.
+- For changes: retrieve and privately back up the current template through
+  `GET /api/templates/1`; check for running/scheduled/paused campaigns using it;
+  then `PUT /api/templates/1` with `name`, `type: "campaign"`, and the source
+  `body`. Read back the saved body and default flag, and render an existing
+  **draft** using `GET /api/campaigns/{id}/preview`. Updating the template does
+  not send that draft. Use existing authorized admin/API access, never store
+  credentials or subscriber exports in this repository.
+- Inspect the server-rendered result at mobile/desktop widths, including logo,
+  unsubscribe/view links, long text and images. Browser previews do not prove
+  rendering in Gmail, Apple Mail, Outlook, or forced dark mode; a specifically
+  authorized test send is the next inbox check.
+- Roll back by restoring the saved template fields with the same API call.
+  Preserve the default flag and do not change campaign status. When branding
+  assets change, update the absolute hashed image/font URLs here as well.
+
+Verified 2026-10-12: template API compilation/readback and server-rendered draft
+preview; no broadcast or test send accompanied this styling update.
