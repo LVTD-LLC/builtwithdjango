@@ -15,8 +15,10 @@ adding page-specific Tailwind combinations.
 
 An independent editorial directory: OpenAlternative's discovery structure,
 Typewolf's screenshot-led publication, and Supabase's restrained light UI.
-Projects and the blog lead; jobs, tools, and the podcast archive live in the
-footer. Reference rationale and measurement limits: `docs/redesign-2026-10.md`.
+Projects and the blog lead; jobs, tools, and the podcast archive remain in the
+footer navigation. A compact homepage tools section follows the project and blog
+sections to explain the two existing utilities without competing with the main
+journeys. Reference rationale and measurement limits: `docs/redesign-2026-10.md`.
 
 Use a warm cream canvas, white screenshot frames, charcoal-green text, fine
 neutral borders, and one dark-green action color. Self-hosted Rubik (600) supplies

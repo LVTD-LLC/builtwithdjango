@@ -108,7 +108,7 @@ class PublishedLinkRedirectTests(SimpleTestCase):
 
 
 class SeoSitemapTests(TestCase):
-    def test_static_sitemap_only_dates_the_revised_tool(self):
+    def test_static_sitemap_uses_content_revision_dates(self):
         Site.objects.update_or_create(pk=1, defaults={"domain": "builtwithdjango.com", "name": "Built with Django"})
         Site.objects.clear_cache()
         response = self.client.get("/sitemap.xml")
@@ -120,7 +120,7 @@ class SeoSitemapTests(TestCase):
         }
         self.assertEqual(entries["https://builtwithdjango.com/tools/django-secret/"], "2026-10-09")
         self.assertEqual(entries["https://builtwithdjango.com/tools/format-html/"], "2026-10-11")
-        self.assertIsNone(entries["https://builtwithdjango.com/"])
+        self.assertEqual(entries["https://builtwithdjango.com/"], "2026-10-12")
 
     def test_sitemap_excludes_submission_form_without_changing_login_redirect(self):
         Site.objects.update_or_create(pk=1, defaults={"domain": "builtwithdjango.com", "name": "Built with Django"})
