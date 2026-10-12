@@ -17,7 +17,7 @@
               action="{% url 'newsletter_home' %}"
               method="post"
               enctype="multipart/form-data">
-            {% csrf_token %} {{ newsletter_form.non_field_errors }}
+            {% csrf_token %} {{ newsletter_form.company }} {{ newsletter_form.non_field_errors }}
             <label for="makers-newsletter-email" class="sr-only">Email address</label>
             <div class="bw-inline-form mt-5">
                 <span class="min-w-0 flex-1">
@@ -65,7 +65,7 @@
                         <form class="absolute right-0 bottom-0 p-2"
                               action="{% url 'claim_account' maker.pk %}"
                               method="post">
-                            {% csrf_token %}
+                            {% csrf_token %} {{ newsletter_form.company }}
                             <input class="hidden" type="text" value="{{ user.email }}" />
                             <button type="submit"
                                     class="inline-flex items-center px-2.5 py-0.5 text-xs font-medium text-green-800 bg-green-100 rounded-full hover:bg-green-300">

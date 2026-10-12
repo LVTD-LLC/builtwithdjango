@@ -23,7 +23,7 @@ Session replay was also disabled at the project level.
 | Submission/profile | form started/submitted, native validation blocked | project submitted/updated, profile updated, form validation failed |
 | Publication | — | project published after commit; screenshot fetch failures |
 | Accounts | identify before initial pageview, reset on anonymous page after logout | signup/login/logout/email confirmation |
-| Newsletter | form intent | newsletter subscribed (local submission, not provider delivery confirmation) |
+| Newsletter | form intent | newsletter confirmation requested (Listmonk accepted an opt-in request, not delivery or confirmed consent) |
 | Payments | checkout intent/return | verified Stripe events; deterministic UUID per event name + Stripe event ID |
 | Failures | unhandled browser errors, masked replay | server exceptions (without locals), HTTP 5xx as request failed |
 
