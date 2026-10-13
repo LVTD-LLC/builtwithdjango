@@ -117,5 +117,19 @@
       "ACCOUNT_AUTHENTICATION_METHOD",
       "Bypass password validation"
     ]
+  },
+  {
+    "claim": "Hosted MCP tutorial protects inactive accounts and keeps ORM work off the event loop",
+    "paths": [
+      "content/blog/build-a-hosted-mcp-server-in-django-with-fastmcp.md"
+    ],
+    "must_match": [
+      "not api_key.user.is_active",
+      "sync_to_async\\(load_user_info, thread_sensitive=True\\)",
+      "authentication happens inside the tool|authentication in this example happens inside the tool"
+    ],
+    "must_not_match": [
+      "DJANGO_ALLOW_ASYNC_UNSAFE"
+    ]
   }
 ]

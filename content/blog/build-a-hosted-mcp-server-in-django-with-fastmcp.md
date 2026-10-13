@@ -1,7 +1,7 @@
 ---
 id: 157
 created: '2026-06-19 20:12:21.788869+00:00'
-modified: '2026-06-19 20:15:36.736275+00:00'
+modified: '2026-10-13T08:54:00.036973+00:00'
 title: Build a Hosted MCP Server in Django With FastMCP
 slug: build-a-hosted-mcp-server-in-django-with-fastmcp
 status: PB
@@ -57,16 +57,16 @@ This guide does not assume your project has a separate API app or Django REST Fr
 Add [FastMCP](https://gofastmcp.com/getting-started/welcome) to your Django project:
 
 ```bash
-uv add fastmcp
+uv add "fastmcp==2.14.7"
 ```
 
 If you are not using `uv`, use your normal dependency manager:
 
 ```bash
-pip install fastmcp
+pip install "fastmcp==2.14.7"
 ```
 
-This guide uses the standalone `fastmcp` package and imports it like this:
+The examples were checked with Python 3.13, Django 5.2.18 and FastMCP 2.14.7. The pin gives you a reproducible starting point, not a reason to skip future security updates. Test the workflow again when upgrading. This guide uses the standalone `fastmcp` package, not `mcp.server.fastmcp`, and imports it like this:
 
 ```python
 from fastmcp import FastMCP
@@ -218,7 +218,7 @@ def authenticate_mcp_headers(headers: Headers):
             .filter(key_hash=key_hash, revoked_at__isnull=True)
             .first()
         )
-        if api_key is None:
+        if api_key is None or not api_key.user.is_active:
             return None
 
         api_key.last_used_at = timezone.now()
@@ -227,6 +227,8 @@ def authenticate_mcp_headers(headers: Headers):
     finally:
         close_old_connections()
 ```
+
+This lookup deliberately rejects revoked keys and inactive users. Because it is a custom API-key check, Django's normal login backend does not make the inactive-user decision for us. If your custom user model uses a different suspension policy, enforce that policy here. See Django's [`is_active` documentation](https://docs.djangoproject.com/en/5.2/ref/contrib/auth/#django.contrib.auth.models.User.is_active).
 
 The important rule: do not let the model pass `user_id` as a tool argument. The server should figure out the user from the API key.
 
@@ -254,6 +256,7 @@ The AI client can ask for data. Django decides which user's data it is allowed t
 Create `mcp_server/server.py`:
 
 ```python
+from asgiref.sync import sync_to_async
 from django.db import close_old_connections
 from fastmcp import FastMCP
 from fastmcp.server.dependencies import get_http_request
@@ -263,35 +266,19 @@ from mcp_server.auth import authenticate_mcp_headers
 mcp = FastMCP(
     name="My Django App",
     instructions=(
-        "Use this MCP server to access safe account information for the "
+        "Use this MCP server to access account information for the "
         "authenticated user. Authenticate with Authorization: Bearer <api_key>."
     ),
 )
 
 
-def get_request_user():
-    request = get_http_request()
-    return authenticate_mcp_headers(request.headers)
-
-
-def require_user():
-    user = get_request_user()
-    if user is None:
-        raise PermissionError(
-            "Missing or invalid MCP API key. "
-            "Send Authorization: Bearer <api_key>."
-        )
-    return user
-
-
-@mcp.tool(
-    name="get_user_info",
-    description="Return safe account details for the authenticated Django user.",
-)
-def get_user_info() -> dict:
+def load_user_info(headers) -> dict:
+    # Keep authentication, ORM access and serialization in the same sync call.
     close_old_connections()
     try:
-        user = require_user()
+        user = authenticate_mcp_headers(headers)
+        if user is None:
+            raise PermissionError("Missing, invalid or disabled MCP API key.")
         return {
             "id": user.id,
             "username": user.get_username(),
@@ -300,9 +287,18 @@ def get_user_info() -> dict:
         }
     finally:
         close_old_connections()
+
+
+@mcp.tool(
+    name="get_user_info",
+    description="Return account details for the authenticated Django user.",
+)
+async def get_user_info() -> dict:
+    request = get_http_request()
+    return await sync_to_async(load_user_info, thread_sensitive=True)(request.headers)
 ```
 
-This is intentionally small. The MCP tool authenticates the request, gets the current Django user, and returns a structured payload.
+The tool reads the HTTP request in the async context, then runs the entire database operation through Django’s [`sync_to_async` adapter](https://docs.djangoproject.com/en/5.2/topics/async/#async-safety). That includes authentication and serialization, so a lazy model lookup does not escape back onto the event loop. A plain synchronous tool function is not enough to guarantee thread-pool execution across FastMCP versions. Do not disable Django’s async-safety checks to make the example work.
 
 Only return fields you are comfortable exposing to an AI client. If you do not want to expose `email`, remove it.
 
@@ -374,19 +370,51 @@ uvicorn my_project.asgi:application --reload
 Your MCP endpoint should now be available at:
 
 ```text
-http://127.0.0.1:8000/mcp
+http://127.0.0.1:8000/mcp/
 ```
 
 Use your MCP client with:
 
 ```text
-Endpoint: http://127.0.0.1:8000/mcp
+Endpoint: http://127.0.0.1:8000/mcp/
 Header: Authorization: Bearer YOUR_MCP_API_KEY
 ```
 
-The exact setup screen depends on the client, but the two important pieces are the endpoint and the `Authorization` header.
+Use a client that supports a custom bearer header; this example does not implement an OAuth authorization flow. Point it directly at `/mcp/` to avoid relying on redirect handling.
 
 A successful `get_user_info` call should return JSON for the user who owns the API key. If the key is missing or wrong, the tool should return an authentication error.
+
+### Check a real tool call before deploying
+
+Save this as `check_mcp.py` in your project. It uses a hidden terminal prompt rather than putting the key in the command or source file:
+
+```python
+import asyncio
+from getpass import getpass
+
+from fastmcp import Client
+from fastmcp.client.transports import StreamableHttpTransport
+
+
+async def main():
+    transport = StreamableHttpTransport(
+        "http://127.0.0.1:8000/mcp/",
+        headers={"Authorization": "Bearer " + getpass("MCP API key: ")},
+    )
+    async with Client(transport) as client:
+        result = await client.call_tool("get_user_info", {})
+        print(result.data)
+
+
+asyncio.run(main())
+```
+
+With Uvicorn still running, run `uv run python check_mcp.py` in another terminal. Check that the returned account is the key owner. Use test accounts: the output contains account information.
+
+Then try a wrong key, revoke a test key, and disable a test user. Each tool call must fail without returning account fields. A second user's key must return only that second user's account. Opening the URL in a browser or listing tools is not this test: authentication in this example happens inside the tool, so a successful MCP handshake does not prove that account access is protected.
+
+If you see `SynchronousOnlyOperation`, check that all ORM work remains inside `load_user_info`. If startup reports that the task group is not initialized, check the lifespan wiring in Step 6. A 404 can mean the request reached Django's WSGI process rather than the combined ASGI application.
+
 
 ## If your deployment uses WSGI
 
