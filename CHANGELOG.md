@@ -5,6 +5,11 @@ Each `YYYY-MM-DD` heading groups all changes for that day by type, without
 release versions or an Unreleased section. Historical dated entries retain
 their recorded dates; previously undated entries use their Git history dates.
 
+## 2026-10-13
+
+### Fixed
+- Correct the hosted FastMCP tutorial’s async ORM handling and inactive-user API-key checks; add a reproducible version baseline and real-client verification steps.
+
 ## 2026-10-12
 
 ### Added
