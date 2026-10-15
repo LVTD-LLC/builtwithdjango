@@ -1,7 +1,7 @@
 ---
 id: 157
 created: '2026-06-19 20:12:21.788869+00:00'
-modified: '2026-10-13T08:54:00.036973+00:00'
+modified: '2026-10-15T08:53:47.636193+00:00'
 title: Build a Hosted MCP Server in Django With FastMCP
 slug: build-a-hosted-mcp-server-in-django-with-fastmcp
 status: PB
@@ -466,4 +466,42 @@ raw_mcp_application = mcp.http_app(path="/", stateless_http=True)
 
 That avoids tying an MCP session to one in-memory worker.
 
-That is the short version. Real deployments can have extra details around static files, reverse proxies, timeouts, and platform-specific settings. If you want a deeper guide for your setup, email me at [Rasul@builtwithdjango.com](mailto:Rasul@builtwithdjango.com).
+## Keep the MCP path intact behind Nginx
+
+When Nginx forwards requests to this combined ASGI app, preserve `/mcp/` in the upstream URL. Starlette needs that prefix to select the MCP mount. If the proxy removes it first, the request reaches Django at `/` instead; the MCP client can receive a 404 even though the ASGI process is running.
+
+Here is a **local HTTP check**, not a complete production configuration. Keep the `stateless_http=True` change above, then run two Uvicorn workers. This command uses [Uvicorn's documented proxy-header settings](https://uvicorn.dev/deployment/), checked with Uvicorn 0.38.0:
+
+```bash
+uv run uvicorn my_project.asgi:application --host 127.0.0.1 --port 8000 \
+  --workers 2 --proxy-headers --forwarded-allow-ips 127.0.0.1
+```
+
+Add the following `server` block inside Nginx's `http` context. It uses the [Nginx proxy module](https://nginx.org/en/docs/http/ngx_http_proxy_module.html), checked with Nginx 1.22.1. Choose unused local ports before starting either service.
+
+```nginx
+server {
+    listen 127.0.0.1:8080;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_buffering off;
+    }
+}
+```
+
+There is **no URI after the port** in `proxy_pass`. In particular, do not copy a `location /mcp/` block with `proxy_pass http://127.0.0.1:8000/;` into this setup: that combination replaces `/mcp/` with `/`. Nginx documents this [URI replacement behavior](https://nginx.org/en/docs/http/ngx_http_proxy_module.html#proxy_pass).
+
+Change the URL in `check_mcp.py` to `http://127.0.0.1:8080/mcp/` and run the real tool call again. Repeat the missing, wrong, revoked and disabled-account checks through the proxy, not just against port 8000. A normal Django page should still work through port 8080 too.
+
+Built with Django checked this routing with Python 3.13.15, Django 5.2.18 and FastMCP 2.14.7: both test accounts received only their own data, rejected keys returned no account fields, and repeated tool calls worked with two workers. Removing the mount prefix reproduced a 404. These are functional checks, not a load test or a claim that every MCP session feature works across workers.
+
+The header settings assume **one local proxy**. Nginx replaces incoming forwarded headers, and Uvicorn trusts only connections from `127.0.0.1`. Do not replace that allowlist with `*`; a container network or an additional load balancer needs its own explicit trust configuration.
+
+For production, terminate HTTPS at your trusted edge, restrict direct access to the upstream process, retain your static-file routing, and set timeouts for your workload. The local check did not test TLS, static delivery or streaming latency. `proxy_buffering off` follows Nginx's documented response behavior; verify long-running tools and streaming notifications separately before relying on them.
+
+If you need a platform-specific setup, email [Rasul@builtwithdjango.com](mailto:Rasul@builtwithdjango.com) with your deployment details.

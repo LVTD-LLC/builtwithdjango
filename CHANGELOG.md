@@ -5,6 +5,11 @@ Each `YYYY-MM-DD` heading groups all changes for that day by type, without
 release versions or an Unreleased section. Historical dated entries retain
 their recorded dates; previously undated entries use their Git history dates.
 
+## 2026-10-15
+
+### Improved
+- Add a tested Nginx routing example and proxy-path troubleshooting to the hosted Django/FastMCP guide, with explicit local-test and production boundaries.
+
 ## 2026-10-13
 
 ### Fixed
