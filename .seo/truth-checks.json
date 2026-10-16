@@ -131,5 +131,20 @@
     "must_not_match": [
       "DJANGO_ALLOW_ASYNC_UNSAFE"
     ]
+  },
+  {
+    "claim": "Basic Django setup uses supported command names and dependency-only Poetry mode",
+    "paths": [
+      "content/blog/basic-django-setup.md"
+    ],
+    "must_match": [
+      "package-mode = false",
+      "poetry run django-admin startproject basic_django ."
+    ],
+    "must_not_match": [
+      "get-poetry.py",
+      "django-admin.py",
+      "latest Django version, 4.0.1"
+    ]
   }
 ]

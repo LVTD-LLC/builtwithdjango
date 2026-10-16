@@ -5,6 +5,11 @@ Each `YYYY-MM-DD` heading groups all changes for that day by type, without
 release versions or an Unreleased section. Historical dated entries retain
 their recorded dates; previously undated entries use their Git history dates.
 
+## 2026-10-16
+
+### Fixed
+- Replace the retired Poetry installer and obsolete setup commands in the basic Django tutorial with a versioned, reproducible Poetry 2/Django 5.2 walkthrough and a homepage test. Preserve the custom-user-before-migrations path.
+
 ## 2026-10-15
 
 ### Improved
