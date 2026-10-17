@@ -5,6 +5,12 @@ Each `YYYY-MM-DD` heading groups all changes for that day by type, without
 release versions or an Unreleased section. Historical dated entries retain
 their recorded dates; previously undated entries use their Git history dates.
 
+## 2026-10-17
+
+### Changed
+
+- Added a one-click, non-sensitive Django example to the HTML formatter. Loading preserves existing input and waits for an explicit format action; success events distinguish example and custom input without collecting source code.
+
 ## 2026-10-16
 
 ### Fixed
