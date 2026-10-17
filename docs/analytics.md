@@ -84,3 +84,13 @@ analytics delivery becomes a requirement.
 
 Rollback: revert the PR and deploy prior image. Replay can independently be
 disabled with project `session_recording_opt_in=false`; no database changes.
+
+## Formatter example experiment — October 17
+
+`html formatter example loaded` records the explicit example-loader action with no source payload.
+The existing `html formatted` browser event adds `input_kind: example|custom`: an exact match to
+the built-in sample is `example`, including manually pasted copies. This is not a source-content
+field or proof that the loader caused a conversion. Server success remains `html formatted server`
+on `request_path=/tools/api/format-html/`; do not require browser `$host` on server events.
+Browser attribution uses the production hostname/current URL. Exclude synthetic/audit/staff/known
+bot indicators where available; remaining events are not certified human traffic.

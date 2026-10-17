@@ -15,11 +15,18 @@
       For private code or whole projects, use the local commands below instead of sending templates to this server.
     </p>
     <p data-html-formatter-target="status" class="mx-auto mt-3 max-w-2xl text-center text-sm bw-muted" role="status" aria-live="polite">
-      Paste a Django template, format it, then copy the result.
+      Paste a Django template or load the example, select Format HTML, then copy the result.
     </p>
     <p class="mx-auto mt-3 max-w-2xl text-center text-sm bw-muted">
       Formatting runs on our server, not only in your browser. Do not paste secrets, customer data, or confidential templates.
     </p>
+    <div class="mt-6 text-center">
+      <button type="button" data-action="click->html-formatter#loadExample"
+              data-html-formatter-target="exampleButton" class="bw-button bw-button-secondary">
+        Load Django example
+      </button>
+      <p class="mt-2 text-sm bw-muted">Try a non-sensitive loop with template variables. Loading it does not submit the template or replace your input.</p>
+    </div>
     <div class="mt-8 flex flex-col gap-6 md:flex-row">
         <div class="min-w-0 flex-1">
             <label for="formatter-input" class="bw-form-label text-base font-black text-[var(--bw-ink)]">Input HTML</label>
@@ -71,7 +78,7 @@
       look up context variables, or execute template tags.</p>
     <h3>A small before-and-after example</h3>
     <p>This example uses Django 5.2's <a href="https://docs.djangoproject.com/en/5.2/ref/templates/builtins/#for">for and empty tags</a>.
-      The output below was checked with djLint 1.36.4 on October 11, 2026. Paste the input into the tool to try it.</p>
+      The output below was checked with djLint 1.36.4 on October 11, 2026. Use Load Django example above, then select Format HTML to try this input.</p>
     <p><strong>Before</strong></p>
     {% verbatim %}<pre class="overflow-x-auto"><code>&lt;ul&gt;{% for project in projects %}&lt;li&gt;{{ project.name }}&lt;/li&gt;{% empty %}&lt;li&gt;No projects yet.&lt;/li&gt;{% endfor %}&lt;/ul&gt;</code></pre>{% endverbatim %}
     <p><strong>After</strong></p>
@@ -103,7 +110,7 @@ uvx --from djlint==1.36.4 djlint templates/example.html --reformat --profile=dja
       Review the output and run your application's tests. For template setup, start with our
       <a href="/blog/basic-django-setup">basic Django setup tutorial</a>; for examples of real applications,
       browse <a href="/projects/?is_open_source=true">open-source Django projects</a>.</p>
-    <p class="text-sm bw-muted">Usage guidance updated <time datetime="2026-10-11">October 11, 2026</time>.</p>
+    <p class="text-sm bw-muted">Usage guidance updated <time datetime="2026-10-17">October 17, 2026</time>.</p>
   </div>
 </section>
 
@@ -116,7 +123,7 @@ uvx --from djlint==1.36.4 djlint templates/example.html --reformat --profile=dja
     {
         "@context": "https://schema.org",
         "@type": "WebPage",
-        "dateModified": "2026-10-11",
+        "dateModified": "2026-10-17",
         "name": "Django HTML Template Formatter | Built with Django",
         "description": "Format Django templates in seconds.",
         "abstract": "Format Django templates in seconds.",

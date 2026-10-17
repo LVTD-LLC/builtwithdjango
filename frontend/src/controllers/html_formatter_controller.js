@@ -1,7 +1,24 @@
 import { Controller } from "@hotwired/stimulus";
 
+const EXAMPLE_TEMPLATE = "<ul>{% for project in projects %}<li>{{ project.name }}</li>{% empty %}<li>No projects yet.</li>{% endfor %}</ul>";
+
 export default class extends Controller {
-  static targets = [ "input", "result", "submitButton", "copyButton", "status" ];
+  static targets = [ "input", "result", "submitButton", "copyButton", "status", "exampleButton" ];
+
+  loadExample() {
+    if (this.submitButtonTarget.disabled) return;
+    if (this.inputTarget.value.trim()) {
+      this.setStatus('Your input is unchanged. Clear it first to load the example.');
+      return;
+    }
+    this.inputTarget.value = EXAMPLE_TEMPLATE;
+    this.resultTarget.value = '';
+    this.copyButtonTarget.disabled = true;
+    this.resetCopyButton();
+    this.inputTarget.focus();
+    this.setStatus('Example loaded. Select Format HTML to try it.');
+    this.capture('html formatter example loaded');
+  }
 
   formatHTML() {
     const input = this.inputTarget.value.trim();
@@ -35,7 +52,8 @@ export default class extends Controller {
         this.setStatus('Formatted HTML is ready.');
         this.capture('html formatted', {
           input_length: input.length,
-          output_length: data.formatted_html.length
+          output_length: data.formatted_html.length,
+          input_kind: input === EXAMPLE_TEMPLATE ? 'example' : 'custom'
         });
       } else if (data.error) {
         this.setError(data.error);
@@ -87,6 +105,7 @@ export default class extends Controller {
 
   setLoading(isLoading) {
     this.submitButtonTarget.disabled = isLoading;
+    this.exampleButtonTarget.disabled = isLoading;
     this.submitButtonTarget.textContent = isLoading ? 'Formatting...' : 'Format HTML';
   }
 
