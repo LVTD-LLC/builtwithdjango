@@ -5,6 +5,12 @@ Each `YYYY-MM-DD` heading groups all changes for that day by type, without
 release versions or an Unreleased section. Historical dated entries retain
 their recorded dates; previously undated entries use their Git history dates.
 
+## 2026-10-18
+
+### Fixed
+
+- Corrected the pre-commit guide's Poetry 2 requirements export workflow with pinned plugin hooks, lock validation, runtime-only exports, and tested install/retry guidance.
+
 ## 2026-10-17
 
 ### Changed

@@ -146,5 +146,20 @@
       "django-admin.py",
       "latest Django version, 4.0.1"
     ]
+  },
+  {
+    "claim": "Pre-commit guide uses the Poetry2 export plugin rather than the obsolete Poetry1 hook",
+    "paths": [
+      "content/blog/improve-your-code-with-pre-commit.md"
+    ],
+    "must_match": [
+      "python-poetry/poetry-plugin-export",
+      "additional_dependencies",
+      "poetry-check",
+      "--only"
+    ],
+    "must_not_match": [
+      "rev:\\s*['\\\"]?1\\.4\\.1"
+    ]
   }
 ]

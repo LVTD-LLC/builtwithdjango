@@ -1,7 +1,7 @@
 ---
 id: 8
 created: '2023-03-31 17:35:13.533963+00:00'
-modified: '2026-10-11 08:45:00+00:00'
+modified: '2026-10-18 08:45:00+00:00'
 title: Improve your Django Code with pre-commit
 slug: improve-your-code-with-pre-commit
 status: PB
@@ -427,29 +427,59 @@ Added H031 because keywords meta is no longer used. Everything else, fixed.
 
 ### poetry export ([^](#table-of-contents))
 
-Final one that I like to use is the `poetry export` hook. It used to be the case that we needed to add this one to the local repo, but no longer.
+If your deployment installs from `requirements.txt`, use an export hook to keep that file aligned with `poetry.lock`. If deployment already installs directly with Poetry, you can skip this section.
 
-This is useful if you don't want to install poetry on your prod server or in your Dockerfile. That is to say very useful.
+**For Poetry 2 projects, use the export plugin repository, not the old Poetry 1.4.1 hook.** The older hook rejects `package-mode = false`, which is used in the [basic Django setup guide](/blog/basic-django-setup). Also, Poetry 2 no longer bundles the export command by default. The [official hook documentation](https://python-poetry.org/docs/pre-commit-hooks/) points to the [export plugin](https://github.com/python-poetry/poetry-plugin-export).
 
-Instead of dealing with poetry in Docker or prod we will just have a nice and fresh "requirements.txt" file to use for out dependencies. Beautiful.
+The following configuration was checked on Linux with Python 3.11, pre-commit 4.3.0, Poetry 2.2.1 and export plugin 1.9.0, using a Django 5.2.18 dependency-only project. These are reproducible version pins, not a claim that every version is the newest. The other hook examples in this guide retain their original 2023 versions; update and test those separately for your project.
 
-To make this work add the following to your pre-commit config file. I put it right after the djlint hook.
+Add these entries under the existing `repos:` list in `.pre-commit-config.yaml`. Replace the old Poetry export entry rather than keeping both:
 
 ```yaml
-- repo: https://github.com/python-poetry/poetry
-  rev: '1.4.1'
-  hooks:
-    - id: poetry-export
-      args: [
-        "-f", "requirements.txt",
-        "-o", "requirements.txt",
-        "--without-hashes"
-      ]
+  - repo: https://github.com/python-poetry/poetry
+    rev: '2.2.1'
+    hooks:
+      - id: poetry-check
+        args: ['--lock']
+
+  - repo: https://github.com/python-poetry/poetry-plugin-export
+    rev: '1.9.0'
+    hooks:
+      - id: poetry-export
+        additional_dependencies: ['poetry==2.2.1']
+        args: ['-f', requirements.txt, '-o', requirements.txt, '--only', main]
 ```
 
-This one doesn't require any configurations ♥️. To see other poetry hooks, check out [their docs](https://python-poetry.org/docs/master/pre-commit-hooks/).
+`poetry-check --lock` catches a dependency declaration that no longer matches the lock file. The export hook runs in its own pre-commit environment; `additional_dependencies` pins the Poetry version used there. You do not need to install the export plugin into your application environment just to run this hook.
 
-![final check passed](https://res.cloudinary.com/built-with-django/image/upload/v1680283450/blog-images/final_check_passed_202303290926_vp7la1.png)
+`--only main` exports runtime dependencies, not development tools such as pre-commit. This example retains dependency hashes. Export extra groups only if your deployment needs them; do not blindly overwrite an existing requirements file that contains deployment-specific dependencies.
+
+From your Git repository, with pre-commit installed as described above, run:
+
+```bash
+poetry lock
+poetry run pre-commit install
+git add pyproject.toml poetry.lock .pre-commit-config.yaml
+poetry run pre-commit run poetry-check --all-files
+poetry run pre-commit run poetry-export --all-files
+```
+
+Review `requirements.txt`. In the tested project it contains Django and its runtime dependencies, without pre-commit. Stage the generated file and rerun the checks before committing:
+
+```bash
+git add requirements.txt
+poetry run pre-commit run --all-files
+```
+
+**A generated-file change can stop the first commit.** That is expected: pre-commit reports that the hook modified files. Inspect the diff, stage it, and retry. A second run with unchanged dependencies should pass without changing the export. If the lock check fails, resolve the dependency change and run `poetry lock`; do not treat a stale export as deployable.
+
+To check the exported dependencies in a fresh deployment environment, the [plugin's installation guidance](https://github.com/python-poetry/poetry-plugin-export#usage) uses pip without dependency resolution:
+
+```bash
+python -m pip install --no-deps -r requirements.txt
+```
+
+Poetry has already resolved the dependency graph. This command was checked in a separate Python 3.11 environment with `python -m django --version` and `python -m pip check`; it is not a test of your production settings, database or deployment.
 
 ### ruff ([^](#table-of-contents))
 
