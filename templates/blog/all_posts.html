@@ -30,6 +30,22 @@
     </div>
   </div>
 </section>
+<section class="bw-section bw-section-ruled" aria-labelledby="blog-tools-heading">
+  <div class="bw-container">
+    <h2 id="blog-tools-heading" class="bw-heading-md">Put the guides to work</h2>
+    <p class="bw-muted mt-3">Setting up a project or tidying a template? These free tools need no account.</p>
+    <div class="mt-8 grid gap-8 md:grid-cols-2">
+      <div>
+        <h3 class="text-xl font-bold"><a href="{% url 'generate_django_secret_page' %}" class="bw-text-link" data-analytics-event="cta clicked" data-analytics-cta="open secret key generator" data-analytics-location="blog tools">Generate a Django secret key</a></h3>
+        <p class="bw-muted mt-3">Create a key for a new project, or use the local-generation instructions. Learn how to load it in <a href="/blog/env-vars" class="bw-text-link">Django with environment variables</a>.</p>
+      </div>
+      <div>
+        <h3 class="text-xl font-bold"><a href="{% url 'format_html_view' %}" class="bw-text-link" data-analytics-event="cta clicked" data-analytics-cta="open template formatter" data-analytics-location="blog tools">Format a Django template</a></h3>
+        <p class="bw-muted mt-3">Try the Django-tag example, or use the local commands for private code. For checks on every commit, follow the <a href="/blog/improve-your-code-with-pre-commit" class="bw-text-link">pre-commit guide</a>.</p>
+      </div>
+    </div>
+  </div>
+</section>
 {% endblock content %}
 
 {% block schema %}
