@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-19
+
+### Added
+- Connect the blog hub to the secret-key and template-formatting tools, with related environment-variable and pre-commit guides and contextual click tracking.
+
 All notable changes to this project are documented by date, newest first.
 Each `YYYY-MM-DD` heading groups all changes for that day by type, without
 release versions or an Unreleased section. Historical dated entries retain

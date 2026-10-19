@@ -22,6 +22,7 @@ class StaticViewSitemap(sitemaps.Sitemap):
         # Content revision dates, not the date the sitemap is requested or built.
         return {
             "home": date(2026, 10, 12),
+            "blog": date(2026, 10, 19),
             "generate_django_secret_page": date(2026, 10, 9),
             "projects": date(2026, 10, 8),
             "format_html_view": date(2026, 10, 17),
