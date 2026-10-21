@@ -27,6 +27,10 @@ test('ingestion token survives privacy settings; replay masks and vitals enabled
   assert.equal(config.session_recording.maskTextSelector, '*');
   assert.equal(config.person_profiles, 'identified_only');
 });
+test('PostHog exception capture (error tracking) stays disabled', () => {
+  const {config} = configFixture();
+  assert.equal(config.capture_exceptions, false);
+});
 test('logout resets previous identity before pageview', () => {
   const {config} = configFixture();
   let resets = 0;

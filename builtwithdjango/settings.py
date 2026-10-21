@@ -713,31 +713,8 @@ posthog.personal_api_key = POSTHOG_PERSONAL_API_KEY or None
 posthog.debug = DEBUG
 posthog.disabled = not POSTHOG_ENABLED
 posthog.disable_geoip = False
-posthog.enable_exception_autocapture = True
-posthog.capture_exception_code_variables = False
-posthog.code_variables_mask_patterns = [
-    r"(?i)password",
-    r"(?i)secret",
-    r"(?i)passwd",
-    r"(?i)pwd",
-    r"(?i)api_key",
-    r"(?i)apikey",
-    r"(?i)auth",
-    r"(?i)credentials",
-    r"(?i)privatekey",
-    r"(?i)private_key",
-    r"(?i)token",
-    r"(?i)aws_access_key_id",
-    r"(?i)_pass",
-    r"(?i)sk_",
-    r"(?i)jwt",
-    r"(?i)dsn",
-    r"(?i)cookie",
-    r"(?i)session",
-    r"(?i)stripe",
-    r"(?i)card",
-]
-posthog.code_variables_ignore_patterns = [r"^__.*"]
+# PostHog error tracking is intentionally disabled; exceptions go to Sentry.
+posthog.enable_exception_autocapture = False
 posthog.before_send = posthog_before_send
 posthog.super_properties = {
     "app": "builtwithdjango",
@@ -746,7 +723,7 @@ posthog.super_properties = {
 posthog.enable_keep_alive()
 POSTHOG_MW_EXTRA_TAGS = posthog_extra_tags
 POSTHOG_MW_REQUEST_FILTER = posthog_request_filter
-POSTHOG_MW_CAPTURE_EXCEPTIONS = POSTHOG_ENABLED
+POSTHOG_MW_CAPTURE_EXCEPTIONS = False
 
 if DEBUG:
     CACHES = {

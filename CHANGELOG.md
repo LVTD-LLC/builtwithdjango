@@ -2,6 +2,10 @@
 
 ## 2026-10-21
 
+### Removed
+
+- Disabled PostHog error tracking (browser and server exception capture). PostHog analytics, replay, and heatmaps are unchanged; errors continue to go to Sentry.
+
 ### Added
 
 - Added two source-pinned code-reading paths to the project directory, connecting Pinry board filtering and Baby Buddy note views to their tests and project listings.

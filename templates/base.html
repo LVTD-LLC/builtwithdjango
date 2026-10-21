@@ -107,11 +107,8 @@
               if (client.get_property("$user_id")) client.reset();
             {% endif %}
           },
-          capture_exceptions: {
-            capture_unhandled_errors: true,
-            capture_unhandled_rejections: true,
-            capture_console_errors: false
-          },
+          // PostHog error tracking is intentionally disabled; errors go to Sentry.
+          capture_exceptions: false,
           disable_session_recording: false,
           enable_heatmaps: true,
           person_profiles: "identified_only",
