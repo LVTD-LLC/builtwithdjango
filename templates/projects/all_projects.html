@@ -22,6 +22,7 @@
     </form>
     <p class="mt-4 text-sm bw-muted">
       Want code you can study?
+      {% if not request.GET %}<a class="bw-text-link" href="#source-reading-paths">Start with a guided code-reading path</a>,{% endif %}
       <a class="bw-text-link" href="{% url 'projects' %}?is_open_source=true" data-analytics-event="cta clicked" data-analytics-cta="browse open source" data-analytics-location="project directory">Browse open-source Django projects</a>
       or <a class="bw-text-link" href="{% url 'blog' %}" data-analytics-event="cta clicked" data-analytics-cta="read django guides" data-analytics-location="project directory">follow a practical Django guide</a>.
     </p>
@@ -79,6 +80,31 @@
           <li><strong>Trace one feature.</strong> Follow a request through its URL, view, model, and template or API response. Read the related tests, then try a small change locally using test data, not production credentials.</li>
         </ol>
       </section>
+      <section class="mt-10" aria-labelledby="source-reading-paths">
+        <h2 id="source-reading-paths" class="text-2xl font-black">Two Django source-code reading paths</h2>
+        <p class="mt-3 max-w-3xl bw-muted">Start with one feature, not the repository root. These examples connect a request to the code and tests behind it: a Django REST Framework API in Pinry, and class-based views in Baby Buddy.</p>
+        <div class="mt-5 grid gap-5 md:grid-cols-2">
+          <article class="bw-surface p-5">
+            <h3 class="text-xl font-black">Pinry: who can see a board?</h3>
+            <p class="mt-3 bw-muted">Explore <a class="bw-text-link" href="{% url 'project' 'pinry' %}">Pinry's project listing</a>, then trace how its image-board API selects boards for the current user.</p>
+            <ol class="mt-4 list-decimal space-y-3 pl-6 bw-muted">
+              <li>Open <a class="bw-text-link" href="https://github.com/pinry/pinry/blob/05476b112401cf34a38bfbffc67c37f5f6c3b38f/core/views.py" data-analytics-event="cta clicked" data-analytics-cta="read pinry views" data-analytics-location="project reading paths">core/views.py</a>. Find the <code>boards</code> router registration and <code>BoardViewSet.get_queryset()</code>.</li>
+              <li>Follow <code>filter_private_board()</code> into <a class="bw-text-link" href="https://github.com/pinry/pinry/blob/05476b112401cf34a38bfbffc67c37f5f6c3b38f/core/serializers.py" data-analytics-event="cta clicked" data-analytics-cta="read pinry filtering" data-analytics-location="project reading paths">core/serializers.py</a>. Compare the authenticated and anonymous branches. Which boards does each exclude?</li>
+              <li>Read the private-board cases in <a class="bw-text-link" href="https://github.com/pinry/pinry/blob/05476b112401cf34a38bfbffc67c37f5f6c3b38f/core/tests/api.py" data-analytics-event="cta clicked" data-analytics-cta="read pinry tests" data-analytics-location="project reading paths">core/tests/api.py</a>. Check the signed-in user and assertions, not just each test's name.</li>
+            </ol>
+          </article>
+          <article class="bw-surface p-5">
+            <h3 class="text-xl font-black">Baby Buddy: follow a note request</h3>
+            <p class="mt-3 bw-muted">Explore <a class="bw-text-link" href="{% url 'project' 'baby-buddy' %}">Baby Buddy's project listing</a>, then follow its note list and add pages through familiar Django building blocks.</p>
+            <ol class="mt-4 list-decimal space-y-3 pl-6 bw-muted">
+              <li>Find <code>notes/</code> and <code>notes/add/</code> in <a class="bw-text-link" href="https://github.com/babybuddy/babybuddy/blob/09629cf633cf3a2059a21ade4cea7ea4d846422f/core/urls.py" data-analytics-event="cta clicked" data-analytics-cta="read baby buddy routes" data-analytics-location="project reading paths">core/urls.py</a>.</li>
+              <li>Open <a class="bw-text-link" href="https://github.com/babybuddy/babybuddy/blob/09629cf633cf3a2059a21ade4cea7ea4d846422f/core/views.py" data-analytics-event="cta clicked" data-analytics-cta="read baby buddy views" data-analytics-location="project reading paths">core/views.py</a> at <code>NoteList</code> and <code>NoteAdd</code>. Follow their base classes; compare the model, form, permission, and success URL settings.</li>
+              <li>Read <code>test_note_views()</code> in <a class="bw-text-link" href="https://github.com/babybuddy/babybuddy/blob/09629cf633cf3a2059a21ade4cea7ea4d846422f/core/tests/tests_views.py" data-analytics-event="cta clicked" data-analytics-cta="read baby buddy tests" data-analytics-location="project reading paths">core/tests/tests_views.py</a>. Which requests and responses does it check?</li>
+            </ol>
+          </article>
+        </div>
+        <p class="mt-4 max-w-3xl text-sm bw-muted">Source links use snapshots checked on October 21, 2026, so the reading paths stay reproducible as the projects change. This is a source-reading exercise, not a setup test or security audit. Check each project's current README and license before running or reusing code; use fictional data in a local environment.</p>
+      </section>
     {% endif %}
   </div>
 </section>
@@ -90,7 +116,7 @@
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     "name": "Projects Built with Django",
-    "dateModified": "2026-10-08",
+    "dateModified": "2026-10-21",
     "description": "Discover real projects and apps built with Django.",
     "thumbnailUrl": "{% absolute_url '/static/vendors/images/logo.png' %}",
     "url": "{% canonical_url '/projects/' %}",

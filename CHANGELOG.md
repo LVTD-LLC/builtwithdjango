@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-21
+
+### Added
+
+- Added two source-pinned code-reading paths to the project directory, connecting Pinry board filtering and Baby Buddy note views to their tests and project listings.
+
 ## 2026-10-19
 
 ### Added
