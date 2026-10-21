@@ -120,3 +120,12 @@ class AnalyticsReliabilityTests(TestCase):
         )
         self.assertNotIn("private-token", str(result))
         self.assertNotIn("secret", str(result))
+
+
+class PostHogErrorTrackingDisabledTests(TestCase):
+    def test_posthog_exception_capture_is_disabled(self):
+        import posthog
+        from django.conf import settings
+
+        self.assertFalse(posthog.enable_exception_autocapture)
+        self.assertIs(settings.POSTHOG_MW_CAPTURE_EXCEPTIONS, False)

@@ -25,7 +25,7 @@ Session replay was also disabled at the project level.
 | Accounts | identify before initial pageview, reset on anonymous page after logout | signup/login/logout/email confirmation |
 | Newsletter | form intent | newsletter confirmation requested (Listmonk accepted an opt-in request, not delivery or confirmed consent) |
 | Payments | checkout intent/return | verified Stripe events; deterministic UUID per event name + Stripe event ID |
-| Failures | unhandled browser errors, masked replay | server exceptions (without locals), HTTP 5xx as request failed |
+| Failures | masked replay (PostHog error tracking disabled; errors go to Sentry) | HTTP 5xx as request failed (PostHog exception capture disabled) |
 
 The site currently uses full-document navigation, not a loaded Turbo runtime.
 SDK `history_change` capture covers initial pageviews and history changes.
@@ -46,7 +46,8 @@ identity/page context refresh into its navigation lifecycle and test logout.
   protections even when changing project-level settings.
 - URL credentials, sensitive query values, fragments, and account/user path
   tokens are redacted. Form events contain structure/error codes, never values.
-- Server exception locals are disabled; screenshot logs no longer print the
+- PostHog exception capture is disabled in both runtimes; Sentry owns error
+  tracking. Screenshot logs no longer print the
   credential-bearing provider URL. Existing authenticated profile properties
   remain unchanged server-side.
 - Existing search terms and public project metadata remain collected. Account
@@ -75,7 +76,7 @@ WHERE timestamp > now() - INTERVAL 24 HOUR
 GROUP BY event ORDER BY count() DESC
 ```
 
-Check browser `$pageview`, server `request completed`, error volume, and
+Check browser `$pageview`, server `request completed`, and
 web-vitals/replay arrival separately. A quiet conversion event is not proof of
 failure. No recurring health job is installed by this change. Python SDK queue
 retries are bounded; deterministic Stripe UUIDs prevent replay inflation but
