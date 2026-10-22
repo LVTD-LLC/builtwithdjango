@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-22
+
+### Fixed
+
+- Replace unsafe migration-reset instructions in the custom-user guide with an additive profile example and a staged, data-preserving migration checklist.
+
 ## 2026-10-21
 
 ### Removed
