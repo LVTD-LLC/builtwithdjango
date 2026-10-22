@@ -161,5 +161,24 @@
     "must_not_match": [
       "rev:\\s*['\\\"]?1\\.4\\.1"
     ]
+  },
+  {
+    "claim": "Custom-user guide does not prescribe destructive migration resets",
+    "paths": [
+      "content/blog/custom-user-model-migration-mid-project-django.md"
+    ],
+    "must_match": [
+      "Keep your migrations",
+      "OneToOneField",
+      "restored copy",
+      "fresh installation"
+    ],
+    "must_not_match": [
+      "TRUNCATE TABLE",
+      "DELETE FROM django_migrations",
+      "migrate --fake",
+      "-delete",
+      "db_table ="
+    ]
   }
 ]
