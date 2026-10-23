@@ -180,5 +180,21 @@
       "-delete",
       "db_table ="
     ]
+  },
+  {
+    "claim": "Environment tutorial preserves deployment precedence and does not promise automatic safety",
+    "paths": [
+      "content/blog/env-vars.md"
+    ],
+    "must_match": [
+      "env.bool\\(\"DEBUG\", default=False\\)",
+      "environ.Env.read_env\\(BASE_DIR / \\\".env\\\"\\)",
+      "plain text, not encryption",
+      "git ls-files -- .env"
+    ],
+    "must_not_match": [
+      "can now be safe",
+      "read_env\\([^\\n]+overwrite=True"
+    ]
   }
 ]
