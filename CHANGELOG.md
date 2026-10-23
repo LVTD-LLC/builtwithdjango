@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-23
+
+### Fixed
+
+- Corrected the environment-variable guide to preserve deployment settings over local .env values, with tested boolean parsing, required secrets, Git checks, and scoped production-safety guidance.
+
 ## 2026-10-22
 
 ### Fixed
