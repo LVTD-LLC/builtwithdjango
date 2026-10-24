@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-24
+
+### Fixed
+
+- Keep the current project search and sort when switching to open-source matches, resetting pagination so relevant results are not skipped.
+
 ## 2026-10-23
 
 ### Fixed

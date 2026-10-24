@@ -23,7 +23,7 @@
     <p class="mt-4 text-sm bw-muted">
       Want code you can study?
       {% if not request.GET %}<a class="bw-text-link" href="#source-reading-paths">Start with a guided code-reading path</a>,{% endif %}
-      <a class="bw-text-link" href="{% url 'projects' %}?is_open_source=true" data-analytics-event="cta clicked" data-analytics-cta="browse open source" data-analytics-location="project directory">Browse open-source Django projects</a>
+      <a class="bw-text-link" href="{% url 'projects' %}{% querystring is_open_source="true" page=None %}" data-analytics-event="cta clicked" data-analytics-cta="browse open source" data-analytics-location="project directory">{% if request.GET.q %}Show open-source matches{% else %}Browse open-source Django projects{% endif %}</a>
       or <a class="bw-text-link" href="{% url 'blog' %}" data-analytics-event="cta clicked" data-analytics-cta="read django guides" data-analytics-location="project directory">follow a practical Django guide</a>.
     </p>
     <div class="bw-results-summary"><p>{{ paginator.count }} project{{ paginator.count|pluralize }}</p><p>Featured projects appear first.</p></div>
@@ -116,7 +116,7 @@
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     "name": "Projects Built with Django",
-    "dateModified": "2026-10-21",
+    "dateModified": "2026-10-24",
     "description": "Discover real projects and apps built with Django.",
     "thumbnailUrl": "{% absolute_url '/static/vendors/images/logo.png' %}",
     "url": "{% canonical_url '/projects/' %}",
