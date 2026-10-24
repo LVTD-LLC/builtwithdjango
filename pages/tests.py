@@ -1,5 +1,8 @@
+import re
 from datetime import timedelta
+from html import unescape
 from unittest.mock import patch
+from urllib.parse import parse_qs, urlsplit
 
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory, TestCase
@@ -186,6 +189,27 @@ class RedesignDiscoveryTests(TestCase):
                 self.assertContains(response, "noindex,follow")
                 self.assertEqual(response.context["canonical_path"], "/projects/")
                 self.assertNotContains(response, 'id="learn-from-projects"')
+
+        # Narrow the current search, rather than silently returning all source projects.
+        # A smaller result set must start at page 1, not retain a stale page 2.
+        with patch("projects.views.ProjectListView.paginate_by", 1):
+            response = self.client.get("/projects/", {"q": "Public", "order_by": "like", "page": 2})
+            shortcut = re.search(
+                r'href="([^"]+)" data-analytics-event="cta clicked" data-analytics-cta="browse open source"',
+                response.content.decode(),
+            )
+            self.assertIsNotNone(shortcut)
+            target = unescape(shortcut.group(1))
+            self.assertEqual(
+                parse_qs(urlsplit(target).query),
+                {"q": ["Public"], "order_by": ["like"], "is_open_source": ["true"]},
+            )
+            narrowed = self.client.get(target)
+            self.assertEqual(narrowed.status_code, 200)
+            self.assertEqual([p.title for p in narrowed.context["page_obj"]], ["Public open source"])
+            self.assertContains(narrowed, "Show open-source matches")
+            self.assertContains(narrowed, "noindex,follow")
+            self.assertEqual(narrowed.context["canonical_path"], "/projects/")
 
     def test_blog_search_and_type_filters_keep_drafts_private(self):
         for title, kind, status in [
