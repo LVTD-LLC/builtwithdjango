@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-27
+
+### Changed
+- Corrected the reusable-model tutorial to use the configured user model, explain UUID and timestamp limits, and provide a runnable abstract-model/partial-save regression example.
+
 ## 2026-10-24
 
 ### Fixed
