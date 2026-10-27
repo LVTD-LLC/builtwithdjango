@@ -196,5 +196,21 @@
       "can now be safe",
       "read_env\\([^\\n]+overwrite=True"
     ]
+  },
+  {
+    "claim": "Reusable models example supports the configured user and accurately bounds timestamps and UUIDs",
+    "paths": [
+      "content/blog/reusable-models.md"
+    ],
+    "must_match": [
+      "settings.AUTH_USER_MODEL",
+      "a UUID is not authorization",
+      "update_fields",
+      "not a separate `BaseModel` table"
+    ],
+    "must_not_match": [
+      "ForeignKey\\('users.CustomUser'",
+      "not able to undo it in prod ever since"
+    ]
   }
 ]
