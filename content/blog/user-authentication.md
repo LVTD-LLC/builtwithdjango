@@ -1,7 +1,7 @@
 ---
 id: 5
 created: '2022-06-18 15:55:37.856000+00:00'
-modified: '2026-10-07 07:00:00+00:00'
+modified: '2026-10-28 08:45:00+00:00'
 title: User Authentication in Django
 slug: user-authentication
 status: PB
@@ -243,3 +243,5 @@ And you're pretty much done.
 Start the development server with `poetry run python manage.py runserver`. Open the signup link, create a test account, then test login and the logout confirmation screen. The logout link opens a confirmation page; it does not log the user out on GET. Django's [runserver documentation](https://docs.djangoproject.com/en/5.2/ref/django-admin/#runserver) covers this development-only command.
 
 In the next post, we are going to integrate TailwindCSS into our app.
+
+Once signup, login and logout work locally, continue with [adding GitHub sign-in](/blog/github-auth) if your users need a social login option. That guide covers the OAuth app, callback URL and provider email-verification behavior; GitHub is not required for the username/password flow above.
