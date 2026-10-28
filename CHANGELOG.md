@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-28
+
+### Fixed
+
+- Corrected the GitHub authentication guide to preserve provider email-verification flags, use matching login/callback paths, and explain tested POST/CSRF, app configuration, and troubleshooting steps; linked it from the basic authentication walkthrough.
+
 ## 2026-10-27
 
 ### Changed

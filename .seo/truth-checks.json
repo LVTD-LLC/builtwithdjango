@@ -212,5 +212,21 @@
       "ForeignKey\\('users.CustomUser'",
       "not able to undo it in prod ever since"
     ]
+  },
+  {
+    "claim": "GitHub guide preserves provider email verification and uses the configured callback prefix",
+    "paths": [
+      "content/blog/github-auth.md"
+    ],
+    "must_match": [
+      "accounts/github/login/callback/",
+      "CSRF",
+      "provider-unverified",
+      "settings only"
+    ],
+    "must_not_match": [
+      "\"VERIFIED_EMAIL\": True",
+      "127.0.0.1:8000/users/github/login/"
+    ]
   }
 ]
