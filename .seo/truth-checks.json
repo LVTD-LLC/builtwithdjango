@@ -228,5 +228,23 @@
       "\"VERIFIED_EMAIL\": True",
       "127.0.0.1:8000/users/github/login/"
     ]
+  },
+  {
+    "claim": "Signup styling preserves configured fields and autoescaped errors without historical unsafe HTML assembly",
+    "paths": [
+      "content/blog/styling-authentication-pages.md"
+    ],
+    "must_match": [
+      "form.visible_fields",
+      "form.hidden_fields",
+      "csrf_token",
+      "field.auto_id",
+      "accounts/signup/"
+    ],
+    "must_not_match": [
+      "errors \\| safe",
+      "class DivErrorList",
+      "autocomplete=\"current-password\""
+    ]
   }
 ]
