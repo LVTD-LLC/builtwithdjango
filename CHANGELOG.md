@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-10-29
+
+### Changed
+
+- Updated the allauth signup-styling tutorial with tested modern template overrides, escaped error rendering, configured routes and accessible field styling.
+
 ## 2026-10-28
 
 ### Fixed

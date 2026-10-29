@@ -1,7 +1,7 @@
 ---
 id: 7
 created: '2022-10-03 16:27:45.268000+00:00'
-modified: '2022-10-03 16:56:38.934000+00:00'
+modified: '2026-10-29 08:45:00+00:00'
 title: Styling django-allauth Authentication Pages
 slug: styling-authentication-pages
 status: PB
@@ -29,304 +29,146 @@ tag_list:
   slug: django-allauth
 author: 1
 ---
-## Intro
-Now that we have [set up Tailwind and Authentication](https://builtwithdjango.com/blog/set-up-webpack-and-tailwind) (Django-Allauth), let's move to styling those authentication pages.
+## Style the form, keep the authentication flow
 
-If you have setup some other authentication setup (not Django-Allauth) you might run into some difficulties, but it still might be useful for you to see.
+Django-allauth supplies the signup view, validation and account flow. You can change how its form looks without rebuilding that behavior or assembling error HTML in Python.
 
-## Code
-We are continuing the series where we are working on the `basic-django` app. The repo for that project can be found [here](https://github.com/builtwithdjango/basic-django).
+This walkthrough overrides one signup template, renders the configured fields and styles their errors with ordinary CSS. It was checked with Python 3.11, Django 5.2.18 and django-allauth 65.19.7, using username, email and two password fields. It is a local password-signup example, not a complete theme for social login, passkeys or MFA.
 
-In all the previous posts I kind of just added commits to the master, which makes it a little hard to track the progress. From now on, each tutorial will be a separate PR that you can examine to see which code has changed to achieve the desired behavior.
+Start with the [working account setup](/blog/user-authentication). The older [basic-django example PR](https://github.com/builtwithdjango/basic-django/pull/1/files) records the original 2022 design; it is not the current dependency baseline. If your CSS is already built with Tailwind, keep that pipeline: the markup below does not require another CSS package.
 
-The PR for this tutorial can be found [here](https://github.com/builtwithdjango/basic-django/pull/1/files).
+## Make sure Django finds your template
 
-## Defaults
-If you you were following the previous posts, you should have a bare bone Django application with Authentication. To make sure everything is working lets start the servers.
+Keep your existing template settings and add the project template directory to `DIRS`. With the usual `BASE_DIR` setting, the relevant entries inside `TEMPLATES` are:
 
-First, run the `npm run start` command. Once it works fine, open up a new terminal with Ctrl+N and run `poetry run python manage.py runserver`. After the Django server started, go to [http://127.0.0.1:8000/](http://127.0.0.1:8000/).
+```python
+"DIRS": [BASE_DIR / "templates"],
+"APP_DIRS": True,
+```
 
-> If you are wondering why we are using `npm run start` you should check out the [previous post where we installed TailwindCSS](https://builtwithdjango.com/blog/set-up-webpack-and-tailwind). If you have your own way of working with CSS then disregard the `npm run start` command.
+The project directory is searched before app templates with Django's default loader setup. A custom loader configuration needs the equivalent ordering. These entries belong inside your existing DjangoTemplates backend, not in a second `TEMPLATES` assignment that drops context processors.
 
-Let's begin by examining the [django-allauth repo](https://github.com/pennersr/django-allauth). More specifically let's look at all the [account templates](https://github.com/pennersr/django-allauth/tree/master/allauth/templates/account) that are available to us.
-
-To be even more specific, let's look at the [`signup.html`](https://github.com/pennersr/django-allauth/blob/master/allauth/templates/account/signup.html) file. We can see that it extends the [`base.html`](https://github.com/pennersr/django-allauth/blob/master/allauth/templates/account/base.html) file and has a simple form.
-
-## Overwriting Defaults
-
-Inside the `templates` directory in your project create a new directory called `account`. Inside that new directory create a `signup.html` file.
-
-Copy all the text from django-allauth's [`signup.html`](https://github.com/pennersr/django-allauth/blob/master/allauth/templates/account/signup.html) file and paste inside your new one.
-
-Since we don't have the exact same environment as django-allauth let's make some changes:
-
-- Replace `{% extends "account/base.html" %}` with `{% extends "base.html" %}`
-- Remove the `{% load i18n %}` line
-- Remove the `{% block head_title %}{% trans "Signup" %}{% endblock %}` line
-- Replace `<h1>{% trans "Sign Up" %}</h1>` with `<h1>Sign Up</h1>`
-- Remove the `{% blocktrans %}` and `{% endblocktrans %}`
-- Finally replace `{% trans "Sign Up" %} &raquo;` with `Sign Up`
-
-Alright step one is done. We just replicated the simplified default version to our project. The last thing I will ask you to do is to add something silly in that template. For example,
+Create `templates/base.html` if you do not already have a site layout:
 
 ```html
-<p>whats aaaaaaaap</p>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block head_title %}My Django site{% endblock %}</title>
+  </head>
+  <body>
+    <main>{% block content %}{% endblock %}</main>
+  </body>
+</html>
 ```
 
-This is just to make sure we are overwriting the template. So, if you head to the [http://127.0.0.1:8000/users/signup/](http://127.0.0.1:8000/users/signup/) page, you should see that silly line there. If you do, awesome, time to move on! If you don't leave a comment with some details and I will try to help you.
+An existing layout is fine too; use its real block names. Extending `base.html` does not create a `content` block in a layout that calls it something else.
 
-## Finer Form Control
+## Override account/signup.html
 
-Now that we can override the let's add some styling. You could stop reading here, since you know how to overwrite the templates, but if you stick around you might learn a couple more useful tips.
-
-First thing I want to draw your attention to is the rendering of the form. As you can see the defaults render the whole form at once with:
-
-```python
-{{ form.as_p }}
-```
-
-I don't like to do that since it limits our control of each field. Technically we can control each field by overwriting the form, but who wants to do that. Let's keep all the html in the html file.
-
-So, replace that line with the following:
-
-```python
-  {{ form.non_field_errors | safe }}
-  <input type="hidden" name="remember" value="true" />
-  <div>
-    <div>
-      {{ form.username.errors | safe }}
-      <label for="username" class="sr-only">Username</label>
-      {{ form.username }}
-    </div>
-    <div>
-      {{ form.email.errors | safe }}
-      <label for="email" class="sr-only">Username</label>
-      {{ form.email }}
-    </div>
-    <div>
-      {{ form.password1.errors | safe }}
-      <label for="id_password1" class="sr-only">Password</label>
-      {{ form.password1 }}
-    </div>
-    <div>
-      {{ form.password2.errors | safe }}
-      <label for="password2" class="sr-only">Password</label>
-      {{ form.password2 }}
-    </div>
-  </div>
-```
-
-Here we just explicitly mention all the fields. Since we are doing it ourselves we also have to take care of the errors that will be rendered if users do something wrong (bad password, existing username, etc) and of the labels. If you really wanted you could avoid those, but probably shouldn't 😃
-
-Try reloading the page. If everything works, we can move on to the next step.
-
-## Styling Prerequisites
-
-When you render the forms with something like `{{ form.password2 }}` you will get an input field with some id and name, but no classes.
-
-This makes it hard to style. Sure, you can wrap it in a div and style that. While that will help, some styling choices have to be applied directly to the input tag. So that won't work.
-
-Don't worry, there is a solution to that. The amazing [jazzband team](https://jazzband.co) is maintaining a cool django extension called [django-widget-tweaks](https://github.com/jazzband/django-widget-tweaks) (btw, this team maintain a bunch of other cool django extensions). It allows you to control how form fields are rendered inside your html file, rather than in your python file. You will see how in a second.
-
-- Stop your Django Server by heading over to the terminal and pressing Ctrl+C.
-- Run `poetry add django-widget-tweaks`
-- Add `"widget_tweaks",` to the `INSTALLED_APPS` list in `settings.py`
-
-That's it. We can now start using it immediately.
-
-Head over to the `signup.html` file and add `{% load widget_tweaks %}` right after `{% extends "base.html" %}`. Then, replace all the form renderings like this:
-
-`{{ form.username }}` becomes  `{% render_field form.username %}`
-`{{ form.email }}` becomes  `{% render_field form.email %}`
-
-etc. Repeat this for `password1` and `password2` fields.
-
-Alright, to make sure we did everything correctly, let's start the django server and head over to [http://127.0.0.1:8000/users/signup/](http://127.0.0.1:8000/users/signup/). If all is good move on to the next step. If not, let me know in the comments below, what issue are you running into. Make sure to include as much details as possible.
-
-## Styling
-
-Now that we have the everything necessary installed, let's do some styling. Look, I'm not designer, so I'm not going to teach you how to style your pages, that is completely up to you, but here is how I usually do it.
-
-Below is all the code that I added in-between the `{% block content %}` and `{% endblock content %}`
+Create `templates/account/signup.html`. The path is relative to the template directory; do not create `templates/allauth/account/signup.html`.
 
 ```html
-<div class="flex items-center justify-center px-4 py-12 my-4 sm:px-6 lg:px-8">
-  <div class="w-full max-w-md space-y-8">
-      <div>
-          <h2 class="mt-6 text-3xl font-extrabold text-center text-gray-900">
-              Create your account
-          </h2>
-          <p class="mt-2 text-sm text-center text-gray-600">
-            Or
-            <a href="{% url 'account_login' %}" class="font-medium text-green-600 hover:text-green-500">
-                login if you have one already.
-            </a>
-        </p>
-      </div>
-      <form class="mt-8 space-y-6" id="signup_form" method="post" action="{% url 'account_signup' %}">
-        {% csrf_token %}
-
-        {{ form.non_field_errors | safe }}
-        <input type="hidden" name="remember" value="true" />
-        <div class="-space-y-px rounded-md shadow-sm">
-          <div>
-            {{ form.username.errors | safe }}
-            <label for="username" class="sr-only">Username</label>
-            {% render_field form.username placeholder="Username" id="username" name="username" type="text" autocomplete="username" required=True class="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" %}
-          </div>
-          <div>
-            {{ form.email.errors | safe }}
-            <label for="email" class="sr-only">Username</label>
-            {% render_field form.email id="email" name="email" placeholder="Email" type="email" autocomplete="email" required="True" class="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" %}
-          </div>
-          <div>
-            {{ form.password1.errors | safe }}
-            <label for="password1" class="sr-only">Password</label>
-            {% render_field form.password1 id="password1" name="password1" placeholder="Password" type="password" autocomplete="current-password" required="True" class="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" %}
-          </div>
-          <div>
-            {{ form.password2.errors | safe }}
-            <label for="password2" class="sr-only">Password</label>
-            {% render_field form.password2 id="password2" name="password2" type="password" autocomplete="current-password" required="True" class="relative block w-full px-3 py-2 text-gray-900 placeholder-gray-500 border border-gray-300 rounded-none appearance-none rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Cofirm Password" %}
-          </div>
+{% extends "base.html" %}
+{% block head_title %}Create your account{% endblock %}
+{% block content %}
+  <section class="signup-card" aria-labelledby="signup-heading">
+    <h1 id="signup-heading">Create your account</h1>
+    <p>Already registered? <a href="{% url 'account_login' %}">Sign in</a>.</p>
+    <form method="post" action="{% url 'account_signup' %}">
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="signup-errors" role="alert">
+          {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
         </div>
-
-        {% if redirect_field_value %}
-        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
-        {% endif %}
-
-        <div>
-            <button type="submit"
-                    class="relative flex justify-center w-full px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent border-solid rounded-md group hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
-                    <!-- Heroicon name: solid/lock-closed -->
-                    <svg class="w-5 h-5 text-green-500 group-hover:text-green-400"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                          aria-hidden="true">
-                        <path fill-rule="evenodd"
-                              d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                              clip-rule="evenodd"/>
-                    </svg>
-                </span>
-                Sign up
-            </button>
+      {% endif %}
+      {% for hidden in form.hidden_fields %}
+        {{ hidden }}
+        {% for error in hidden.errors %}<p class="signup-errors">{{ error }}</p>{% endfor %}
+      {% endfor %}
+      {% for field in form.visible_fields %}
+        <div class="signup-field">
+          {{ field.label_tag }}
+          {{ field }}
+          {% if field.help_text %}
+            <div id="{{ field.auto_id }}_helptext" class="signup-help">{{ field.help_text }}</div>
+          {% endif %}
+          {% if field.errors %}
+            <ul id="{{ field.auto_id }}_error" class="signup-errors">
+              {% for error in field.errors %}<li>{{ error }}</li>{% endfor %}
+            </ul>
+          {% endif %}
         </div>
-      </form>
-    </div>
-  </div>
+      {% endfor %}
+      {% if redirect_field_value %}
+        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}">
+      {% endif %}
+      <button type="submit">Create account</button>
+    </form>
+  </section>
+{% endblock %}
 ```
 
-This yields something like this:
+The field loop follows the configured signup form rather than assuming every project requires the same four fields. It preserves widget names, generated IDs, password autocomplete attributes and bound values. `label_tag` connects each visible label to its input. Django 5.2 also associates ordinary field errors and help text using these `_error` and `_helptext` IDs. Keep those IDs if you change the wrappers.
 
-![Example Styling of Signup](https://res.cloudinary.com/built-with-django/image/upload/v1664811117/blog-images/example_styling_of_a_login_20221001104430_mjucv2.png)
+The form action uses the named URL. If the prerequisite includes allauth under `accounts/`, signup is `/accounts/signup/`, not `/users/signup/`. To check your own prefix, run:
 
-Feel free to play around with it. A lot of the times, when you paste a large chunk of code from a tutorial you lack some understanding. So, feel free to play around with some values, or change things one at a time to get a better feel for what changes what.
-
-## Styling Errors
-
-There is a small problem. The errors that django will display remained unstyled. So, if the user enter a weak password for example, he will see something like this:
-
-![Validation Error Example](https://res.cloudinary.com/built-with-django/image/upload/v1664811117/blog-images/validation_error_example_20221001114000_duvcas.png)
-
-Not so nice. We could replace all the error rendering tags to use render_field and add some classes, but that is not such a good idea, since all the errors will use the same styling and we don't want to add a lot of repeating code to our project. That will break the DRY principle of programming.
-
-Don't worry, there is a neat solution. We are going to enhance the Form.
-
-First let's create a generic class that we will be able to use in any part of the application. Inside the `basic_django` directory (same dir that has `settings.py`) create a file named `utils.py` (you can name it whatever you want, but this is the name I use). Here  we can store all the code that will can be reused in the whole application.
-
-Add the following to that new file:
-
-```python
-from django.forms.utils import ErrorList
-
-
-class DivErrorList(ErrorList):
-    def __str__(self):
-        return self.as_divs()
-
-    def as_divs(self):
-        if not self:
-            return ""
-        return f"""
-            <div class="p-4 my-4 border border-red-600 border-solid rounded-md bg-red-50">
-              <div class="flex">
-                <div class="flex-shrink-0">
-                  <!-- Heroicon name: solid/x-circle -->
-                  <svg class="w-5 h-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                  </svg>
-                </div>
-                <div class="ml-3 text-sm text-red-700">
-                      {''.join(['<p>%s</p>' % e for e in self])}
-                </div>
-              </div>
-            </div>
-         """
+```bash
+poetry run python manage.py shell -c "from django.urls import reverse; print(reverse('account_signup'))"
 ```
 
-Here we are creating a class that enhances Django's native ErrorList class by adding some HTML markup to it.
+Keep the CSRF token and POST method. The redirect field preserves allauth's continuation value; it does not replace the view's redirect-safety checks. Do not add a hidden `remember` input to signup: session persistence belongs to the login flow.
 
-Next, create a `forms.py` file under the `users` directory and add the following to it:
+## Style inputs and errors together
 
-```python
-from allauth.account.forms import SignupForm
-from basic_django.utils import DivErrorList
+Add this to the stylesheet your layout already loads. To try the self-contained example, put it inside a `<style>` element in the example base template's `<head>`; projects with a restrictive Content Security Policy should use their allowed external stylesheet.
 
-class CustomSignUpForm(SignupForm):
-    def __init__(self, *args, **kwargs):
-      super(CustomSignUpForm, self).__init__(*args, **kwargs)
-      self.error_class = DivErrorList
-```
-
-As you can see, here we are importing that custom ErrorList class and overwriting the error_class variable available to us in the SignUp Form provided by django_allauth.
-
-One last change we need to make is to tell django_allauth, that we have our own form that we would like it to use. To do that head over to `settings.py` and add the following line at the bottom of the file:
-
-```python
-ACCOUNT_FORMS = {
-  'signup': 'users.forms.CustomSignUpForm'
+```css
+.signup-card { max-width: 28rem; margin: 2rem auto; padding: 1.25rem; color: #17251d; }
+.signup-field { margin: 1rem 0; }
+.signup-field label { display: block; margin-bottom: .35rem; font-weight: 600; }
+.signup-field input:not([type="checkbox"]):not([type="radio"]) {
+  box-sizing: border-box; width: 100%; padding: .7rem;
+  border: 1px solid #66746c; border-radius: .35rem;
 }
+.signup-card a { color: #166534; text-decoration: underline; }
+.signup-card button {
+  padding: .75rem 1rem; border: 0; border-radius: .35rem;
+  background: #166534; color: white; font-weight: 600; cursor: pointer;
+}
+.signup-card :is(input, button, a):focus-visible { outline: 3px solid #2563eb; outline-offset: 3px; }
+.signup-help { margin-top: .35rem; color: #46564c; font-size: .9rem; }
+.signup-errors { margin: .5rem 0; padding: .75rem 1.5rem; border: 1px solid #b91c1c; color: #991b1b; background: #fef2f2; }
+.signup-field input[aria-invalid="true"] { border-color: #b91c1c; }
 ```
 
-Now, let's head back over to the [signup page](http://127.0.0.1:8000/users/signup/) and try entering "password" in the password field and let's see what happens.
+No `django-widget-tweaks`, custom `SignupForm` or `ACCOUNT_FORMS` entry is needed for this version. Existing application-specific validation can stay in Python; visual error markup stays in the template.
 
-What you should be able to see is that something changed, but not exactly to the state that we wanted.
+### Keep error messages escaped
 
-![Not Complete Transofratmion of the DivErrorClass](https://res.cloudinary.com/built-with-django/image/upload/v1664811117/blog-images/not_complete_transofratmion_of_the_diverrorclass_20221001122443_qmplo9.png)
+Use `{{ error }}` in the loops, without a `safe` filter. Do not join error strings into HTML in an f-string and then mark the result safe. A custom validator might include user-supplied text: rendering that text as HTML can introduce an injection vulnerability. The former `DivErrorList` recipe did exactly this for a fixture error containing HTML; that is why this example no longer uses it. This is not a claim that the standard allauth validators or a deployed site were exploited.
 
-If you look into the `DivErrorClass` you will see that we have added some other classes to make the text and background red, but that didn't happen. Here is why.
+Django's ordinary template autoescaping handles plain error strings. Do not deliberately mark untrusted validator output safe upstream. See the [Django forms API](https://docs.djangoproject.com/en/5.2/ref/forms/api/) for validation and error handling.
 
-When we were setting up TailwindCSS we created a config file for it. In it there is a block that tells the Twilwind engine in which files you use tailwind:
+## Check the local flow
 
-```javascript
-  content: [
-    './templates/**/*.html',
-  ],
-```
+Start Django with `poetry run python manage.py runserver`. If your existing stylesheet needs a frontend watcher, start that separately using your project's command.
 
-This is done in an attempt to minimize the generated css file. Let's add another file to it. Add `'./basic_django/utils.py',` to the array to make it look like this:
+1. Open the URL returned by `reverse('account_signup')`. Confirm the new heading and visible, correctly associated labels.
+2. Submit empty required fields, different passwords and a weak password. Browser validation may stop an empty form before it reaches Django; submit a malformed POST with Django's test client to check server-side errors too. Confirm errors stay beside their fields and non-field errors remain visible.
+3. Submit an existing username and, with unique email enabled, an existing email. Confirm the bound form displays errors without losing the entered non-password values.
+4. Test a custom validation message containing `<strong>example</strong>`. It should appear as literal text, not bold markup. Check hidden-field errors too if your form adds hidden fields.
+5. Submit valid disposable local credentials. Confirm the expected redirect and account creation. With email verification enabled, also test the appropriate verification flow using a local mail backend; the example's local checks do not prove production email delivery.
+6. Check at a narrow viewport and navigate by keyboard. Labels, validation messages and the submit button should remain readable, with visible focus.
 
-```javascript
-  content: [
-    './templates/**/*.html',
-    './basic_django/utils.py',
-  ],
-```
+The template changes presentation, not your signup policy. Recheck fields, redirects and verification after changing allauth settings or upgrading the package.
 
-Now let's head back to [http://127.0.0.1:8000/users/signup/](http://127.0.0.1:8000/users/signup/)
+## When to use allauth's layout and element overrides
 
-![Fixed Error Message](https://res.cloudinary.com/built-with-django/image/upload/v1664811117/blog-images/fixed_error_message_20221003101220_qgpcra.png)
+Overriding `account/signup.html` is useful for a deliberately custom page, but it replaces that page's upstream markup. This example intentionally omits social-provider buttons and other optional signup modes. For GitHub sign-in, follow the [provider setup guide](/blog/github-auth) and preserve the provider controls required by your flow.
 
-Hooray! Now all the error messages on our website will look like this.
+For a consistent theme across login, signup and account-management screens, consider allauth's `allauth/layouts/entrance.html` and `allauth/elements/` overrides instead. They can retain more of the package's built-in flow. Check the [current allauth template documentation](https://docs.allauth.org/en/latest/common/templates.html) and the templates shipped with your installed version: the modern element/slot structure is not the same as the historical template this tutorial originally copied.
 
-## Conclusion
-
-This was a long post, but we have learnt a lot.
-
-We learnt how to overwrite/enhance auth templates provided to us by django-allauth. As well as, how to customize the way error get rendered onto the template.
-
-When I was starting these things were a mystery to me, so I hope they will help you in your journey.
-
-Now the task for you would be to try customizing a different form, perhaps a login or anything else that you might need for your website.
+Next, apply the same approach to one other account page, testing its actual behavior before sharing a common theme.
