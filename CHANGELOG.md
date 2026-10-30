@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-10-30
+
+### Added
+- Added a pinned Healthchecks source-reading path to the project directory, tracing a failure ping through Django routes, view, model and test assertions. Existing reading paths and search metadata remain unchanged.
+
 ## 2026-10-29
 
 ### Changed
