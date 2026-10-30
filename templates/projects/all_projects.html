@@ -81,8 +81,8 @@
         </ol>
       </section>
       <section class="mt-10" aria-labelledby="source-reading-paths">
-        <h2 id="source-reading-paths" class="text-2xl font-black">Two Django source-code reading paths</h2>
-        <p class="mt-3 max-w-3xl bw-muted">Start with one feature, not the repository root. These examples connect a request to the code and tests behind it: a Django REST Framework API in Pinry, and class-based views in Baby Buddy.</p>
+        <h2 id="source-reading-paths" class="text-2xl font-black">Three Django source-code reading paths</h2>
+        <p class="mt-3 max-w-3xl bw-muted">Start with one feature, not the repository root. Trace API permissions in Pinry, class-based views in Baby Buddy, or a monitoring state change in Healthchecks.</p>
         <div class="mt-5 grid gap-5 md:grid-cols-2">
           <article class="bw-surface p-5">
             <h3 class="text-xl font-black">Pinry: who can see a board?</h3>
@@ -102,8 +102,18 @@
               <li>Read <code>test_note_views()</code> in <a class="bw-text-link" href="https://github.com/babybuddy/babybuddy/blob/09629cf633cf3a2059a21ade4cea7ea4d846422f/core/tests/tests_views.py" data-analytics-event="cta clicked" data-analytics-cta="read baby buddy tests" data-analytics-location="project reading paths">core/tests/tests_views.py</a>. Which requests and responses does it check?</li>
             </ol>
           </article>
+          <article class="bw-surface p-5">
+            <h3 class="text-xl font-black">Healthchecks: can HTTP 200 mean a failed job?</h3>
+            <p class="mt-3 bw-muted">In Healthchecks' explicit failure-ping test, HTTP <code>200</code> acknowledges the request while the check becomes <code>down</code>. Explore <a class="bw-text-link" href="{% url 'project' 'healthchecks' %}">Healthchecks' project listing</a>, then trace that distinction in the code. No live monitoring endpoint is needed.</p>
+            <ol class="mt-4 list-decimal space-y-3 pl-6 bw-muted">
+              <li>Find <code>uuid_urls</code> in <a class="bw-text-link" href="https://github.com/healthchecks/healthchecks/blob/f6c46b594dec66c92bca7dd56db58fbd1e4ce9fe/hc/api/urls.py" data-analytics-event="cta clicked" data-analytics-cta="read healthchecks routes" data-analytics-location="project reading paths">hc/api/urls.py</a>. The empty path and <code>fail</code> both call <code>views.ping</code>; what extra argument does the failure route supply?</li>
+              <li>Read <code>ping()</code> in <a class="bw-text-link" href="https://github.com/healthchecks/healthchecks/blob/f6c46b594dec66c92bca7dd56db58fbd1e4ce9fe/hc/api/views.py" data-analytics-event="cta clicked" data-analytics-cta="read healthchecks view" data-analytics-location="project reading paths">hc/api/views.py</a>, then <code>Check.ping()</code> in <a class="bw-text-link" href="https://github.com/healthchecks/healthchecks/blob/f6c46b594dec66c92bca7dd56db58fbd1e4ce9fe/hc/api/models.py" data-analytics-event="cta clicked" data-analytics-cta="read healthchecks model" data-analytics-location="project reading paths">hc/api/models.py</a>. Follow <code>action</code> to the model's status change, then return to the view's HTTP response.</li>
+              <li>Compare the response-code and check-status assertions in <code>test_fail_endpoint_works()</code> in <a class="bw-text-link" href="https://github.com/healthchecks/healthchecks/blob/f6c46b594dec66c92bca7dd56db58fbd1e4ce9fe/hc/api/tests/test_ping.py" data-analytics-event="cta clicked" data-analytics-cta="read healthchecks tests" data-analytics-location="project reading paths">hc/api/tests/test_ping.py</a>: the response is <code>200</code>, but the check is <code>down</code>. Why would checking only the response code miss the behavior?</li>
+            </ol>
+            <p class="mt-4 text-sm bw-muted">Reading challenge: identify the recorded ping kind and status-flip reason in that same test. These assertions cover the explicit failure request; they do not prove an alert was delivered or cover every check configuration.</p>
+          </article>
         </div>
-        <p class="mt-4 max-w-3xl text-sm bw-muted">Source links use snapshots checked on October 21, 2026, so the reading paths stay reproducible as the projects change. This is a source-reading exercise, not a setup test or security audit. Check each project's current README and license before running or reusing code; use fictional data in a local environment.</p>
+        <p class="mt-4 max-w-3xl text-sm bw-muted">Source links use snapshots checked on October 21, 2026 (Pinry and Baby Buddy) and October 30, 2026 (Healthchecks), so the reading paths stay reproducible as the projects change. These are source-reading exercises, not setup tests or security audits. Check each project's current README and license before running or reusing code; use fictional data in a local environment.</p>
       </section>
     {% endif %}
   </div>
@@ -116,7 +126,7 @@
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     "name": "Projects Built with Django",
-    "dateModified": "2026-10-24",
+    "dateModified": "2026-10-30",
     "description": "Discover real projects and apps built with Django.",
     "thumbnailUrl": "{% absolute_url '/static/vendors/images/logo.png' %}",
     "url": "{% canonical_url '/projects/' %}",
