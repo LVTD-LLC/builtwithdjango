@@ -246,5 +246,23 @@
       "class DivErrorList",
       "autocomplete=\"current-password\""
     ]
+  },
+  {
+    "claim": "Version-control guide distinguishes ignore rules, tracked files and exposed credentials",
+    "paths": [
+      "content/blog/django-version-control.md"
+    ],
+    "must_match": [
+      "only affects untracked files",
+      "git ls-files -- .env",
+      "git rm --cached -- .env",
+      "git diff --cached",
+      "revoke or rotate",
+      "Do not ignore the whole"
+    ],
+    "must_not_match": [
+      "match the Regex",
+      "except the ones in `.gitignore`"
+    ]
   }
 ]

@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-01
+
+### Fixed
+- Corrected the Django version-control guide with tested ignore, staging and tracked-file checks, credential-exposure guidance, and explicit migration/lockfile retention.
+
 ## 2026-10-30
 
 ### Added
