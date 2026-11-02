@@ -94,7 +94,7 @@ module.exports = {
 
 Those paths cover the root template directory, one-level Django app template directories and frontend JavaScript. Add a path for any deeper or differently located templates. Write complete class names such as `text-green-800`; constructing partial names dynamically can prevent Tailwind from finding them.
 
-Keep the generated SCSS filename. Replace `frontend/src/styles/index.scss` with:
+Rename the generated `frontend/src/styles/index.scss` to `index.css`, then replace its contents with:
 
 ```css
 @tailwind base;
@@ -102,13 +102,13 @@ Keep the generated SCSS filename. Replace `frontend/src/styles/index.scss` with:
 @tailwind utilities;
 ```
 
-Replace the demo content of `frontend/src/application/app.js` with:
+Rename `frontend/src/application/app.js` to `index.js`, then replace its demo content with:
 
 ```javascript
-import "../styles/index.scss";
+import "../styles/index.css";
 ```
 
-The entry is now called **`app`**, not `index`. The template tags below use that entry name. Other generated demo entries are not needed by this homepage; they need not be loaded.
+The entry is called **`index`**, matching the later [Stimulus tutorial](/blog/stimulusjs). The template tags below use that entry name. Other generated demo entries are not needed by this homepage; they need not be loaded.
 
 In the generated `.stylelintrc.json`, keep the other rules and replace `scss/at-rule-no-unknown` with this value so development linting recognizes Tailwind's directives:
 
@@ -146,8 +146,8 @@ Use this `templates/base.html`:
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Django with Tailwind</title>
-  {% stylesheet_pack 'app' %}
-  {% javascript_pack 'app' attrs='defer' %}
+  {% stylesheet_pack 'index' %}
+  {% javascript_pack 'index' attrs='defer' %}
 </head>
 <body>{% block content %}{% endblock %}</body>
 </html>
@@ -184,7 +184,7 @@ poetry run python manage.py collectstatic --noinput
 poetry run python manage.py runserver
 ```
 
-Check that `frontend/build/manifest.json` exists and has an `app` entry. Visit the Django homepage at `http://127.0.0.1:8000/` and check the green heading. In browser developer tools, confirm that the emitted CSS and JavaScript requests return 200. A manifest alone does not prove that your template loads the right entry or that the CSS contains your utilities.
+Check that `frontend/build/manifest.json` exists and has an `index` entry. Visit the Django homepage at `http://127.0.0.1:8000/` and check the green heading. In browser developer tools, confirm that the emitted CSS and JavaScript requests return 200. A manifest alone does not prove that your template loads the right entry or that the CSS contains your utilities.
 
 Build **before** `collectstatic`; collection copies files but does not compile Tailwind. Django's development server can serve static files with `DEBUG=True`. A production web server or storage/CDN must serve the collected files separately; this walkthrough does not configure TLS, a CDN or production static hosting. See [Django's static deployment guide](https://docs.djangoproject.com/en/5.2/howto/static-files/deployment/).
 
@@ -202,7 +202,7 @@ When returning to production, stop the watcher or development server, run `npm r
 
 - **PostCSS asks for `@tailwindcss/postcss`, or `tailwindcss/nesting` is not exported:** check `npm ls tailwindcss`. This guide needs 3.4.17, not v4. Choose one version's complete setup.
 - **No manifest:** finish a successful build first and check the `MANIFEST_FILE` path.
-- **No styling:** check the `app` entry, CSS requests, template scan paths and literal class names before changing package versions.
+- **No styling:** check the `index` entry, CSS requests, template scan paths and literal class names before changing package versions.
 - **Assets point at port 9091 after deployment:** rebuild in production mode and recollect static files. Do not publish a development manifest.
 
 You now have a version-scoped Webpack/Tailwind pipeline and concrete checks for the handoff to Django. Use the [template formatter](/tools/format-html/) when editing the examples, without pasting private template data into an online tool.

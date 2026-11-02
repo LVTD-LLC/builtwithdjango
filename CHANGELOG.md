@@ -3,6 +3,7 @@
 ## 2026-11-02
 
 ### Fixed
+- Preserve the Webpack guide’s `index.js`/`index.css` entry paths so its existing Stimulus continuation remains compatible.
 - Correct the Webpack/Tailwind tutorial with a tested Tailwind 3 compatibility path, version-specific PostCSS setup and build/collectstatic verification.
 
 ## 2026-11-01
