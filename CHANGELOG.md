@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-02
+
+### Fixed
+- Correct the Webpack/Tailwind tutorial with a tested Tailwind 3 compatibility path, version-specific PostCSS setup and build/collectstatic verification.
+
 ## 2026-11-01
 
 ### Fixed

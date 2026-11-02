@@ -264,5 +264,22 @@
       "match the Regex",
       "except the ones in `.gitignore`"
     ]
+  },
+  {
+    "claim": "Webpack guide separates Tailwind3 plugin syntax from v4 and builds before collection",
+    "paths": [
+      "content/blog/set-up-webpack-and-tailwind.md"
+    ],
+    "must_match": [
+      "tailwindcss@3.4.17",
+      "python-webpack-boilerplate==1.0.4",
+      "Build \\*\\*before\\*\\*",
+      "not a v4 migration guide"
+    ],
+    "must_not_match": [
+      "npm install -D tailwindcss@latest",
+      "no downside to installing",
+      "won.t have to do this again, ever"
+    ]
   }
 ]
