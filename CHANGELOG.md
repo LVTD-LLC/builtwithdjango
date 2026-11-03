@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-03
+
+### Fixed
+- Correct the Django Cookiecutter tutorial’s invalid JSON, template/output paths and dependency setup, with tested generation checks and per-application secret configuration.
+
 ## 2026-11-02
 
 ### Fixed

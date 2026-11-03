@@ -281,5 +281,22 @@
       "no downside to installing",
       "won.t have to do this again, ever"
     ]
+  },
+  {
+    "claim": "Cookiecutter tutorial uses strict JSON, separate output checks and per-application secrets",
+    "paths": [
+      "content/blog/creating-django-cookiecutter.md"
+    ],
+    "must_match": [
+      "python -m json.tool cookiecutter.json",
+      "cd my_awesome_project",
+      "os.environ\\[\"DJANGO_SECRET_KEY\"\\]",
+      "package-mode = false"
+    ],
+    "must_not_match": [
+      "/\\* cookiecutter.json \\*/",
+      "/\\* new \\*/",
+      "Django = \"\\^4.0.4\""
+    ]
   }
 ]
