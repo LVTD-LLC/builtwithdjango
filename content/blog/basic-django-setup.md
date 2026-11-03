@@ -1,7 +1,7 @@
 ---
 id: 2
 created: '2022-01-27 19:00:02.487000+00:00'
-modified: '2026-10-16 08:50:00+00:00'
+modified: '2026-11-03 08:45:00+00:00'
 title: Setting up a basic Django project with Poetry
 slug: basic-django-setup
 status: PB
@@ -233,3 +233,5 @@ An unapplied-migrations warning is expected if you have deferred database setup 
 You now have a Poetry-managed Django project, a lock file, and a tested homepage. Keep using `poetry run` so commands resolve against this project's dependencies. No globally installed Django or activated shell is required.
 
 Next, configure [user authentication](/blog/user-authentication) before your first migration if you want a custom user, put [environment-specific settings outside your code](/blog/env-vars), or add [pre-commit checks](/blog/improve-your-code-with-pre-commit). For template indentation, the [Django HTML formatter](/tools/format-html/) offers an example and a local djLint command; use the local option for private templates.
+
+If you repeat this setup across projects, [create a minimal Django Cookiecutter](/blog/creating-django-cookiecutter) and verify its generated output before adding more options.
