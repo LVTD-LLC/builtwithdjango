@@ -81,8 +81,8 @@
         </ol>
       </section>
       <section class="mt-10" aria-labelledby="source-reading-paths">
-        <h2 id="source-reading-paths" class="text-2xl font-black">Three Django source-code reading paths</h2>
-        <p class="mt-3 max-w-3xl bw-muted">Start with one feature, not the repository root. Trace API permissions in Pinry, class-based views in Baby Buddy, or a monitoring state change in Healthchecks.</p>
+        <h2 id="source-reading-paths" class="text-2xl font-black">Four Django source-code reading paths</h2>
+        <p class="mt-3 max-w-3xl bw-muted">Start with one feature, not the repository root. Trace API permissions in Pinry, class-based views in Baby Buddy, a monitoring state change in Healthchecks, or configuration-dependent document ingestion in Paperless-ngx.</p>
         <div class="mt-5 grid gap-5 md:grid-cols-2">
           <article class="bw-surface p-5">
             <h3 class="text-xl font-black">Pinry: who can see a board?</h3>
@@ -112,8 +112,18 @@
             </ol>
             <p class="mt-4 text-sm bw-muted">Reading challenge: identify the recorded ping kind and status-flip reason in that same test. These assertions cover the explicit failure request; they do not prove an alert was delivered or cover every check configuration.</p>
           </article>
+          <article class="bw-surface p-5">
+            <h3 class="text-xl font-black">Paperless-ngx: must a duplicate import fail?</h3>
+            <p class="mt-3 bw-muted">In this source snapshot, matching file content triggers a warning; the duplicate-deletion setting decides whether ingestion stops. Explore <a class="bw-text-link" href="{% url 'project' 'paperless-ngx' %}">Paperless-ngx's project listing</a>, then follow the branch without uploading a document.</p>
+            <ol class="mt-4 list-decimal space-y-3 pl-6 bw-muted">
+              <li>Open <a class="bw-text-link" href="https://github.com/paperless-ngx/paperless-ngx/blob/fc29f3511f427e365a7d6fe19b232c13445b9343/src/documents/consumer.py" data-analytics-event="cta clicked" data-analytics-cta="read paperless consumer" data-analytics-location="project reading paths">src/documents/consumer.py</a> at <code>ConsumerPreflightPlugin.run()</code> and <code>pre_check_duplicate()</code>. Follow the checksum query's two <code>Q</code> conditions: does it check only the original file, or the archive too?</li>
+              <li>Stay in that method and find <code>CONSUMER_DELETE_DUPLICATES</code>. Identify which operations are inside the conditional. Does detecting a match always raise an error? Use the <a class="bw-text-link" href="https://github.com/paperless-ngx/paperless-ngx/blob/fc29f3511f427e365a7d6fe19b232c13445b9343/docs/usage.md#duplicate-documents">snapshot's duplicate-document documentation</a> to check your interpretation.</li>
+              <li>Compare <code>test_no_delete_duplicate()</code> with <code>test_delete_duplicate()</code> in <a class="bw-text-link" href="https://github.com/paperless-ngx/paperless-ngx/blob/fc29f3511f427e365a7d6fe19b232c13445b9343/src/documents/tests/test_consumer.py" data-analytics-event="cta clicked" data-analytics-cta="read paperless tests" data-analytics-location="project reading paths">src/documents/tests/test_consumer.py</a>. Read each settings override, then the document-count and failure assertions. The same input does not imply the same configured behavior.</li>
+            </ol>
+            <p class="mt-4 text-sm bw-muted">Reading challenge: why does the query use <code>Document.global_objects</code>? Follow <code>test_delete_duplicate_in_trash()</code> to see how a trashed document still participates. This is a code-reading exercise, not a cleanup recipe: do not change deletion settings or use personal documents to try it.</p>
+          </article>
         </div>
-        <p class="mt-4 max-w-3xl text-sm bw-muted">Source links use snapshots checked on October 21, 2026 (Pinry and Baby Buddy) and October 30, 2026 (Healthchecks), so the reading paths stay reproducible as the projects change. These are source-reading exercises, not setup tests or security audits. Check each project's current README and license before running or reusing code; use fictional data in a local environment.</p>
+        <p class="mt-4 max-w-3xl text-sm bw-muted">Source links use snapshots checked on October 21, 2026 (Pinry and Baby Buddy), October 30, 2026 (Healthchecks), and November 4, 2026 (Paperless-ngx), so the reading paths stay reproducible as the projects change. These are source-reading exercises, not setup tests or security audits. Check each project's current README and license before running or reusing code; use fictional data in a local environment.</p>
       </section>
     {% endif %}
   </div>
@@ -126,7 +136,7 @@
     "@context": "https://schema.org",
     "@type": "CollectionPage",
     "name": "Projects Built with Django",
-    "dateModified": "2026-10-30",
+    "dateModified": "2026-11-04",
     "description": "Discover real projects and apps built with Django.",
     "thumbnailUrl": "{% absolute_url '/static/vendors/images/logo.png' %}",
     "url": "{% canonical_url '/projects/' %}",
