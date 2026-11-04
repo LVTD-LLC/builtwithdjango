@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-11-04
+
+### Added
+- Added a source-pinned Paperless-ngx reading path to the project directory, tracing checksum queries, configuration branches and duplicate-ingestion test assertions without requiring document uploads or deletion changes.
+
 ## 2026-11-03
 
 ### Fixed
