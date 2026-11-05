@@ -1,10 +1,13 @@
+from datetime import datetime, timedelta, timezone as datetime_timezone
 from urllib.parse import urlparse
 
 import cloudinary.uploader
 import requests
 from django.conf import settings
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.urls import reverse
+from django_q.models import Schedule
 from django_q.tasks import async_task
 
 from builtwithdjango.notifications import send_admin_notification
@@ -16,12 +19,49 @@ from .models import Job
 logger = get_builtwithdjango_logger(__name__)
 
 
-def notify_of_new_job(instance):
-    message = f"""
-      Someone submitted a new job.
-      Instance: {instance}
+def notify_of_new_job(job_id):
+    """Batch accepted submissions, including legacy queued model arguments.
+
+    Database records are the digest source of truth; the cache only serializes
+    schedule creation. No untrusted form text is sent to admin notifications.
     """
-    return send_admin_notification("New Job Submission", message)
+    if isinstance(job_id, Job):
+        job_id = job_id.pk
+    job = Job.objects.get(pk=job_id)
+    bucket = int(job.created_datetime.timestamp()) // 600
+    start = datetime.fromtimestamp(bucket * 600, tz=datetime_timezone.utc)
+    end = start + timedelta(minutes=10)
+    name = f"job-submission-digest-{bucket}"
+    lock_key = f"jobs:digest-schedule:{bucket}"
+    if not cache.add(lock_key, True, timeout=1200):
+        return
+    try:
+        Schedule.objects.get_or_create(
+            name=name,
+            defaults={
+                "func": "jobs.tasks.send_job_submission_digest",
+                "args": repr((start.isoformat(), end.isoformat())),
+                "schedule_type": Schedule.ONCE,
+                "next_run": end + timedelta(seconds=5),
+                "repeats": 1,
+            },
+        )
+    except Exception:
+        cache.delete(lock_key)
+        raise
+
+
+def send_job_submission_digest(start, end):
+    jobs = Job.objects.filter(created_datetime__gte=start, created_datetime__lt=end, source="")
+    count = jobs.count()
+    if not count:
+        return
+    pending = jobs.filter(approved=False).count()
+    message = (
+        f"{count} job submission(s) received in a 10-minute window; {pending} awaiting approval. "
+        "Review pending entries in Django admin. Submitted text is omitted from notifications."
+    )
+    return send_admin_notification("Job Submission Summary", message)
 
 
 def queue_sponsorship_request_email(job_instance):

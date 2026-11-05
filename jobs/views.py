@@ -1,7 +1,8 @@
 from urllib.parse import urlencode
 
 import stripe
-from django.http import HttpResponseRedirect
+from django.conf import settings
+from django.http import HttpResponse, HttpResponseRedirect
 from django.templatetags.static import static
 from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, TemplateView
@@ -11,6 +12,7 @@ from builtwithdjango.analytics import capture, capture_checkout_return, email_do
 from builtwithdjango.stripe_client import get_stripe_price_id
 from newsletter.views import NewsletterSignupForm
 
+from .abuse import SubmissionProtectionUnavailable, submission_rate_exceeded
 from .forms import PostJob
 from .models import Job
 from .tasks import notify_of_new_job
@@ -126,13 +128,28 @@ class JobCreateView(CreateView):
     form_class = PostJob
     template_name = "jobs/post-job.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["job_turnstile_site_key"] = settings.JOB_TURNSTILE_SITE_KEY if settings.JOB_TURNSTILE_ENABLED else ""
+        return context
+
+    def post(self, request, *args, **kwargs):
+        try:
+            limited = submission_rate_exceeded(request)
+        except SubmissionProtectionUnavailable:
+            return HttpResponse("Job submissions are temporarily unavailable. Please try again shortly.", status=503)
+        if limited:
+            response = HttpResponse("Too many submission attempts. Please try again in 10 minutes.", status=429)
+            response["Retry-After"] = str(settings.JOB_SUBMISSION_WINDOW)
+            return response
+        return super().post(request, *args, **kwargs)
+
     def get_success_url(self):
         return reverse("stripe_checkout_session", kwargs={"pk": self.object.id})
 
     def form_valid(self, form):
-        form.instance.logged_in_maker = self.request.user
         self.object = form.save()
-        async_task(notify_of_new_job, self.object)
+        async_task(notify_of_new_job, self.object.pk)
         capture(
             self.request,
             "job posted",
@@ -148,7 +165,7 @@ class JobCreateView(CreateView):
             },
             groups={"job": str(self.object.id)},
         )
-        return super(JobCreateView, self).form_valid(form)
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class ThankYouView(TemplateView):
