@@ -301,6 +301,10 @@ class JobSubmissionProtectionTests(TestCase):
     def setUp(self):
         from django.core.cache import cache
 
+        # Python CI has no compiled assets; browser/frontend checks cover them.
+        bundles = patch("webpack_boilerplate.utils.get_as_tags", return_value=[])
+        bundles.start()
+        self.addCleanup(bundles.stop)
         cache.clear()
         self.payload = {
             "title": "Django Engineer",
