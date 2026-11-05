@@ -5,6 +5,7 @@
 ### Changed
 
 - Surface the existing guided Django source-code reading paths beside homepage project discovery, with a direct section link and contextual click tracking. Preserve project browsing, blog navigation, and the existing directory exercises.
+- Keep the reading-path heading clear of the sticky header when following a direct section link.
 
 ## 2026-11-04
 
