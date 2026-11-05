@@ -295,3 +295,189 @@ class JobImportTaskTests(TestCase):
         job = Job.objects.get(external_id="tj-2", source="gettjalerts.com")
         self.assertEqual(job.email, "")
         queue_sponsorship_request_email.assert_called_once_with(job)
+
+
+class JobSubmissionProtectionTests(TestCase):
+    def setUp(self):
+        from django.core.cache import cache
+
+        cache.clear()
+        self.payload = {
+            "title": "Django Engineer",
+            "company_name": "Example",
+            "listing_url": "https://example.com/jobs/engineer",
+            "email": "hiring@example.com",
+        }
+
+    @override_settings(JOB_TURNSTILE_ENABLED=True, JOB_TURNSTILE_SITE_KEY="site", JOB_TURNSTILE_SECRET_KEY="secret")
+    def test_missing_challenge_never_saves_or_queues(self):
+        with patch("jobs.views.async_task") as queue, patch("jobs.abuse.requests.post") as verify:
+            response = self.client.post(reverse("post_job"), self.payload)
+        self.assertContains(response, "complete the verification")
+        self.assertFalse(Job.objects.exists())
+        queue.assert_not_called()
+        verify.assert_not_called()
+
+    @override_settings(
+        JOB_TURNSTILE_ENABLED=True,
+        JOB_TURNSTILE_SITE_KEY="site",
+        JOB_TURNSTILE_SECRET_KEY="secret",
+        SITE_URL="https://builtwithdjango.com",
+    )
+    def test_verified_submission_is_unapproved_and_queues_id(self):
+        payload = {**self.payload, "cf-turnstile-response": "valid-token"}
+        with patch("jobs.views.async_task") as queue, patch("jobs.abuse.requests.post") as verify:
+            verify.return_value.json.return_value = {
+                "success": True,
+                "hostname": "builtwithdjango.com",
+                "action": "post-job",
+            }
+            response = self.client.post(reverse("post_job"), payload)
+        self.assertEqual(response.status_code, 302)
+        job = Job.objects.get()
+        self.assertFalse(job.approved)
+        self.assertFalse(job.paid)
+        self.assertEqual(queue.call_args.args[1], job.pk)
+        self.assertEqual(verify.call_args.kwargs["timeout"], (3, 5))
+
+    @override_settings(
+        JOB_TURNSTILE_ENABLED=True,
+        JOB_TURNSTILE_SITE_KEY="site",
+        JOB_TURNSTILE_SECRET_KEY="secret",
+        SITE_URL="https://builtwithdjango.com",
+    )
+    def test_failed_challenge_hostname_action_and_outage_fail_closed(self):
+        import requests
+
+        payload = {**self.payload, "cf-turnstile-response": "token"}
+        results = [
+            {"success": False},
+            {"success": True, "hostname": "other.example", "action": "post-job"},
+            {"success": True, "hostname": "builtwithdjango.com", "action": "login"},
+            [],
+        ]
+        with patch("jobs.views.async_task") as queue, patch("jobs.abuse.requests.post") as verify:
+            for result in results:
+                verify.return_value.json.return_value = result
+                self.assertEqual(self.client.post(reverse("post_job"), payload).status_code, 200)
+            verify.side_effect = requests.Timeout()
+            self.assertEqual(self.client.post(reverse("post_job"), payload).status_code, 200)
+        self.assertFalse(Job.objects.exists())
+        queue.assert_not_called()
+
+    @override_settings(JOB_SUBMISSION_LIMIT=2, JOB_SUBMISSION_TRUST_PROXY_IP=True)
+    def test_invalid_attempts_are_limited_and_forwarded_for_cannot_bypass(self):
+        with patch("jobs.views.async_task") as queue:
+            for spoofed in ["1.1.1.1", "2.2.2.2"]:
+                response = self.client.post(
+                    reverse("post_job"), {}, HTTP_X_REAL_IP="198.51.100.2", HTTP_X_FORWARDED_FOR=spoofed
+                )
+                self.assertEqual(response.status_code, 200)
+            response = self.client.post(
+                reverse("post_job"), {}, HTTP_X_REAL_IP="198.51.100.2", HTTP_X_FORWARDED_FOR="3.3.3.3"
+            )
+            self.assertEqual(response.status_code, 429)
+            self.assertIn("Retry-After", response)
+            self.assertEqual(self.client.post(reverse("post_job"), {}, HTTP_X_REAL_IP="198.51.100.3").status_code, 200)
+        queue.assert_not_called()
+
+    def test_cache_outage_does_not_save_or_queue(self):
+        with patch("jobs.abuse.cache.add", side_effect=ConnectionError()), patch("jobs.views.async_task") as queue:
+            response = self.client.post(reverse("post_job"), self.payload)
+        self.assertEqual(response.status_code, 503)
+        self.assertFalse(Job.objects.exists())
+        queue.assert_not_called()
+
+    def test_honeypot_blocks_submission(self):
+        with patch("jobs.views.async_task") as queue:
+            self.client.post(reverse("post_job"), {**self.payload, "website": "https://spam.example"})
+        self.assertFalse(Job.objects.exists())
+        queue.assert_not_called()
+
+    @override_settings(JOB_TURNSTILE_ENABLED=True, JOB_TURNSTILE_SITE_KEY="", JOB_TURNSTILE_SECRET_KEY="")
+    def test_unconfigured_challenge_blocks_and_oversized_token_never_calls_provider(self):
+        with patch("jobs.abuse.requests.post") as verify, patch("jobs.views.async_task") as queue:
+            self.client.post(reverse("post_job"), {**self.payload, "cf-turnstile-response": "token"})
+            self.client.post(reverse("post_job"), {**self.payload, "cf-turnstile-response": "x" * 2049})
+        self.assertFalse(Job.objects.exists())
+        verify.assert_not_called()
+        queue.assert_not_called()
+
+    @override_settings(JOB_SUBMISSION_LIMIT=1, JOB_SUBMISSION_TRUST_PROXY_IP=False)
+    def test_untrusted_proxy_headers_do_not_change_identity(self):
+        self.client.post(reverse("post_job"), {}, HTTP_X_REAL_IP="198.51.100.1")
+        self.assertEqual(self.client.post(reverse("post_job"), {}, HTTP_X_REAL_IP="198.51.100.2").status_code, 429)
+
+    @override_settings(JOB_SUBMISSION_LIMIT=1, JOB_SUBMISSION_TRUST_PROXY_IP=True)
+    def test_ipv6_privacy_addresses_share_a_limit(self):
+        self.client.post(reverse("post_job"), {}, HTTP_X_REAL_IP="2001:db8::1")
+        self.assertEqual(self.client.post(reverse("post_job"), {}, HTTP_X_REAL_IP="2001:db8::2").status_code, 429)
+
+    def test_expiring_counter_race_and_storage_failure_are_handled(self):
+        from .abuse import SubmissionProtectionUnavailable, submission_rate_exceeded
+
+        request = RequestFactory().post(reverse("post_job"))
+        with patch("jobs.abuse.cache.add", side_effect=[False, True]), patch(
+            "jobs.abuse.cache.incr", side_effect=ValueError()
+        ):
+            self.assertFalse(submission_rate_exceeded(request))
+        with patch("jobs.abuse.cache.add", side_effect=[False, ConnectionError()]), patch(
+            "jobs.abuse.cache.incr", side_effect=ValueError()
+        ):
+            with self.assertRaises(SubmissionProtectionUnavailable):
+                submission_rate_exceeded(request)
+
+    def test_sql_probe_is_stored_as_literal_text_not_executed(self):
+        probe = "x' OR 1=(SELECT 1 FROM PG_SLEEP(15))--"
+        with patch("jobs.views.async_task"):
+            response = self.client.post(reverse("post_job"), {**self.payload, "company_name": probe})
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Job.objects.get().company_name, probe)
+        self.assertFalse(Job.objects.get().approved)
+
+    def test_submission_still_requires_csrf(self):
+        from django.test import Client
+
+        response = Client(enforce_csrf_checks=True).post(reverse("post_job"), self.payload)
+        self.assertEqual(response.status_code, 403)
+        self.assertFalse(Job.objects.exists())
+
+    @override_settings(JOB_TURNSTILE_ENABLED=True, JOB_TURNSTILE_SITE_KEY="site")
+    def test_form_renders_widget_and_uses_full_page_navigation(self):
+        response = self.client.get(reverse("post_job"))
+        self.assertContains(response, 'data-action="post-job"')
+        self.assertContains(response, 'data-size="flexible"')
+        self.assertContains(response, 'data-turbo="false"')
+        self.assertContains(response, 'name="turbo-visit-control" content="reload"')
+
+
+class JobSubmissionDigestTests(TestCase):
+    def setUp(self):
+        from django.core.cache import cache
+
+        cache.clear()
+
+    def test_burst_schedules_one_digest_without_sending_payloads(self):
+        from .tasks import notify_of_new_job
+
+        job = Job.objects.create(title="Engineer", company_name="sql-probe'", listing_url="https://example.com/job")
+        with patch("jobs.tasks.send_admin_notification") as send:
+            notify_of_new_job(job.pk)
+            notify_of_new_job(job.pk)
+        from django_q.models import Schedule
+
+        self.assertEqual(Schedule.objects.filter(func="jobs.tasks.send_job_submission_digest").count(), 1)
+        send.assert_not_called()
+
+    def test_digest_counts_records_and_excludes_imports_without_raw_payload(self):
+        from .tasks import send_job_submission_digest
+
+        now = timezone.now()
+        Job.objects.create(title="Engineer", company_name="sql-probe'", listing_url="https://example.com/job")
+        Job.objects.create(title="Imported", source="gettjalerts.com", listing_url="https://example.com/import")
+        with patch("jobs.tasks.send_admin_notification") as send:
+            send_job_submission_digest(
+                (now - timedelta(minutes=1)).isoformat(), (now + timedelta(minutes=1)).isoformat()
+            )
+        self.assertIn("1 job submission", send.call_args.args[1])
+        self.assertNotIn("sql-probe", send.call_args.args[1])

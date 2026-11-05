@@ -2,6 +2,11 @@
 
 ## 2026-11-05
 
+### Security
+
+- Protect job submissions with hostname/action-validated Turnstile, shared-cache rate limits and a honeypot before saving records or queueing work. Preserve moderation and fail closed on verification/cache outages.
+- Batch job-submission alerts into 10-minute count-only summaries so submitted payloads cannot flood admin notifications. Queue stable job IDs and save each valid form once.
+
 ### Changed
 
 - Surface the existing guided Django source-code reading paths beside homepage project discovery, with a direct section link and contextual click tracking. Preserve project browsing, blog navigation, and the existing directory exercises.

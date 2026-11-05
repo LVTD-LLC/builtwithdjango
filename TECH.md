@@ -104,3 +104,36 @@ storage, and database state separately.
 - CI additionally runs Django system checks, migration-drift checks, Python
   compilation, coverage, and a clean frontend build.
 - Use `make test-pgsandbox` only with an explicit sandbox `DATABASE_URL`.
+
+## Job submission abuse controls
+
+- `/jobs/new` limits all CSRF-valid POST attempts to 10 per 600 seconds using
+  the shared Redis cache. Keys contain an HMAC of the client address, not raw
+  addresses; IPv6 addresses are grouped by /64. Cache outages return 503.
+- Production requires `JOB_TURNSTILE_ENABLED=True`, `JOB_TURNSTILE_SITE_KEY`
+  and `JOB_TURNSTILE_SECRET_KEY`. Use a managed widget restricted to the site
+  hostname. Tokens are validated server-side with exact hostname and
+  `post-job` action checks before saving or enqueueing. Missing/expired/
+  replayed tokens, bad provider responses and verification outages reject
+  submissions without side effects. Development/tests may explicitly disable
+  the integration; do not use test keys or disable it in production.
+- Set `JOB_SUBMISSION_TRUST_PROXY_IP=True` only when the origin is reached
+  through a trusted proxy that **overwrites** `X-Real-IP`. The inspected
+  CapRover nginx config does so. Never trust incoming `X-Forwarded-For` or
+  `CF-Connecting-IP` without a verified proxy boundary. Keep direct application
+  ports private. No Cloudflare zone/DNS migration is required for Turnstile.
+- A hidden honeypot rejects basic form fillers. SQL keyword blacklists are
+  intentionally not used: database safety depends on parameterized ORM
+  queries, not recognizing attack strings.
+- Accepted submissions remain unapproved/unpaid and enqueue a stable job ID.
+  Django Q schedules at most one digest per UTC 10-minute window, executed
+  after the window closes. The digest queries saved, non-imported submissions
+  and contains only counts, never submitted text. Positive ONCE repeats keep
+  the completed schedule as a deduplication marker. Keep the Q scheduler on.
+- Job-form visits force a normal page load, and POSTs opt out of Turbo so the
+  challenge widget resets correctly after invalid forms. The widget is
+  flexible-width for small screens; visitors need JavaScript for verification.
+
+Rollback: revert the protection PR and redeploy the previous web/worker images.
+Keep widget credentials in deployment configuration, not Git. Preserve incident
+records and private access-log evidence before any separately approved cleanup.

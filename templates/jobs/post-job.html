@@ -3,6 +3,7 @@
 {% load widget_tweaks %}
 
 {% block meta %}
+    <meta name="turbo-visit-control" content="reload">
     {% include "components/seo_meta.html" with title="Post a Django Job | Built with Django" description="Post a Django job for the Built with Django community. Sponsorship payment is optional after submitting, and your job still appears on the board." canonical_path="/jobs/new" twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 
@@ -12,9 +13,10 @@
 <section class="pb-16">
   <div class="bw-container grid gap-8 lg:grid-cols-[minmax(0,42rem)_1fr]">
     <div data-controller="loading" class="bw-surface p-5 sm:p-8">
-      <form name="form" class="grid gap-5" method="post" enctype="multipart/form-data">
+      <form name="form" class="grid gap-5" method="post" data-turbo="false" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.non_field_errors }}
+        {{ form.website }}
         <div>
           {{ form.title.errors }}
           <label class="bw-form-label" for="{{ form.title.id_for_label }}">Role title</label>
@@ -48,6 +50,10 @@
             {% render_field form.max_yearly_salary class="bw-form-input text-base" placeholder="180000" %}
           </div>
         </div>
+        {% if job_turnstile_site_key %}
+          <div class="cf-turnstile" data-sitekey="{{ job_turnstile_site_key }}" data-action="post-job" data-size="flexible"></div>
+          <noscript><p>Please enable JavaScript to verify and submit your job.</p></noscript>
+        {% endif %}
         <button data-action="click->loading#load" data-loading-target="button" class="bw-button bw-button-primary justify-self-start" type="submit">
           <span data-loading-target="loader" class="hidden" role="status">
             <svg aria-hidden="true" class="h-5 w-5 animate-spin text-[oklch(98%_0.01_118)]" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -72,3 +78,9 @@
   </div>
 </section>
 {% endblock content %}
+
+{% block extra_bottom_js %}
+  {% if job_turnstile_site_key %}
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  {% endif %}
+{% endblock extra_bottom_js %}
