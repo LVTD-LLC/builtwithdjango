@@ -13,6 +13,7 @@
 <section class="bw-section bw-section-ruled">
   <div class="bw-container">
     <div class="bw-section-heading"><h2 class="bw-heading-md">Projects</h2><a href="{% url 'projects' %}" class="bw-text-link">View all projects</a></div>
+    <p class="bw-muted mt-4 max-w-3xl">Looking for Django projects with source code? <a href="{% url 'projects' %}#source-reading-paths" class="bw-text-link" data-analytics-event="cta clicked" data-analytics-cta="open source reading paths" data-analytics-location="homepage projects">Start with a guided code-reading path</a>. Follow a request, compare permissions, or trace a background task through real code and tests—without installing a project.</p>
     <div class="bw-project-grid mt-8">
       {% for project in projects %}{% include "components/project-card.html" with site=project %}
       {% empty %}<div class="bw-empty-state"><h3 class="text-xl font-bold">Your project could be first.</h3><p class="bw-muted mt-2">Share something you’ve built with Django.</p><a class="bw-button bw-button-primary mt-4" href="{% url 'submit_project' %}">Submit a project</a></div>{% endfor %}
