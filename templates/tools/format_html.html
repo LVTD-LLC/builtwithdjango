@@ -14,6 +14,10 @@
       then review and copy the result. The formatter adjusts layout without rendering your template variables.
       For private code or whole projects, use the local commands below instead of sending templates to this server.
     </p>
+    <p class="mx-auto mt-3 max-w-2xl text-center text-sm bw-muted">
+      Looking for Python's <code>django.utils.html.format_html()</code>?
+      <a href="#python-format-html" class="underline">That builds HTML fragments; this tool indents template source.</a>
+    </p>
     <p data-html-formatter-target="status" class="mx-auto mt-3 max-w-2xl text-center text-sm bw-muted" role="status" aria-live="polite">
       Paste a Django template or load the example, select Format HTML, then copy the result.
     </p>
@@ -92,6 +96,21 @@
     <p>The loop and variable remain template source; the formatter does not replace them with project names.
       Check the diff before using the result. In particular, review whitespace around inline elements and in
       whitespace-sensitive content, then render the template in your application.</p>
+    <h2 id="python-format-html" class="scroll-mt-28">Is this Django's Python format_html() function?</h2>
+    <p>No. <code>django.utils.html.format_html()</code> builds small HTML fragments in Python;
+      it does not indent or reformat a template. This tool uses djLint to format template source.</p>
+    <p>For a Python-generated fragment, follow
+      <a href="https://docs.djangoproject.com/en/5.2/ref/utils/#django.utils.html.format_html">Django's format_html() documentation</a>.
+      This example was checked with Django 5.2.14:</p>
+    <pre class="overflow-x-auto"><code>from django.utils.html import format_html
+
+name = "&lt;em&gt;Ada &amp; Co&lt;/em&gt;"
+fragment = format_html("&lt;strong&gt;{}&lt;/strong&gt;", name)
+print(fragment)
+# &lt;strong&gt;&amp;lt;em&amp;gt;Ada &amp;amp; Co&amp;lt;/em&amp;gt;&lt;/strong&gt;</code></pre>
+    <p>The ordinary string argument is escaped, so the name's <code>&lt;em&gt;</code> tags are displayed as text.
+      Keep the format string developer-controlled: it is not escaped. Do not mark untrusted values safe to bypass escaping.
+      For a full page, prefer a Django template with autoescaping enabled.</p>
     <h2>Format private templates locally</h2>
     <p>For a file on your own computer, use djLint's
       <a href="https://djlint.com/docs/formatter/">check and reformat commands</a> with its
@@ -110,7 +129,7 @@ uvx --from djlint==1.36.4 djlint templates/example.html --reformat --profile=dja
       Review the output and run your application's tests. For template setup, start with our
       <a href="/blog/basic-django-setup">basic Django setup tutorial</a>; for examples of real applications,
       browse <a href="/projects/?is_open_source=true">open-source Django projects</a>.</p>
-    <p class="text-sm bw-muted">Usage guidance updated <time datetime="2026-10-17">October 17, 2026</time>.</p>
+    <p class="text-sm bw-muted">Usage guidance updated <time datetime="2026-11-06">November 6, 2026</time>.</p>
   </div>
 </section>
 
@@ -123,7 +142,7 @@ uvx --from djlint==1.36.4 djlint templates/example.html --reformat --profile=dja
     {
         "@context": "https://schema.org",
         "@type": "WebPage",
-        "dateModified": "2026-10-17",
+        "dateModified": "2026-11-06",
         "name": "Django HTML Template Formatter | Built with Django",
         "description": "Format Django templates in seconds.",
         "abstract": "Format Django templates in seconds.",

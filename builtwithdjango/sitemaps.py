@@ -25,7 +25,7 @@ class StaticViewSitemap(sitemaps.Sitemap):
             "blog": date(2026, 10, 19),
             "generate_django_secret_page": date(2026, 10, 9),
             "projects": date(2026, 11, 4),
-            "format_html_view": date(2026, 10, 17),
+            "format_html_view": date(2026, 11, 6),
         }.get(item)
 
     def items(self):
