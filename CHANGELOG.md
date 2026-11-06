@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-06
+
+### Changed
+
+- Clarify the template formatter's distinction from Django's Python `format_html()` helper, with a tested escaping example and a direct documentation link.
+
 ## 2026-11-05
 
 ### Security
