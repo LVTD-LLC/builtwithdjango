@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime, time
 
 from django.contrib import sitemaps
 from django.contrib.sitemaps import GenericSitemap
@@ -90,7 +90,7 @@ class ProjectSitemap(GenericSitemap):
     def lastmod(self, obj):
         modified = super().lastmod(obj)
         if reading_path_for(obj):
-            return max(modified.date(), READING_PATHS_MODIFIED)
+            return max(modified, datetime.combine(READING_PATHS_MODIFIED, time.min, tzinfo=modified.tzinfo))
         return modified
 
 
