@@ -237,6 +237,55 @@ class ProjectOwnershipTests(TestCase):
 
         self.assertEqual(response.status_code, 403)
 
+    def test_curated_reading_links_match_the_project_repository(self):
+        for slug, repository, anchor in [
+            ("pinry", "https://github.com/pinry/pinry", "read-pinry-permissions"),
+            ("baby-buddy", "https://github.com/babybuddy/babybuddy", "read-baby-buddy-notes"),
+        ]:
+            with self.subTest(slug=slug):
+                self.project.slug = slug
+                self.project.github_url = repository
+                self.project.save()
+                url = reverse("project", kwargs={"slug": slug})
+                response = self.client.get(url)
+                self.assertContains(response, f'href="/projects/#{anchor}"')
+                self.assertContains(response, 'data-analytics-cta="open project reading path"')
+                self.assertContains(response, "Learn from this codebase")
+                self.assertContains(response, repository + "?ref=testserver")
+
+                self.project.github_url = "https://github.com/unrelated/project"
+                self.project.save()
+                self.assertNotContains(self.client.get(url), "Learn from this codebase")
+
+    def test_curated_reading_link_is_absent_from_private_preview(self):
+        self.project.slug = "pinry"
+        self.project.github_url = "https://github.com/pinry/pinry"
+        self.project.published = False
+        self.project.save()
+        url = reverse("project", kwargs={"slug": "pinry"})
+        self.assertEqual(self.client.get(url).status_code, 404)
+        self.client.force_login(self.owner)
+        self.assertNotContains(self.client.get(url), "Learn from this codebase")
+
+    def test_curated_reading_dates_preserve_newer_project_revisions(self):
+        from datetime import date, datetime, timezone as dt_timezone
+
+        from builtwithdjango.sitemaps import sitemaps
+
+        self.project.slug = "pinry"
+        self.project.github_url = "https://github.com/pinry/pinry"
+        self.project.save()
+        old_date = datetime(2026, 10, 1, tzinfo=dt_timezone.utc)
+        Project.objects.filter(pk=self.project.pk).update(updated_date=old_date)
+        self.project.refresh_from_db()
+        self.assertEqual(sitemaps["projects"].lastmod(self.project), date(2026, 11, 17))
+        newer_date = datetime(2026, 11, 20, tzinfo=dt_timezone.utc)
+        Project.objects.filter(pk=self.project.pk).update(updated_date=newer_date)
+        self.project.refresh_from_db()
+        self.assertEqual(sitemaps["projects"].lastmod(self.project), date(2026, 11, 20))
+        self.project.github_url = "https://github.com/another/repository"
+        self.assertEqual(sitemaps["projects"].lastmod(self.project), newer_date)
+
 
 class ProjectTestCase(TestCase):
     def setUp(self):
@@ -319,6 +368,7 @@ class ProjectTestCase(TestCase):
         self.assertEqual(project.content_summary, "A concise summary")
         self.assertEqual(project.content_language, "English")
         self.assertTrue(project.published)
+
 
 
 class ProjectModelServiceTests(TestCase):
