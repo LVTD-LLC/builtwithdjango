@@ -10,6 +10,7 @@ from jobs.models import Job
 from makers.models import Maker
 from podcast.models import Episode
 from projects.models import Project
+from projects.reading_paths import READING_PATHS_MODIFIED, reading_path_for
 
 
 class StaticViewSitemap(sitemaps.Sitemap):
@@ -24,7 +25,7 @@ class StaticViewSitemap(sitemaps.Sitemap):
             "home": date(2026, 11, 5),
             "blog": date(2026, 10, 19),
             "generate_django_secret_page": date(2026, 10, 9),
-            "projects": date(2026, 11, 4),
+            "projects": date(2026, 11, 17),
             "format_html_view": date(2026, 11, 6),
         }.get(item)
 
@@ -85,10 +86,18 @@ class BlogSitemap(sitemaps.Sitemap):
         return obj.modified
 
 
+class ProjectSitemap(GenericSitemap):
+    def lastmod(self, obj):
+        modified = super().lastmod(obj)
+        if reading_path_for(obj):
+            return max(modified.date(), READING_PATHS_MODIFIED)
+        return modified
+
+
 sitemaps = {
     "static": StaticViewSitemap,
     "blog": BlogSitemap(),
-    "projects": GenericSitemap(
+    "projects": ProjectSitemap(
         {
             "queryset": Project.objects.filter(published=True, active=True, might_be_spam=False),
             "date_field": "updated_date",

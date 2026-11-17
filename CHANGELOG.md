@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-17
+
+### Changed
+
+- Connect the Pinry and Baby Buddy project listings to their existing source-code reading exercises, with direct section anchors and contextual click tracking. Preserve repository links, search snippets, and public-project access rules.
+
 ## 2026-11-06
 
 ### Changed

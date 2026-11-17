@@ -58,6 +58,18 @@
             {% endif %}
             {% include "components/project-likes.html" with site=object %}
           </div>
+          {% if source_reading_path %}
+            <div class="border-t border-[var(--bw-border)] pt-4">
+              <h2 class="text-lg font-black">Learn from this codebase</h2>
+              <p class="mt-2 text-sm leading-6 bw-muted">{{ source_reading_path.description }} No installation needed.</p>
+              <a class="bw-text-link mt-3 inline-block"
+                 href="{% url 'projects' %}#{{ source_reading_path.anchor }}"
+                 data-analytics-event="cta clicked"
+                 data-analytics-cta="open project reading path"
+                 data-analytics-location="project detail"
+                 data-analytics-project-slug="{{ object.slug }}">Follow the guided reading path</a>
+            </div>
+          {% endif %}
           {% if object.is_for_sale and object.sale_link %}
             <a class="bw-button bw-button-accent w-full" href="{{ object.sale_link }}" target="_blank" rel="noopener">View sale listing</a>
           {% endif %}

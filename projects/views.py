@@ -16,6 +16,7 @@ from .forms import AddProject, ProjectUpdateViewForm
 from .hooks import screenshot_saved
 from .models import Project, ProjectTitleAlias
 from .querysets import with_like_metadata
+from .reading_paths import reading_path_for
 from .tasks import fetch_page_content, notify_of_new_project, save_screenshot
 
 
@@ -123,6 +124,7 @@ class ProjectDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["newsletter_form"] = NewsletterSignupForm
+        context["source_reading_path"] = reading_path_for(self.object)
         context["project_screenshot_url"] = self.request.build_absolute_uri(static("vendors/images/logo.png"))
 
         try:

@@ -84,7 +84,7 @@
         <h2 id="source-reading-paths" class="scroll-mt-28 text-2xl font-black">Four Django source-code reading paths</h2>
         <p class="mt-3 max-w-3xl bw-muted">Start with one feature, not the repository root. Trace API permissions in Pinry, class-based views in Baby Buddy, a monitoring state change in Healthchecks, or configuration-dependent document ingestion in Paperless-ngx.</p>
         <div class="mt-5 grid gap-5 md:grid-cols-2">
-          <article class="bw-surface p-5">
+          <article id="read-pinry-permissions" class="bw-surface scroll-mt-28 p-5">
             <h3 class="text-xl font-black">Pinry: who can see a board?</h3>
             <p class="mt-3 bw-muted">Explore <a class="bw-text-link" href="{% url 'project' 'pinry' %}">Pinry's project listing</a>, then trace how its image-board API selects boards for the current user.</p>
             <ol class="mt-4 list-decimal space-y-3 pl-6 bw-muted">
@@ -93,7 +93,7 @@
               <li>Read the private-board cases in <a class="bw-text-link" href="https://github.com/pinry/pinry/blob/05476b112401cf34a38bfbffc67c37f5f6c3b38f/core/tests/api.py" data-analytics-event="cta clicked" data-analytics-cta="read pinry tests" data-analytics-location="project reading paths">core/tests/api.py</a>. Check the signed-in user and assertions, not just each test's name.</li>
             </ol>
           </article>
-          <article class="bw-surface p-5">
+          <article id="read-baby-buddy-notes" class="bw-surface scroll-mt-28 p-5">
             <h3 class="text-xl font-black">Baby Buddy: follow a note request</h3>
             <p class="mt-3 bw-muted">Explore <a class="bw-text-link" href="{% url 'project' 'baby-buddy' %}">Baby Buddy's project listing</a>, then follow its note list and add pages through familiar Django building blocks.</p>
             <ol class="mt-4 list-decimal space-y-3 pl-6 bw-muted">
