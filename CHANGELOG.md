@@ -2,6 +2,10 @@
 
 ## 2026-11-17
 
+### Fixed
+
+- Keep curated project sitemap revision timestamps compatible with ordinary project timestamps when calculating the newest content date.
+
 ### Changed
 
 - Connect the Pinry and Baby Buddy project listings to their existing source-code reading exercises, with direct section anchors and contextual click tracking. Preserve repository links, search snippets, and public-project access rules.

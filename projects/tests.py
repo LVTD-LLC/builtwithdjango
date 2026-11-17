@@ -268,7 +268,7 @@ class ProjectOwnershipTests(TestCase):
         self.assertNotContains(self.client.get(url), "Learn from this codebase")
 
     def test_curated_reading_dates_preserve_newer_project_revisions(self):
-        from datetime import date, datetime, timezone as dt_timezone
+        from datetime import datetime, timezone as dt_timezone
 
         from builtwithdjango.sitemaps import sitemaps
 
@@ -278,11 +278,18 @@ class ProjectOwnershipTests(TestCase):
         old_date = datetime(2026, 10, 1, tzinfo=dt_timezone.utc)
         Project.objects.filter(pk=self.project.pk).update(updated_date=old_date)
         self.project.refresh_from_db()
-        self.assertEqual(sitemaps["projects"].lastmod(self.project), date(2026, 11, 17))
+        self.assertEqual(
+            sitemaps["projects"].lastmod(self.project), datetime(2026, 11, 17, tzinfo=dt_timezone.utc)
+        )
+        Project.objects.create(
+            title="Another public project", url="https://another.example.com",
+            short_description="No curated reading path.", published=True, active=True,
+        )
+        self.assertEqual(self.client.get("/sitemap.xml").status_code, 200)
         newer_date = datetime(2026, 11, 20, tzinfo=dt_timezone.utc)
         Project.objects.filter(pk=self.project.pk).update(updated_date=newer_date)
         self.project.refresh_from_db()
-        self.assertEqual(sitemaps["projects"].lastmod(self.project), date(2026, 11, 20))
+        self.assertEqual(sitemaps["projects"].lastmod(self.project), newer_date)
         self.project.github_url = "https://github.com/another/repository"
         self.assertEqual(sitemaps["projects"].lastmod(self.project), newer_date)
 
