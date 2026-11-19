@@ -1,7 +1,7 @@
 ---
 id: 7
 created: '2022-10-03 16:27:45.268000+00:00'
-modified: '2026-10-29 08:45:00+00:00'
+modified: '2026-11-19 08:48:00+00:00'
 title: Styling django-allauth Authentication Pages
 slug: styling-authentication-pages
 status: PB
@@ -143,6 +143,8 @@ Add this to the stylesheet your layout already loads. To try the self-contained 
 .signup-errors { margin: .5rem 0; padding: .75rem 1.5rem; border: 1px solid #b91c1c; color: #991b1b; background: #fef2f2; }
 .signup-field input[aria-invalid="true"] { border-color: #b91c1c; }
 ```
+
+If the nested fields are hard to scan, try the public signup template above in the [Django template formatter](/tools/format-html/). For your own private templates, use the local djLint command on that page instead of pasting the source online. Formatting changes the layout of the source; run the signup checks below to verify behavior.
 
 No `django-widget-tweaks`, custom `SignupForm` or `ACCOUNT_FORMS` entry is needed for this version. Existing application-specific validation can stay in Python; visual error markup stays in the template.
 
