@@ -1,7 +1,7 @@
 ---
 id: 7
 created: '2022-10-03 16:27:45.268000+00:00'
-modified: '2026-10-29 08:45:00+00:00'
+modified: '2026-11-19 08:48:00+00:00'
 title: Styling django-allauth Authentication Pages
 slug: styling-authentication-pages
 status: PB
@@ -110,6 +110,8 @@ Create `templates/account/signup.html`. The path is relative to the template dir
   </section>
 {% endblock %}
 ```
+
+If the nested fields are hard to scan, try the public signup template above in the [Django template formatter](/tools/format-html/). For your own private templates, use the local djLint command on that page instead of pasting the source online. Formatting changes the layout of the source; run the signup checks below to verify behavior.
 
 The field loop follows the configured signup form rather than assuming every project requires the same four fields. It preserves widget names, generated IDs, password autocomplete attributes and bound values. `label_tag` connects each visible label to its input. Django 5.2 also associates ordinary field errors and help text using these `_error` and `_helptext` IDs. Keep those IDs if you change the wrappers.
 

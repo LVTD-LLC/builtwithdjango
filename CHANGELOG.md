@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-19
+
+### Changed
+
+- Link the allauth signup styling guide to the Django template formatter, with a local formatting option for private templates.
+
 ## 2026-11-17
 
 ### Fixed
