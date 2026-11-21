@@ -1,4 +1,6 @@
 """Enroll a verified account without sending a second opt-in message."""
+import re
+
 import requests
 from allauth.account.models import EmailAddress
 from django.conf import settings
@@ -18,7 +20,7 @@ def enroll_verified_account(user_id):
             return
         # Creation is insert-only. Resolve a duplicate by exact address, never by
         # the first fuzzy search result. Do not change subscriber-wide status.
-        page = client.get(endpoint, params={"search": address.email}, timeout=10)
+        page = client.get(endpoint, params={"search": f"^{re.escape(address.email)}$"}, timeout=10)
         page.raise_for_status()
         for sub in page.json()["data"]["results"] or []:
             if sub["email"].casefold() != address.email.casefold():
