@@ -1,7 +1,7 @@
 ---
 id: 9
 created: '2024-05-22 06:48:45.298332+00:00'
-modified: '2026-10-27 08:45:00+00:00'
+modified: '2026-11-21 10:53:00+00:00'
 title: How I Use Reusable Models in Django
 slug: reusable-models
 status: PB
@@ -139,6 +139,8 @@ Note: that we are only asked to enter the details that we added on the BlogPost 
 
 * After the post has been created you will see that all the other fields also show up on the new BlogPost instance.
 ![View new post in admin panel](https://res.cloudinary.com/built-with-django/image/upload/v1716359877/blog-images/new_blog_post_slqqgo.png)
+
+If your blog also limits each author to [one draft at a time](/blog/django-one-draft-per-user), put that rule on the concrete post model: the timestamp fields apply to every row, but the draft rule applies only to some of them.
 
 ## Check the timestamps, not just the admin form
 

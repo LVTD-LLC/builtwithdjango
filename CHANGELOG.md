@@ -2,6 +2,8 @@
 
 ## 2026-11-21
 
+- Add a tested Django tutorial on enforcing one draft per user while keeping published versions.
+
 - Queue URL-only project and free job submissions for review. Add Jobs to navigation and show more projects with compact logo cards.
 
 ## 2026-11-19
