@@ -6,7 +6,7 @@ from .models import Comment, Project
 class AddProject(ModelForm):
     class Meta:
         model = Project
-        fields = ["url"]
+        fields = ["url", "github_url", "twitter_url"]
 
 
 class AddComment(ModelForm):
