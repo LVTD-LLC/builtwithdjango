@@ -16,6 +16,16 @@
     <label for="{{ form.url.id_for_label }}" class="bw-form-label">Project URL</label>
     {{ form.url.errors }}
     {% render_field form.url class="bw-form-input" placeholder="https://example.com" %}
+    <div>
+      <label for="{{ form.github_url.id_for_label }}" class="bw-form-label">Open-source GitHub repository (optional)</label>
+      {{ form.github_url.errors }}
+      {% render_field form.github_url class="bw-form-input" placeholder="https://github.com/org/project" %}
+    </div>
+    <div>
+      <label for="{{ form.twitter_url.id_for_label }}" class="bw-form-label">Project Twitter / X profile (optional)</label>
+      {{ form.twitter_url.errors }}
+      {% render_field form.twitter_url class="bw-form-input" placeholder="https://x.com/project" %}
+    </div>
     <button class="bw-button bw-button-primary">Submit for review</button>
   </form>
 </section>

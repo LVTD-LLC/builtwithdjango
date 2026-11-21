@@ -113,6 +113,21 @@ class ProjectOwnershipTests(TestCase):
         self.assertRedirects(response, reverse("projects"), fetch_redirect_response=False)
         self.assertEqual(Project.objects.get(url="https://submitted-project.example.com").logged_in_maker, self.owner)
 
+    def test_optional_project_links_are_saved_for_review(self):
+        self.client.force_login(self.owner)
+        payload = {
+            "url": "https://linked.example.com",
+            "github_url": "https://github.com/example/project",
+            "twitter_url": "https://x.com/example",
+        }
+        with patch("projects.views.async_task"):
+            response = self.client.post(reverse("submit_project"), payload)
+        self.assertRedirects(response, reverse("projects"), fetch_redirect_response=False)
+        project = Project.objects.get(url=payload["url"])
+        self.assertEqual(project.github_url, payload["github_url"])
+        self.assertEqual(project.twitter_url, payload["twitter_url"])
+        self.assertFalse(project.published)
+
     def test_owner_can_update_project_metadata_and_screenshot(self):
         self.client.force_login(self.owner)
         update_url = reverse("project_update", kwargs={"slug": self.project.slug})
