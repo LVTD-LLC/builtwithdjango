@@ -1,7 +1,6 @@
 import importlib
 import json
 from base64 import b64decode
-from contextlib import nullcontext
 from datetime import timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -142,7 +141,7 @@ class ProjectOwnershipTests(TestCase):
         self.assertEqual(self.project.short_description, "An updated description.")
         self.assertTrue(self.project.homepage_screenshot.name.endswith("updated-screenshot.gif"))
 
-    def test_owner_url_update_clears_stale_enrichment_and_queues_refreshes(self):
+    def test_owner_url_update_clears_stale_enrichment_without_queuing_refreshes(self):
         self.project.page_title = "Old page title"
         self.project.page_content_markdown = "Old page content"
         self.project.content_summary = "Old analysis"

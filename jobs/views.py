@@ -176,39 +176,6 @@ class ThankYouView(TemplateView):
         return context
 
 
-def create_checkout_session(request, pk):
-    price_id = get_stripe_price_id("job")
-
-    checkout_session = stripe.checkout.Session.create(
-        success_url=request.build_absolute_uri(reverse_lazy("job_thank_you")) + "?session_id={CHECKOUT_SESSION_ID}",
-        cancel_url=request.build_absolute_uri(reverse_lazy("home")) + "?status=failed",
-        mode="payment",
-        line_items=[
-            {
-                "quantity": 1,
-                "price": price_id,
-            }
-        ],
-        allow_promotion_codes=True,
-        automatic_tax={"enabled": True},
-        metadata={"pk": str(pk), "price_id": price_id},
-    )
-
-    capture(
-        request,
-        "job checkout started",
-        properties={
-            "job_id": pk,
-            "price_id": price_id,
-            "stripe_checkout_session_id": checkout_session.id,
-            "checkout_mode": "payment",
-        },
-        groups={"job": str(pk)},
-    )
-
-    return HttpResponseRedirect(checkout_session.url, status=303)
-
-
 def sponsor_job_checkout_session(request, pk):
     """
     Create a Stripe checkout session for sponsoring an existing job posting.
