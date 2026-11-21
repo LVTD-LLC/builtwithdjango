@@ -2,10 +2,17 @@ from allauth.account.signals import email_confirmed, user_signed_up
 from django.conf import settings
 from django.contrib.auth.signals import user_logged_in, user_logged_out
 from django.core.mail import send_mail
+from django.db import transaction
 from django.dispatch import receiver
+from django_q.tasks import async_task
 
 from builtwithdjango.analytics import capture, capture_event, get_user_properties
-from newsletter.tasks import add_email_to_buttondown
+
+
+def queue_newsletter_enrollment(user_id):
+    if settings.NEWSLETTER_LIST_ID:
+        transaction.on_commit(lambda: async_task("newsletter.enrollment.enroll_verified_account", user_id))
+
 
 
 # @receiver(user_signed_up)
@@ -25,6 +32,8 @@ def notify_of_new_user(sender, **kwargs):
 
 @receiver(user_signed_up)
 def user_signed_up_callback(sender, request, user, **kwargs):
+    # Social providers may supply a verified address at signup.
+    queue_newsletter_enrollment(user.pk)
     capture(
         request,
         "user signed up",
@@ -72,5 +81,4 @@ def email_confirmation_callback(sender, **kwargs):
             "email": email_address.email,
         },
     )
-    if not settings.DEBUG:
-        add_email_to_buttondown(email_address, tag="user")
+    queue_newsletter_enrollment(user.pk)

@@ -13,6 +13,7 @@
             <h1 class="bw-heading-md text-center">
                 Create your account
             </h1>
+            <p class="mt-4 bw-muted">Your verified account includes the weekly Django newsletter. Unsubscribe from any issue.</p>
             <form class="mt-8 grid gap-5" method="post">
                 {% csrf_token %}
                 {{ form.non_field_errors | safe }}
