@@ -7,7 +7,6 @@ from .views import (
     JobDetailView,
     JobListView,
     ThankYouView,
-    create_checkout_session,
     sponsor_job_checkout_session,
 )
 
@@ -17,7 +16,6 @@ urlpatterns = [
     path("<int:pk>/<slug:slug>", JobDetailView.as_view(), name="job_details"),
     path("new", JobCreateView.as_view(), name="post_job"),
     path("thank-you", ThankYouView.as_view(), name="job_thank_you"),
-    path("create-checkout-session/<int:pk>/", create_checkout_session, name="stripe_checkout_session"),
     path("sponsor/<int:pk>/", sponsor_job_checkout_session, name="sponsor_job_checkout"),
     path("feed/rss", LatestJobsFeed(), name="jobs_feed"),
 ]

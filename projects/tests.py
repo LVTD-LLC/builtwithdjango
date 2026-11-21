@@ -1,7 +1,6 @@
 import importlib
 import json
 from base64 import b64decode
-from contextlib import nullcontext
 from datetime import timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -17,9 +16,7 @@ from django.urls import reverse
 from django.utils import timezone
 from webpack_boilerplate import utils as webpack_utils
 
-from .hooks import screenshot_saved
-from .models import Like, Project, ProjectTitleAlias, get_content_analysis_agent
-from .tasks import analyze_project, fetch_page_content, save_screenshot
+from .models import Like, Project, ProjectTitleAlias
 from .views import ProjectListView
 
 
@@ -109,14 +106,12 @@ class ProjectOwnershipTests(TestCase):
             response = self.client.post(
                 reverse("submit_project"),
                 {
-                    "title": "Submitted Project",
                     "url": "https://submitted-project.example.com",
-                    "short_description": "Submitted by its owner.",
                 },
             )
 
         self.assertRedirects(response, reverse("projects"), fetch_redirect_response=False)
-        self.assertEqual(Project.objects.get(title="Submitted Project").logged_in_maker, self.owner)
+        self.assertEqual(Project.objects.get(url="https://submitted-project.example.com").logged_in_maker, self.owner)
 
     def test_owner_can_update_project_metadata_and_screenshot(self):
         self.client.force_login(self.owner)
@@ -146,7 +141,7 @@ class ProjectOwnershipTests(TestCase):
         self.assertEqual(self.project.short_description, "An updated description.")
         self.assertTrue(self.project.homepage_screenshot.name.endswith("updated-screenshot.gif"))
 
-    def test_owner_url_update_clears_stale_enrichment_and_queues_refreshes(self):
+    def test_owner_url_update_clears_stale_enrichment_without_queuing_refreshes(self):
         self.project.page_title = "Old page title"
         self.project.page_content_markdown = "Old page content"
         self.project.content_summary = "Old analysis"
@@ -172,14 +167,7 @@ class ProjectOwnershipTests(TestCase):
         self.assertEqual(self.project.content_summary, "")
         self.assertFalse(self.project.might_be_spam)
         self.assertFalse(self.project.homepage_screenshot)
-        mock_async_task.assert_any_call(
-            save_screenshot,
-            self.project.id,
-            self.project.url,
-            "",
-            hook=screenshot_saved,
-        )
-        mock_async_task.assert_any_call(fetch_page_content, self.project.id)
+        mock_async_task.assert_not_called()
 
     def test_owner_title_update_preserves_existing_project_slug(self):
         original_slug = self.project.slug
@@ -324,60 +312,6 @@ class ProjectTestCase(TestCase):
         self.assertEqual(test.published, False)
         self.assertEqual(example.published, True)
 
-    def test_analyze_content_uses_pydantic_ai_v1_output_api(self):
-        class FakeAgent:
-            kwargs = None
-            prompt = None
-
-            def __init__(self, *args, **kwargs):
-                self.output_type = kwargs["output_type"]
-                FakeAgent.kwargs = kwargs
-
-            def run_sync(self, prompt):
-                FakeAgent.prompt = prompt
-                return SimpleNamespace(
-                    output=self.output_type(
-                        target_audience="Django teams",
-                        content_summary="A concise summary",
-                        might_be_spam=False,
-                        key_features="- Feature",
-                        pain_points="- Pain point",
-                        usage_instructions="Use it from the browser",
-                        page_links="- Home - https://ai.example.com",
-                        content_language="English",
-                    )
-                )
-
-        project = Project.objects.create(
-            title="AI Analyze Project",
-            url="https://ai.example.com",
-            short_description="A Django AI project",
-            page_title="AI Project",
-            page_description="Useful project",
-            page_content_markdown="Project content",
-            page_content_html="<p>Project content</p>",
-            published=True,
-        )
-
-        get_content_analysis_agent.cache_clear()
-        with (
-            patch("projects.models.get_openrouter_model", return_value=object()),
-            patch("projects.models.Agent", FakeAgent),
-        ):
-            self.assertTrue(project.analyze_content())
-        get_content_analysis_agent.cache_clear()
-
-        project.refresh_from_db()
-        self.assertNotIn("result_type", FakeAgent.kwargs)
-        self.assertEqual(FakeAgent.kwargs["output_type"].__name__, "ContentAnalysis")
-        self.assertIn("AI Project", FakeAgent.prompt)
-        self.assertEqual(project.target_audience, "Django teams")
-        self.assertEqual(project.content_summary, "A concise summary")
-        self.assertEqual(project.content_language, "English")
-        self.assertTrue(project.published)
-
-
-
 class ProjectModelServiceTests(TestCase):
     def test_check_project_is_active_updates_active_flag_from_http_status(self):
         project = Project.objects.create(
@@ -403,110 +337,6 @@ class ProjectModelServiceTests(TestCase):
             self.assertFalse(project.check_project_is_active())
 
         self.assertFalse(project.active)
-
-    def test_fetch_page_content_saves_jina_reader_response(self):
-        project = Project.objects.create(
-            title="Readable Project",
-            url="https://readable.example.com",
-            short_description="A project.",
-        )
-        html_response = Mock(text="<html>Project</html>")
-        html_response.raise_for_status.return_value = None
-        jina_response = Mock()
-        jina_response.raise_for_status.return_value = None
-        jina_response.json.return_value = {
-            "data": {
-                "title": "Readable",
-                "description": "A readable project.",
-                "content": "# Readable",
-            }
-        }
-
-        with patch("projects.models.requests.get", side_effect=[html_response, jina_response]):
-            self.assertTrue(project.fetch_page_content())
-
-        project.refresh_from_db()
-        self.assertEqual(project.page_title, "Readable")
-        self.assertEqual(project.page_description, "A readable project.")
-        self.assertEqual(project.page_content_markdown, "# Readable")
-        self.assertEqual(project.page_content_html, "<html>Project</html>")
-        self.assertIsNotNone(project.date_scraped)
-
-    def test_fetch_page_content_treats_direct_html_failure_as_fallback_warning(self):
-        project = Project.objects.create(
-            title="Blocked HTML Project",
-            url="https://blocked-html.example.com",
-            short_description="A project.",
-        )
-        html_response = Mock()
-        html_response.raise_for_status.side_effect = requests.HTTPError("403 Client Error: Forbidden")
-        jina_response = Mock()
-        jina_response.raise_for_status.return_value = None
-        jina_response.json.return_value = {
-            "data": {
-                "title": "Fallback Readable",
-                "description": "Fetched through Jina.",
-                "content": "# Fallback",
-            }
-        }
-
-        with (
-            patch("projects.models.requests.get", side_effect=[html_response, jina_response]),
-            patch("projects.models.logger") as logger,
-        ):
-            self.assertTrue(project.fetch_page_content())
-
-        project.refresh_from_db()
-        self.assertEqual(project.page_title, "Fallback Readable")
-        self.assertEqual(project.page_description, "Fetched through Jina.")
-        self.assertEqual(project.page_content_markdown, "# Fallback")
-        self.assertEqual(project.page_content_html, "")
-        logger.warning.assert_called_once_with(
-            "Direct HTML fetch failed; continuing with Jina Reader fallback",
-            project_id=project.id,
-            url=project.url,
-            error="403 Client Error: Forbidden",
-        )
-        logger.error.assert_not_called()
-
-
-class ProjectTaskObservabilityTests(TestCase):
-    def test_fetch_page_content_counts_unexpected_failure(self):
-        project = Project.objects.create(
-            title="Fetch Task Project",
-            url="https://fetch-task.example.com",
-            short_description="A project.",
-        )
-
-        with (
-            patch.object(Project, "fetch_page_content", side_effect=RuntimeError("fetch failed")),
-            patch("projects.tasks.sentry_count") as sentry_count,
-            patch("projects.tasks.sentry_task_transaction", return_value=nullcontext()),
-        ):
-            with self.assertRaisesMessage(RuntimeError, "fetch failed"):
-                fetch_page_content(project.id)
-
-        sentry_count.assert_any_call("projects.content_fetch.started")
-        sentry_count.assert_any_call("projects.content_fetch.completed", attributes={"outcome": "failure"})
-
-    def test_analyze_project_counts_unexpected_failure(self):
-        project = Project.objects.create(
-            title="Analysis Task Project",
-            url="https://analysis-task.example.com",
-            short_description="A project.",
-        )
-
-        with (
-            patch.object(Project, "analyze_content", side_effect=RuntimeError("analysis failed")),
-            patch("projects.tasks.sentry_count") as sentry_count,
-            patch("projects.tasks.sentry_task_transaction", return_value=nullcontext()),
-        ):
-            with self.assertRaisesMessage(RuntimeError, "analysis failed"):
-                analyze_project(project.id)
-
-        sentry_count.assert_any_call("projects.content_analysis.started")
-        sentry_count.assert_any_call("projects.content_analysis.completed", attributes={"outcome": "failure"})
-
 
 class ProjectListViewTests(TestCase):
     def test_project_list_filters_public_active_non_spam_projects(self):
@@ -677,158 +507,3 @@ class LikeMigrationTests(TestCase):
         self.assertEqual(fake_apps.app_label, "projects")
         self.assertEqual(fake_apps.model_name, "Like")
         self.assertEqual([like.id for like in like_manager.likes], [3, 4])
-
-
-class ProjectTaskTests(TestCase):
-    def setUp(self):
-        media = TemporaryDirectory()
-        self.addCleanup(media.cleanup)
-        self.enterContext(override_settings(MEDIA_ROOT=media.name))
-
-    def test_save_screenshot_publishes_project_when_screenshot_succeeds(self):
-        project = Project.objects.create(
-            title="Screenshot Project",
-            url="https://screenshot.example.com",
-            short_description="A project.",
-        )
-        response = Mock(content=b"image-bytes")
-        response.raise_for_status.return_value = None
-
-        with patch("projects.tasks.requests.get", return_value=response) as get, patch(
-            "projects.tasks.capture_event"
-        ) as analytics:
-            with self.captureOnCommitCallbacks(execute=True):
-                self.assertTrue(save_screenshot(project.id))
-            self.assertEqual(analytics.call_args.args[0], "project published")
-            analytics.reset_mock()
-            with self.captureOnCommitCallbacks(execute=True):
-                self.assertTrue(
-                    save_screenshot(
-                        project.id, project.url, Project.objects.get(pk=project.pk).homepage_screenshot.name
-                    )
-                )
-            analytics.assert_not_called()
-
-        project.refresh_from_db()
-        self.assertTrue(project.published)
-        self.assertTrue(project.homepage_screenshot.name.endswith(".png"))
-        self.assertEqual(get.call_args.kwargs["timeout"], 30)
-
-    def test_save_screenshot_uses_stable_project_id_after_title_change(self):
-        project = Project.objects.create(
-            title="Queued Screenshot Project",
-            url="https://queued-screenshot.example.com",
-            short_description="A project.",
-        )
-        queued_project_id = project.id
-        project.title = "Renamed Before Screenshot"
-        project.save()
-        response = Mock(content=b"image-bytes")
-        response.raise_for_status.return_value = None
-
-        with patch("projects.tasks.requests.get", return_value=response):
-            self.assertTrue(save_screenshot(queued_project_id))
-
-        project.refresh_from_db()
-        self.assertTrue(project.published)
-        self.assertTrue(project.homepage_screenshot.name.endswith("Renamed_Before_Screenshot.png"))
-
-    def test_save_screenshot_keeps_newer_manual_upload(self):
-        project = Project.objects.create(
-            title="Stale Screenshot Project",
-            url="https://stale-screenshot.example.com",
-            short_description="A project.",
-        )
-        response = Mock(content=b"generated-image-bytes")
-        response.raise_for_status.return_value = None
-
-        def upload_screenshot_during_fetch(*args, **kwargs):
-            Project.objects.filter(id=project.id).update(
-                homepage_screenshot="website_homepage_screenshot/manual-upload.gif"
-            )
-            return response
-
-        with patch("projects.tasks.requests.get", side_effect=upload_screenshot_during_fetch):
-            self.assertFalse(save_screenshot(project.id, project.url, ""))
-
-        project.refresh_from_db()
-        self.assertEqual(project.homepage_screenshot.name, "website_homepage_screenshot/manual-upload.gif")
-        self.assertFalse(project.published)
-
-    def test_save_screenshot_supports_legacy_title_argument(self):
-        project = Project.objects.create(
-            title="Legacy Queued Screenshot",
-            url="https://legacy-screenshot.example.com",
-            short_description="A project.",
-        )
-        response = Mock(content=b"image-bytes")
-        response.raise_for_status.return_value = None
-
-        with patch("projects.tasks.requests.get", return_value=response):
-            self.assertTrue(save_screenshot(project.title))
-
-        project.refresh_from_db()
-        self.assertTrue(project.published)
-        self.assertTrue(project.homepage_screenshot.name.endswith("Legacy_Queued_Screenshot.png"))
-
-    def test_legacy_save_screenshot_keeps_newer_manual_upload(self):
-        project = Project.objects.create(
-            title="Legacy Screenshot With Owner Upload",
-            url="https://legacy-owner-upload.example.com",
-            short_description="A project.",
-            homepage_screenshot="website_homepage_screenshot/owner-upload.gif",
-        )
-
-        with patch("projects.tasks.requests.get") as get:
-            self.assertFalse(save_screenshot(project.title))
-
-        project.refresh_from_db()
-        self.assertEqual(project.homepage_screenshot.name, "website_homepage_screenshot/owner-upload.gif")
-        self.assertFalse(project.published)
-        get.assert_not_called()
-
-    def test_legacy_save_screenshot_uses_title_alias_after_rename_and_reuse(self):
-        original_project = Project.objects.create(
-            title="Legacy Original Title",
-            url="https://legacy-original.example.com",
-            short_description="The project that queued the legacy job.",
-        )
-        ProjectTitleAlias.objects.create(project=original_project, title=original_project.title)
-        original_project.title = "Renamed Legacy Project"
-        original_project.save()
-        reused_title_project = Project.objects.create(
-            title="Legacy Original Title",
-            url="https://reused-title.example.com",
-            short_description="A different project that reused the title.",
-        )
-        response = Mock(content=b"image-bytes")
-        response.raise_for_status.return_value = None
-
-        with patch("projects.tasks.requests.get", return_value=response):
-            self.assertTrue(save_screenshot("Legacy Original Title"))
-
-        original_project.refresh_from_db()
-        reused_title_project.refresh_from_db()
-        self.assertTrue(original_project.published)
-        self.assertTrue(original_project.homepage_screenshot.name.endswith("Renamed_Legacy_Project.png"))
-        self.assertFalse(reused_title_project.published)
-        self.assertFalse(reused_title_project.homepage_screenshot)
-
-    def test_save_screenshot_returns_false_when_screenshot_fetch_fails(self):
-        project = Project.objects.create(
-            title="Broken Screenshot Project",
-            url="https://broken-screenshot.example.com",
-            short_description="A project.",
-        )
-        response = Mock()
-        response.raise_for_status.side_effect = requests.HTTPError("failed")
-
-        with patch("projects.tasks.requests.get", return_value=response), patch(
-            "projects.tasks.capture_event"
-        ) as analytics:
-            self.assertFalse(save_screenshot(project.id))
-            self.assertEqual(analytics.call_args.args[0], "project screenshot failed")
-            self.assertEqual(analytics.call_args.kwargs["properties"]["error_type"], "HTTPError")
-
-        project.refresh_from_db()
-        self.assertFalse(project.published)

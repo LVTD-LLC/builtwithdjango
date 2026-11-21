@@ -1,6 +1,7 @@
 from urllib.parse import urlencode
 
 import stripe
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseRedirect
 from django.templatetags.static import static
@@ -8,7 +9,7 @@ from django.urls import reverse, reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, TemplateView
 from django_q.tasks import async_task
 
-from builtwithdjango.analytics import capture, capture_checkout_return, email_domain, stable_hash
+from builtwithdjango.analytics import capture, capture_checkout_return
 from builtwithdjango.stripe_client import get_stripe_price_id
 from newsletter.views import NewsletterSignupForm
 
@@ -123,7 +124,8 @@ class JobDetailView(DetailView):
         return context
 
 
-class JobCreateView(CreateView):
+class JobCreateView(LoginRequiredMixin, CreateView):
+    login_url = "account_login"
     model = Job
     form_class = PostJob
     template_name = "jobs/post-job.html"
@@ -145,24 +147,16 @@ class JobCreateView(CreateView):
         return super().post(request, *args, **kwargs)
 
     def get_success_url(self):
-        return reverse("stripe_checkout_session", kwargs={"pk": self.object.id})
+        return reverse("job_thank_you")
 
     def form_valid(self, form):
+        form.instance.title = "Pending job listing"
         self.object = form.save()
         async_task(notify_of_new_job, self.object.pk)
         capture(
             self.request,
             "job posted",
-            properties={
-                "job_id": self.object.id,
-                "job_title": self.object.title,
-                "job_company_name": self.object.company_name,
-                "email_domain": email_domain(self.object.email),
-                "email_hash": stable_hash(self.object.email),
-                "has_salary": bool(self.object.min_yearly_salary or self.object.max_yearly_salary),
-                "min_yearly_salary": self.object.min_yearly_salary,
-                "max_yearly_salary": self.object.max_yearly_salary,
-            },
+            properties={"job_id": self.object.id},
             groups={"job": str(self.object.id)},
         )
         return HttpResponseRedirect(self.get_success_url())
@@ -180,39 +174,6 @@ class ThankYouView(TemplateView):
         context["newsletter_form"] = NewsletterSignupForm
 
         return context
-
-
-def create_checkout_session(request, pk):
-    price_id = get_stripe_price_id("job")
-
-    checkout_session = stripe.checkout.Session.create(
-        success_url=request.build_absolute_uri(reverse_lazy("job_thank_you")) + "?session_id={CHECKOUT_SESSION_ID}",
-        cancel_url=request.build_absolute_uri(reverse_lazy("home")) + "?status=failed",
-        mode="payment",
-        line_items=[
-            {
-                "quantity": 1,
-                "price": price_id,
-            }
-        ],
-        allow_promotion_codes=True,
-        automatic_tax={"enabled": True},
-        metadata={"pk": str(pk), "price_id": price_id},
-    )
-
-    capture(
-        request,
-        "job checkout started",
-        properties={
-            "job_id": pk,
-            "price_id": price_id,
-            "stripe_checkout_session_id": checkout_session.id,
-            "checkout_mode": "payment",
-        },
-        groups={"job": str(pk)},
-    )
-
-    return HttpResponseRedirect(checkout_session.url, status=303)
 
 
 def sponsor_job_checkout_session(request, pk):

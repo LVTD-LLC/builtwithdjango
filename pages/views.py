@@ -45,7 +45,7 @@ class HomeView(TemplateView):
                 "-sponsored", "-date_added"
             ),
             getattr(self.request, "user", None),
-        )[:6]
+        )[:12]
         context["guides"] = published_posts()[:6]
         filter_date = timezone.now() - timedelta(days=60)
         context["jobs"] = Job.objects.filter(approved=True, created_datetime__gte=filter_date).order_by(

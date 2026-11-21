@@ -21,7 +21,8 @@ unpublish_selected_projects.short_description = "Unpublish selected project(s)"
 
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = ["title", "logged_in_maker", "active", "published", "maker", "date_added", "might_be_spam"]
+    list_display = ["title", "url", "logged_in_maker", "active", "published", "maker", "date_added", "might_be_spam"]
+    list_filter = ["published"]
     inlines = [CommentInline, LikeInline]
     actions = [unpublish_selected_projects]
 

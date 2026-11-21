@@ -4,19 +4,9 @@ from .models import Comment, Project
 
 
 class AddProject(ModelForm):
-    def __init__(self, *args, **kwargs):
-        super(AddProject, self).__init__(*args, **kwargs)
-
     class Meta:
         model = Project
-        fields = [
-            "title",
-            "short_description",
-            "url",
-            "twitter_url",
-            "github_url",
-            "technology_suggestions_by_user",
-        ]
+        fields = ["url"]
 
 
 class AddComment(ModelForm):

@@ -14,4 +14,7 @@ class CompanyAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Company, CompanyAdmin)
-admin.site.register(Job)
+@admin.register(Job)
+class JobAdmin(admin.ModelAdmin):
+    list_display = ["title", "listing_url", "approved", "created_datetime"]
+    list_filter = ["approved"]

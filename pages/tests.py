@@ -54,13 +54,13 @@ class HomeViewTests(TestCase):
         self.assertNotIn(old_job, jobs)
         self.assertNotIn(unapproved_job, jobs)
 
-    def test_home_projects_and_guides_show_six_items(self):
+    def test_home_shows_twelve_projects_and_six_guides(self):
         author = get_user_model().objects.create_user(
             username="guide-author",
             email="guide-author@example.com",
             password="test-pass",
         )
-        for index in range(7):
+        for index in range(13):
             Project.objects.create(
                 title=f"Project {index}",
                 url=f"https://example.com/projects/{index}",
@@ -86,7 +86,7 @@ class HomeViewTests(TestCase):
         with patch("pages.views.static", return_value="/static/vendors/images/logo.png"):
             context = view.get_context_data()
 
-        self.assertEqual(len(context["projects"]), 6)
+        self.assertEqual(len(context["projects"]), 12)
         self.assertEqual(len(context["guides"]), 6)
 
     def test_home_projects_include_like_metadata(self):
@@ -137,7 +137,8 @@ class RedesignDiscoveryTests(TestCase):
         header = html.split("<header", 1)[1].split("</header>", 1)[0]
         footer = html.split("<footer", 1)[1].split("</footer>", 1)[0]
         self.assertNotContains(response, "Hidden spam")
-        for path in ("/tools/django-secret/", "/tools/format-html/", "/podcast/", "/jobs/"):
+        self.assertIn('href="/jobs/"', header)
+        for path in ("/tools/django-secret/", "/tools/format-html/", "/podcast/"):
             self.assertNotIn('href="' + path + '"', header)
             self.assertIn('href="' + path + '"', footer)
         self.assertNotContains(response, "Django teams are hiring")

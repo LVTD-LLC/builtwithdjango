@@ -12,7 +12,6 @@
 - Email and payments: django-anymail/Mailgun, local Mailhog, and Stripe.
 - Observability and analytics: Sentry, structlog, Logfire, PostHog, and
   Plausible.
-- AI/content enrichment: Pydantic AI/OpenRouter and Jina Reader integrations.
 - Deployment: Docker images deployed to CapRover from `master`; server and
   worker images share `deployment/Dockerfile`.
 
@@ -61,18 +60,12 @@ match the ports/hostnames the browser can reach.
 
 1. `ProjectCreateView` requires authentication and sets
    `Project.logged_in_maker`.
-2. Submission enqueues screenshot capture, admin notification, and page-content
-   fetching through Django Q2.
-3. `save_screenshot` stores `homepage_screenshot` and marks the project
-   published after a successful capture/upload.
+2. The URL is saved as an unpublished project. Only the admin notification is queued.
+3. Curation, screenshot capture and publication happen separately from submission.
 4. Public list/search queries require `published=True`, `active=True`, and
    `might_be_spam=False`.
 5. The linked submitter or linked legacy maker user can view and update their
    listing; anonymous and unrelated users cannot.
-
-This means a successful form response does not by itself prove public
-publication. Diagnose queue, worker, external screenshot response, object
-storage, and database state separately.
 
 ## API boundaries
 

@@ -41,8 +41,7 @@ surfaces support the site without overwhelming the community content.
   maker model is phased down.
 - Do not infer ownership from a matching email address or introduce a claiming
   flow without an explicit product decision and abuse-resistant verification.
-- Background processing may enrich a submission, but optional enrichment must
-  not redefine who owns the listing.
+- Project and job submissions are URL-only and are reviewed before publication.
 
 ## Brand personality
 

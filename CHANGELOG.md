@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-21
+
+- Queue URL-only project and free job submissions for review. Add Jobs to navigation and show more projects with compact logo cards.
+
 ## 2026-11-19
 
 ### Changed
