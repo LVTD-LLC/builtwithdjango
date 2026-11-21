@@ -756,6 +756,9 @@ DEPLOYMENT_REVISION = os.environ.get("DEPLOYMENT_REVISION", "local")
 
 # Public double-opt-in endpoint; no Listmonk administrator credentials in the app.
 NEWSLETTER_LISTMONK_URL = env("NEWSLETTER_LISTMONK_URL", default="")
+NEWSLETTER_LIST_ID = env.int("NEWSLETTER_LIST_ID", default=0)
+NEWSLETTER_API_USER = env("NEWSLETTER_API_USER", default="")
+NEWSLETTER_API_TOKEN = env("NEWSLETTER_API_TOKEN", default="")
 NEWSLETTER_LIST_UUID = env("NEWSLETTER_LIST_UUID", default="")
 NEWSLETTER_TRUST_PROXY = env.bool("NEWSLETTER_TRUST_PROXY", default=False)
 

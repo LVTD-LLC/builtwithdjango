@@ -41,7 +41,7 @@ preferences URLs remain accessible. Preserve those proxy rules during updates.
 
 Existing Buttondown contacts, historical Django email rows, archive DNS and
 Buttondown draft tasks are retained. They are **not imported or synchronized**.
-The legacy account-signup Buttondown integration also remains unchanged. Do not
+Verified primary account emails are enrolled by the worker with a list-scoped Listmonk API user (NEWSLETTER_API_USER, NEWSLETTER_API_TOKEN, NEWSLETTER_LIST_ID). The public newsletter form still requires double opt-in. Do not
 assume this is a migration of the historical audience. No editorial schedule or
 campaign is created. New Listmonk editions must be drafted and sent separately.
 Use an unsubscribe link in every campaign; Mailgun continues enforcing its
