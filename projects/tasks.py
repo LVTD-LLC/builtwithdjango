@@ -1,83 +1,8 @@
-from functools import partial
-
-import requests
-from django.conf import settings
-from django.core.files.base import ContentFile
-from django.db import transaction
 from django_q.tasks import async_task
 
-from builtwithdjango.analytics import capture_event
 from builtwithdjango.notifications import send_admin_notification
-from builtwithdjango.sentry_utils import sentry_count, sentry_task_transaction
-from builtwithdjango.utils import get_builtwithdjango_logger
 
-from .models import Project, ProjectTitleAlias
-
-logger = get_builtwithdjango_logger(__name__)
-
-
-def save_screenshot(project_identifier, expected_url=None, expected_screenshot=None):
-    if isinstance(project_identifier, int):
-        project = Project.objects.get(id=project_identifier)
-    else:
-        # Keep jobs queued by releases that identified projects by title working
-        # while new jobs use the stable primary key.
-        alias = ProjectTitleAlias.objects.select_related("project").filter(title=project_identifier).first()
-        project = alias.project if alias else Project.objects.get(title=project_identifier)
-
-    if expected_url is None:
-        # Legacy jobs did not carry state. They may fill a missing screenshot,
-        # but must not replace media an owner uploaded before the job ran.
-        expected_url = project.url
-        expected_screenshot = ""
-
-    def screenshot_state_matches(candidate):
-        return candidate.url == expected_url and (candidate.homepage_screenshot.name or "") == (
-            expected_screenshot or ""
-        )
-
-    if not screenshot_state_matches(project):
-        logger.info("screenshot_refresh_skipped", project_id=project.id, reason="project_changed")
-        return False
-
-    image_url = (
-        f"https://api.screenshotmachine.com?key={settings.SCREENSHOT_API_KEY}&url={project.url}&dimension=1680x876"
-    )
-
-    logger.info("screenshot_fetch_started", project_id=project.id)
-    try:
-        response = requests.get(image_url, timeout=30)
-        response.raise_for_status()
-    except requests.RequestException as e:
-        logger.error("screenshot_fetch_failed", project_id=project.id, error_type=type(e).__name__)
-        capture_event(
-            "project screenshot failed",
-            distinct_id=str(project.logged_in_maker_id) if project.logged_in_maker_id else None,
-            properties={"project_id": project.id, "error_type": type(e).__name__},
-        )
-        return False
-
-    with transaction.atomic():
-        project = Project.objects.select_for_update().get(id=project.id)
-        if not screenshot_state_matches(project):
-            logger.info("screenshot_refresh_skipped", project_id=project.id, reason="project_changed")
-            return False
-
-        file = ContentFile(response.content)
-        project.homepage_screenshot.save(f"{project.title}.png", file, save=False)
-        was_published = project.published
-        project.published = True
-        project.save()
-        if not was_published:
-            transaction.on_commit(
-                partial(
-                    capture_event,
-                    "project published",
-                    distinct_id=str(project.logged_in_maker_id) if project.logged_in_maker_id else None,
-                    properties={"project_id": project.id, "publication_source": "screenshot"},
-                )
-            )
-    return True
+from .models import Project
 
 
 def notify_of_new_project(instance):
@@ -98,7 +23,7 @@ def notify_admins_of_comment(instance):
 
 
 def check_all_projects():
-    projects = Project.objects.all()
+    projects = Project.objects.filter(published=True)
 
     for project in projects:
         async_task(update_project_active_status, project.id, group="Check Project Active Status")
@@ -114,55 +39,3 @@ def update_project_active_status(project_id):
         project.save(update_fields=["active"])
 
     return f"Project {project.title} is active: {active}"
-
-
-def fetch_page_content(project_id):
-    """
-    Task wrapper for fetching page content.
-    """
-    sentry_count("projects.content_fetch.started")
-    with sentry_task_transaction("projects.tasks.fetch_page_content", attributes={"project.id": project_id}):
-        try:
-            project = Project.objects.get(id=project_id)
-            success = project.fetch_page_content()
-            sentry_count(
-                "projects.content_fetch.completed",
-                attributes={"outcome": "success" if success else "failure"},
-            )
-            if success:
-                async_task(analyze_project, project.id)
-            return success
-        except Project.DoesNotExist:
-            sentry_count("projects.content_fetch.completed", attributes={"outcome": "missing_project"})
-            logger.error(f"Project with ID {project_id} not found")
-            return False
-        except Exception:
-            sentry_count("projects.content_fetch.completed", attributes={"outcome": "failure"})
-            raise
-
-
-def analyze_project(project_id):
-    """
-    Task wrapper for analyzing project audience.
-    """
-    sentry_count("projects.content_analysis.started")
-    with sentry_task_transaction("projects.tasks.analyze_project", attributes={"project.id": project_id}):
-        try:
-            project = Project.objects.get(id=project_id)
-            success = project.analyze_content()
-            project.refresh_from_db(fields=["might_be_spam"])
-            sentry_count(
-                "projects.content_analysis.completed",
-                attributes={
-                    "outcome": "success" if success else "failure",
-                    "might_be_spam": project.might_be_spam,
-                },
-            )
-            return success
-        except Project.DoesNotExist:
-            sentry_count("projects.content_analysis.completed", attributes={"outcome": "missing_project"})
-            logger.error(f"Project with ID {project_id} not found")
-            return False
-        except Exception:
-            sentry_count("projects.content_analysis.completed", attributes={"outcome": "failure"})
-            raise

@@ -4,11 +4,11 @@
 
 {% block meta %}
     <meta name="turbo-visit-control" content="reload">
-    {% include "components/seo_meta.html" with title="Post a Django Job | Built with Django" description="Post a Django job for the Built with Django community. Sponsorship payment is optional after submitting, and your job still appears on the board." canonical_path="/jobs/new" twitter_card="summary" image_alt="Built with Django logo" %}
+    {% include "components/seo_meta.html" with title="Post a Django Job | Built with Django" description="Submit a Django job listing for free." canonical_path="/jobs/new" twitter_card="summary" image_alt="Built with Django logo" %}
 {% endblock meta %}
 
 {% block content %}
-{% include "components/page-hero.html" with section_class="pb-10" kicker="Reach Django builders" title="Post a Django job" description="Share the core role details. After submitting, you'll be taken to a payment page for an optional sponsored post. You can skip sponsorship; your job will still be added to the job board." %}
+{% include "components/page-hero.html" with section_class="pb-10" kicker="Reach Django builders" title="Post a Django job" description="Submit the listing URL for free. We’ll review it before adding it to the board." %}
 
 <section class="pb-16">
   <div class="bw-container grid gap-8 lg:grid-cols-[minmax(0,42rem)_1fr]">
@@ -18,37 +18,9 @@
         {{ form.non_field_errors }}
         {{ form.website }}
         <div>
-          {{ form.title.errors }}
-          <label class="bw-form-label" for="{{ form.title.id_for_label }}">Role title</label>
-          {% render_field form.title class="bw-form-input text-base" placeholder="Senior Django Engineer" %}
-        </div>
-        <div>
-          {{ form.company_name.errors }}
-          <label class="bw-form-label" for="{{ form.company_name.id_for_label }}">Company name</label>
-          {% render_field form.company_name class="bw-form-input text-base" placeholder="Acme Studio" %}
-        </div>
-        <div>
           {{ form.listing_url.errors }}
           <label class="bw-form-label" for="{{ form.listing_url.id_for_label }}">Job listing URL</label>
           {% render_field form.listing_url class="bw-form-input text-base" placeholder="https://example.com/jobs/django-engineer" %}
-        </div>
-        <div>
-          {{ form.email.errors }}
-          <label class="bw-form-label" for="{{ form.email.id_for_label }}">Your email</label>
-          {% render_field form.email class="bw-form-input text-base" placeholder="hiring@example.com" %}
-          <p class="mt-2 text-sm bw-muted">Only used to contact you about this listing.</p>
-        </div>
-        <div class="grid gap-5 sm:grid-cols-2">
-          <div>
-            {{ form.min_yearly_salary.errors }}
-            <label class="bw-form-label" for="{{ form.min_yearly_salary.id_for_label }}">Min salary, USD</label>
-            {% render_field form.min_yearly_salary class="bw-form-input text-base" placeholder="120000" %}
-          </div>
-          <div>
-            {{ form.max_yearly_salary.errors }}
-            <label class="bw-form-label" for="{{ form.max_yearly_salary.id_for_label }}">Max salary, USD</label>
-            {% render_field form.max_yearly_salary class="bw-form-input text-base" placeholder="180000" %}
-          </div>
         </div>
         {% if job_turnstile_site_key %}
           <div class="cf-turnstile" data-sitekey="{{ job_turnstile_site_key }}" data-action="post-job" data-size="flexible"></div>
@@ -67,14 +39,6 @@
       </form>
     </div>
 
-    <aside class="bw-surface self-start p-5">
-      <h2 class="text-xl font-black">Why post here?</h2>
-      <ul class="mt-4 grid gap-3 text-sm leading-6 bw-muted">
-        <li><strong class="text-[var(--bw-ink)]">Django-specific audience.</strong> Reach people who already care about this stack.</li>
-        <li><strong class="text-[var(--bw-ink)]">Simple submission.</strong> The listing URL keeps the source of truth on your site, and sponsorship is optional after you submit.</li>
-        <li><strong class="text-[var(--bw-ink)]">Community context.</strong> Jobs sit alongside projects, guides, and practical community resources.</li>
-      </ul>
-    </aside>
   </div>
 </section>
 {% endblock content %}

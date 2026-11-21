@@ -355,7 +355,7 @@ class SeoPageRenderTests(TestCase):
         self.assertEqual(response.status_code, 404)
 
     def test_project_page_two_self_canonicalizes(self):
-        for index in range(13):
+        for index in range(31):
             Project.objects.create(
                 title=f"Paginated Project {index}",
                 url=f"https://paginated-project-{index}.example.com",

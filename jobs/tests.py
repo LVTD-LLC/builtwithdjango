@@ -305,6 +305,8 @@ class JobSubmissionProtectionTests(TestCase):
         bundles = patch("webpack_boilerplate.utils.get_as_tags", return_value=[])
         bundles.start()
         self.addCleanup(bundles.stop)
+        from django.contrib.auth import get_user_model
+        self.client.force_login(get_user_model().objects.create_user(username="submitter"))
         cache.clear()
         self.payload = {
             "title": "Django Engineer",
@@ -329,7 +331,7 @@ class JobSubmissionProtectionTests(TestCase):
         SITE_URL="https://builtwithdjango.com",
     )
     def test_verified_submission_is_unapproved_and_queues_id(self):
-        payload = {**self.payload, "cf-turnstile-response": "valid-token"}
+        payload = {"listing_url": self.payload["listing_url"], "cf-turnstile-response": "valid-token"}
         with patch("jobs.views.async_task") as queue, patch("jobs.abuse.requests.post") as verify:
             verify.return_value.json.return_value = {
                 "success": True,
@@ -338,6 +340,7 @@ class JobSubmissionProtectionTests(TestCase):
             }
             response = self.client.post(reverse("post_job"), payload)
         self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, reverse("job_thank_you"))
         job = Job.objects.get()
         self.assertFalse(job.approved)
         self.assertFalse(job.paid)
@@ -431,12 +434,18 @@ class JobSubmissionProtectionTests(TestCase):
             with self.assertRaises(SubmissionProtectionUnavailable):
                 submission_rate_exceeded(request)
 
-    def test_sql_probe_is_stored_as_literal_text_not_executed(self):
+    def test_anonymous_user_cannot_submit_a_job(self):
+        self.client.logout()
+        response = self.client.post(reverse("post_job"), self.payload)
+        self.assertRedirects(response, f'{reverse("account_login")}?next={reverse("post_job")}', fetch_redirect_response=False)
+        self.assertFalse(Job.objects.exists())
+
+    def test_extra_company_name_is_ignored(self):
         probe = "x' OR 1=(SELECT 1 FROM PG_SLEEP(15))--"
         with patch("jobs.views.async_task"):
             response = self.client.post(reverse("post_job"), {**self.payload, "company_name": probe})
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(Job.objects.get().company_name, probe)
+        self.assertEqual(Job.objects.get().company_name, "")
         self.assertFalse(Job.objects.get().approved)
 
     def test_submission_still_requires_csrf(self):

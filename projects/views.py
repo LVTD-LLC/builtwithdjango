@@ -1,3 +1,6 @@
+from urllib.parse import urlsplit
+from uuid import uuid4
+
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db import transaction
@@ -13,18 +16,17 @@ from newsletter.forms import NewsletterSignupForm
 
 from .filters import ProjectFilter
 from .forms import AddProject, ProjectUpdateViewForm
-from .hooks import screenshot_saved
 from .models import Project, ProjectTitleAlias
 from .querysets import with_like_metadata
 from .reading_paths import reading_path_for
-from .tasks import fetch_page_content, notify_of_new_project, save_screenshot
+from .tasks import notify_of_new_project
 
 
 class ProjectListView(FilterView):
     model = Project
     template_name = "projects/all_projects.html"
     filterset_class = ProjectFilter
-    paginate_by = 12
+    paginate_by = 30
 
     def get_queryset(self):
         queryset = with_like_metadata(
@@ -153,17 +155,11 @@ class ProjectCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.logged_in_maker = self.request.user
-        self.object = form.save()
+        hostname = urlsplit(form.cleaned_data["url"]).hostname
+        form.instance.title = f"{hostname[:75]} - {uuid4().hex[:16]}"
+        response = super().form_valid(form)
 
-        async_task(
-            save_screenshot,
-            self.object.id,
-            self.object.url,
-            self.object.homepage_screenshot.name,
-            hook=screenshot_saved,
-        )
         async_task(notify_of_new_project, self.object)
-        async_task(fetch_page_content, self.object.id)
         capture(
             self.request,
             "project submitted",
@@ -178,7 +174,7 @@ class ProjectCreateView(LoginRequiredMixin, SuccessMessageMixin, CreateView):
             groups={"project": str(self.object.id)},
         )
 
-        return super(ProjectCreateView, self).form_valid(form)
+        return response
 
 
 class ProjectUpdateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageMixin, UpdateView):
@@ -232,17 +228,6 @@ class ProjectUpdateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageM
                     title=previous_title,
                     defaults={"project": self.object},
                 )
-
-        if url_changed:
-            if not screenshot_uploaded:
-                async_task(
-                    save_screenshot,
-                    self.object.id,
-                    self.object.url,
-                    self.object.homepage_screenshot.name,
-                    hook=screenshot_saved,
-                )
-            async_task(fetch_page_content, self.object.id)
 
         capture(
             self.request,

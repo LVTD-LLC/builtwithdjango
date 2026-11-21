@@ -258,6 +258,7 @@
         </a>
         <div class="bw-nav-primary">
           <a href="{% url 'projects' %}" class="bw-nav-link" {% if request.resolver_match.app_name == 'projects' or '/projects/' in request.path %}aria-current="page"{% endif %} data-analytics-event="nav clicked" data-analytics-nav-item="projects">Projects</a>
+          <a href="{% url 'jobs' %}" class="bw-nav-link" {% if '/jobs/' in request.path %}aria-current="page"{% endif %} data-analytics-event="nav clicked" data-analytics-nav-item="jobs">Jobs</a>
           <a href="{% url 'blog' %}" class="bw-nav-link" {% if '/blog/' in request.path %}aria-current="page"{% endif %} data-analytics-event="nav clicked" data-analytics-nav-item="guides">Blog</a>
         </div>
         <div class="bw-nav-account">

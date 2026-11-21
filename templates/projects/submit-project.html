@@ -8,87 +8,15 @@
 {% endblock meta %}
 
 {% block content %}
-{% include "components/page-hero.html" with section_class="pb-10" kicker="Add to the showcase" title="Submit a Django project" description="Share what you built so people using Django can learn from it, use it, and send useful attention back to the project." %}
-
-<section class="pb-16">
-  <div class="bw-container">
-    {% if user.is_authenticated %}
-      <div class="grid gap-8 lg:grid-cols-[minmax(0,44rem)_1fr]">
-        <form method="post" enctype="multipart/form-data" class="bw-surface grid gap-8 p-5 sm:p-8">
-          {% csrf_token %}
-          {{ form.non_field_errors }}
-
-          <div>
-            <h2 class="text-2xl font-black text-[var(--bw-ink)]">Required info</h2>
-            <p class="mt-2 text-sm leading-6 bw-muted">Keep it clear. A real screenshot will be generated after submission.</p>
-          </div>
-
-          <div class="grid gap-5">
-            <div>
-              {{ form.title.errors | safe }}
-              <label for="{{ form.title.id_for_label }}" class="bw-form-label">Project title</label>
-              {% render_field form.title class="bw-form-input text-base" placeholder="My Django App" %}
-            </div>
-            <div>
-              {{ form.url.errors | safe }}
-              <label for="{{ form.url.id_for_label }}" class="bw-form-label">Project URL</label>
-              {% render_field form.url class="bw-form-input text-base" placeholder="https://example.com" %}
-            </div>
-            <div>
-              {{ form.short_description.errors | safe }}
-              <label for="{{ form.short_description.id_for_label }}" class="bw-form-label">Short description</label>
-              {% render_field form.short_description class="bw-form-input text-base" placeholder="What does it do, and who is it for?" %}
-              <p class="mt-2 text-sm bw-muted">A few useful sentences, up to 200 characters.</p>
-            </div>
-          </div>
-
-          <div class="border-t border-[var(--bw-border)] pt-8">
-            <h2 class="text-2xl font-black text-[var(--bw-ink)]">Optional signals</h2>
-            <p class="mt-2 text-sm leading-6 bw-muted">These help visitors understand the project faster.</p>
-          </div>
-
-          <div class="grid gap-5">
-            <div class="grid gap-5 sm:grid-cols-2">
-              <div>
-                {{ form.twitter_url.errors | safe }}
-                <label for="{{ form.twitter_url.id_for_label }}" class="bw-form-label">X/Twitter URL</label>
-                {% render_field form.twitter_url class="bw-form-input text-base" placeholder="https://twitter.com/builtwithdjango" %}
-              </div>
-              <div>
-                {{ form.github_url.errors | safe }}
-                <label for="{{ form.github_url.id_for_label }}" class="bw-form-label">GitHub URL</label>
-                {% render_field form.github_url class="bw-form-input text-base" placeholder="https://github.com/example/repo" %}
-              </div>
-            </div>
-            <div>
-              {{ form.technology_suggestions_by_user.errors | safe }}
-              <label for="{{ form.technology_suggestions_by_user.id_for_label }}" class="bw-form-label">Technologies used</label>
-              {% render_field form.technology_suggestions_by_user class="bw-form-input text-base" rows=5 placeholder="Django, HTMX, Tailwind, Postgres..." %}
-            </div>
-          </div>
-
-          <button type="submit" class="bw-button bw-button-primary justify-self-start">Submit project</button>
-        </form>
-
-        <aside class="bw-surface self-start p-5">
-          <h2 class="text-xl font-black">What makes a strong listing?</h2>
-          <ul class="mt-4 grid gap-3 text-sm leading-6 bw-muted">
-            <li><strong class="text-[var(--bw-ink)]">A clear use case.</strong> Say who it helps and what problem it solves.</li>
-            <li><strong class="text-[var(--bw-ink)]">A live URL.</strong> Visitors need somewhere to go after the screenshot catches interest.</li>
-            <li><strong class="text-[var(--bw-ink)]">Useful context.</strong> Tech stack links make the project more educational.</li>
-          </ul>
-        </aside>
-      </div>
-    {% else %}
-      <div class="bw-surface mx-auto max-w-xl p-8 text-center">
-        <h2 class="text-3xl font-black text-[var(--bw-ink)]">Create an account first</h2>
-        <p class="mt-4 leading-7 bw-muted">Accounts help prevent spam and let you update your listing later.</p>
-        <div class="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-          <a class="bw-button bw-button-primary" href="{% url 'account_signup' %}">Create account</a>
-          <a class="bw-button bw-button-secondary" href="{% url 'account_login' %}">Sign in</a>
-        </div>
-      </div>
-    {% endif %}
-  </div>
+<section class="bw-container py-10">
+  <h1 class="text-3xl font-black">Submit a Django project</h1>
+  <form method="post" class="bw-surface grid max-w-xl gap-4 p-5">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <label for="{{ form.url.id_for_label }}" class="bw-form-label">Project URL</label>
+    {{ form.url.errors }}
+    {% render_field form.url class="bw-form-input" placeholder="https://example.com" %}
+    <button class="bw-button bw-button-primary">Submit for review</button>
+  </form>
 </section>
 {% endblock content %}
