@@ -275,6 +275,10 @@ class SeoPageRenderTests(TestCase):
             password="test-pass",
         )
 
+    def test_job_submission_destination_survives_switch_to_signup(self):
+        response = self.client.get(reverse("post_job"), follow=True)
+        self.assertContains(response, f'href="{reverse("account_signup")}?next=%2Fjobs%2Fnew"')
+
     def test_blog_index_is_reachable_and_legacy_articles_redirect_without_exposing_drafts(self):
         article = make_post(self, slug="community-note", type="ARTICLE", author=self.author)
         guide = make_post(self, slug="practical-guide", type="TUTORIAL", author=self.author)
