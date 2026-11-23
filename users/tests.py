@@ -1,3 +1,4 @@
+from urllib.parse import urlencode
 from importlib import import_module
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -24,6 +25,11 @@ PRICE_IDS = {
 
 
 class SignupTests(TestCase):
+    def test_job_submission_destination_survives_switch_to_signup(self):
+        response = self.client.get(reverse("post_job"), follow=True)
+        query = urlencode({"next": reverse("post_job")})
+        self.assertContains(response, f'href="{reverse("account_signup")}?{query}"')
+
     def test_duplicate_username_validation_race_returns_form_error(self):
         request = RequestFactory().post(reverse("account_signup"))
         SessionMiddleware(lambda req: None).process_request(request)

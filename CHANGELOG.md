@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-11-23
+
+- Keep the job submission destination when a signed-out employer switches from login to signup.
+
 ## 2026-11-21
 
 - Allow optional GitHub repository and Twitter/X links alongside the required project URL.
