@@ -5,9 +5,9 @@
          data-ph-capture-attribute-project-title="{{ site.title }}"
          data-ph-capture-attribute-project-sponsored="{{ site.sponsored }}">
   <div class="bw-project-card__body">
-    <div class="flex items-start justify-between gap-3">
-      {% if site.logo %}<img src="{{ site.logo.url }}" width="32" height="32" alt="" loading="lazy">{% endif %}
-      <h2 class="m-0">
+    <div class="flex items-center gap-3">
+      {% if site.logo %}<img class="h-8 w-8 shrink-0 object-contain" src="{{ site.logo.url }}" width="32" height="32" alt="" loading="lazy">{% endif %}
+      <h2 class="m-0 min-w-0 flex-1">
         <a href="{% url 'project' site.slug %}"
            class="bw-project-card__title"
            data-analytics-event="project card clicked"
@@ -21,6 +21,11 @@
       {% endif %}
     </div>
     <p class="text-sm leading-6 bw-muted">{{ site.short_description }}</p>
+    <dl class="bw-project-facts">
+      <div><dt>Added</dt><dd>{{ site.created_date|date:"M Y" }}</dd></div>
+      {% if site.type %}<div><dt>Category</dt><dd>{{ site.type }}</dd></div>{% endif %}
+      {% if site.is_open_source %}<div><dt>Source</dt><dd>Open source</dd></div>{% endif %}
+    </dl>
   </div>
   <div class="bw-project-card__actions">
     <div class="flex flex-wrap items-center gap-2">
