@@ -1,9 +1,9 @@
 {% load static %}
 
-<article class="bw-card bw-project-card {% if site.sponsored %}bw-project-card--sponsored{% endif %}"
+<article class="bw-card bw-project-card {% if site.is_featured %}bw-project-card--sponsored{% endif %}"
          data-ph-capture-attribute-project-id="{{ site.id }}"
          data-ph-capture-attribute-project-title="{{ site.title }}"
-         data-ph-capture-attribute-project-sponsored="{{ site.sponsored }}">
+         data-ph-capture-attribute-project-sponsored="{{ site.is_featured }}">
   {% if site.homepage_screenshot %}
     <a href="{% url 'project' site.slug %}"
        class="bw-project-card__media mb-3"
@@ -11,7 +11,7 @@
        data-analytics-event="project card clicked"
        data-analytics-project-id="{{ site.id }}"
        data-analytics-project-title="{{ site.title }}"
-       data-analytics-project-sponsored="{{ site.sponsored }}"
+       data-analytics-project-sponsored="{{ site.is_featured }}"
        data-analytics-click-target="screenshot">
       <img src="{% get_media_prefix %}{{ site.homepage_screenshot }}" alt="" loading="lazy" decoding="async">
     </a>
@@ -25,10 +25,10 @@
            data-analytics-event="project card clicked"
            data-analytics-project-id="{{ site.id }}"
            data-analytics-project-title="{{ site.title }}"
-           data-analytics-project-sponsored="{{ site.sponsored }}"
+           data-analytics-project-sponsored="{{ site.is_featured }}"
            data-analytics-click-target="title">{{ site.title }}</a>
       </h2>
-      {% if site.sponsored %}
+      {% if site.is_featured %}
         <span class="bw-featured-badge">Featured</span>
       {% endif %}
     </div>
@@ -42,14 +42,14 @@
   <div class="bw-project-card__actions">
     <div class="flex flex-wrap items-center gap-2">
       <a class="bw-icon-button"
-         href='{{ site.url }}?ref={{ request.get_host }}&utm_source={{ request.get_host }}{{ request.path }}&utm_campaign=list-of-projects-{% now "F-Y" %}-{% if site.sponsored %}sponsored{% else %}unsponsored{% endif %}'
+         href='{{ site.url }}?ref={{ request.get_host }}&utm_source={{ request.get_host }}{{ request.path }}&utm_campaign=list-of-projects-{% now "F-Y" %}-{% if site.is_featured %}sponsored{% else %}unsponsored{% endif %}'
          target="_blank"
          rel="noopener"
          aria-label="Visit {{ site.title }}"
          data-analytics-event="project external site clicked"
          data-analytics-project-id="{{ site.id }}"
          data-analytics-project-title="{{ site.title }}"
-         data-analytics-project-sponsored="{{ site.sponsored }}">
+         data-analytics-project-sponsored="{{ site.is_featured }}">
         <i class="las la-external-link-alt" aria-hidden="true"></i>
       </a>
       {% if site.github_url %}

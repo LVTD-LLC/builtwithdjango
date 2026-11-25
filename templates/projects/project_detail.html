@@ -37,6 +37,13 @@
             Visit website
             <i class="las la-external-link-alt" aria-hidden="true"></i>
           </a>
+          {% if object.active and object.published and not object.might_be_spam %}
+            <form method="post" action="{% url 'feature_project' object.slug %}">
+              {% csrf_token %}
+              <button class="bw-button w-full" type="submit">Feature this project</button>
+              <p class="mt-2 text-sm bw-muted">$299 USD once · 7 days of highlighted placement and one newsletter feature.</p>
+            </form>
+          {% endif %}
           <div class="grid grid-cols-3 gap-2">
             {% if object.github_url %}
               <a class="bw-icon-button w-full"

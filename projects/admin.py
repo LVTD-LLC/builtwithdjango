@@ -1,6 +1,6 @@
 from django.contrib import admin, messages
 
-from .models import Comment, Like, Project, Technology
+from .models import FeaturePurchase, Comment, Like, Project, Technology
 
 
 class CommentInline(admin.TabularInline):
@@ -30,3 +30,10 @@ class ProjectAdmin(admin.ModelAdmin):
 admin.site.register(Project, ProjectAdmin)
 admin.site.register(Technology)
 admin.site.register(Comment)
+
+
+@admin.register(FeaturePurchase)
+class FeaturePurchaseAdmin(admin.ModelAdmin):
+    list_display = ("project", "purchased_at", "newsletter_feature_sent")
+    list_filter = ("newsletter_feature_sent",)
+    readonly_fields = ("project", "session_id", "purchased_at")

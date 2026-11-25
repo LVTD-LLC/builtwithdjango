@@ -18,6 +18,7 @@ from django.views.decorators.http import require_POST
 from builtwithdjango.analytics import capture_event, get_user_properties
 from builtwithdjango.stripe_client import get_stripe_price_id
 from builtwithdjango.utils import get_builtwithdjango_logger
+from projects.placement import PRICE_KEY, fulfill_feature
 from users.models import CustomUser
 
 logger = get_builtwithdjango_logger(__name__)
@@ -68,6 +69,10 @@ def handle_checkout_session_completed(event):
     Route successful checkout sessions based on the price_id in metadata.
     """
     checkout_session = event.data["object"]
+
+    if (checkout_session.get("metadata") or {}).get("offer") == PRICE_KEY:
+        fulfill_feature(checkout_session)
+        return
     event_price_id = (checkout_session.get("metadata") or {}).get("price_id")
     price_nickname = get_checkout_price_nickname(event_price_id)
     checkout_distinct_id = get_checkout_distinct_id(checkout_session, price_nickname)

@@ -41,11 +41,9 @@ class HomeView(TemplateView):
         context = super().get_context_data(**kwargs)
         context["newsletter_form"] = NewsletterSignupForm
         context["projects"] = with_like_metadata(
-            Project.objects.filter(published=True, active=True, might_be_spam=False).order_by(
-                "-sponsored", "-date_added"
-            ),
+            Project.objects.filter(published=True, active=True, might_be_spam=False),
             getattr(self.request, "user", None),
-        )[:12]
+        ).order_by("-is_featured", "-date_added")[:12]
         context["guides"] = published_posts()[:6]
         filter_date = timezone.now() - timedelta(days=60)
         context["jobs"] = Job.objects.filter(approved=True, created_datetime__gte=filter_date).order_by(
