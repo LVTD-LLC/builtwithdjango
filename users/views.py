@@ -1,5 +1,4 @@
 import stripe
-from allauth.account.adapter import get_adapter
 from allauth.account.models import EmailAddress
 from allauth.account.views import SignupView
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -113,9 +112,8 @@ class ProfileUpgrade(LoginRequiredMixin, TemplateView):
 
 def resend_email_confirmation_email(request):
     user = request.user
-    adapter = get_adapter(request)
     emailaddress = EmailAddress.objects.get_for_user(user, user.email)
-    adapter.send_confirmation_mail(request, emailaddress, signup=False)
+    emailaddress.send_confirmation(request, signup=False)
     capture(
         request,
         "email confirmation resent",

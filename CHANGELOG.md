@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-11-25
+
+### Fixed
+
+- Fix resending the email verification link from the profile page.
+
 ## 2026-11-23
 
 - Keep the job submission destination when a signed-out employer switches from login to signup.
