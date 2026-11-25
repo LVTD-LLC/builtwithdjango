@@ -1,12 +1,11 @@
 from datetime import timedelta
-from unittest.mock import Mock, patch
 
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
 
 from .models import FeaturePurchase, Project
-from .placement import fulfill_feature
+from .placement import PAYMENT_LINK, fulfill_feature, project_reference
 from .querysets import with_like_metadata
 
 
@@ -14,7 +13,7 @@ class PlacementTests(TestCase):
     def setUp(self):
         self.project = Project.objects.create(title="Example", url="https://example.org", published=True)
         self.session = {
-            "id": "cs_one", "metadata": {"project_id": str(self.project.pk)},
+            "id": "cs_one", "client_reference_id": project_reference(self.project.pk),
             "mode": "payment", "payment_status": "paid", "amount_total": 29900, "currency": "usd",
         }
 
@@ -34,14 +33,15 @@ class PlacementTests(TestCase):
         Project.objects.update(featured_until=timezone.now() - timedelta(seconds=1))
         self.assertFalse(listings.get().is_featured)
 
-    @patch("projects.placement.stripe.checkout.Session.create")
-    @patch("projects.placement.stripe.Price.list")
-    def test_checkout_is_bound_to_public_project(self, prices, checkout):
-        prices.return_value.data = [Mock(id="price_feature", unit_amount=29900, currency="usd")]
-        checkout.return_value.url = "https://checkout.stripe.com/example"
+    def test_checkout_is_bound_to_public_project(self):
         url = reverse("feature_project", args=[self.project.slug])
-        self.assertRedirects(self.client.post(url), checkout.return_value.url, fetch_redirect_response=False)
-        self.assertEqual(checkout.call_args.kwargs["metadata"]["project_id"], str(self.project.pk))
+        expected = f"{PAYMENT_LINK}?client_reference_id={project_reference(self.project.pk)}"
+        self.assertRedirects(self.client.post(url), expected, fetch_redirect_response=False)
         Project.objects.update(published=False)
         self.assertEqual(self.client.post(url).status_code, 404)
-        checkout.assert_called_once()
+
+    def test_unattributed_payment_is_queued_for_reconciliation(self):
+        fulfill_feature(dict(self.session, client_reference_id="1_tampered"))
+        self.assertIsNone(FeaturePurchase.objects.get().project_id)
+        self.project.refresh_from_db()
+        self.assertIsNone(self.project.featured_until)
