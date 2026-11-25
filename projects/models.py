@@ -48,6 +48,7 @@ class Project(models.Model):
     technology_suggestions_by_user = models.TextField(blank=True)
 
     is_for_sale = models.BooleanField(default=False)
+    featured_until = models.DateTimeField(null=True, blank=True, editable=False)
     sponsored = models.BooleanField(default=False)
     sale_link = models.URLField(blank=True)
 
@@ -148,3 +149,10 @@ class Like(TimeStampedModel):
 
     def __str__(self):
         return f"{self.project}: {self.author} ({self.like})"
+
+
+class FeaturePurchase(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.PROTECT)
+    session_id = models.CharField(max_length=255, unique=True)
+    purchased_at = models.DateTimeField(auto_now_add=True)
+    newsletter_feature_sent = models.BooleanField(default=False)

@@ -42,11 +42,11 @@ class ProjectListView(FilterView):
             ordering = self.request.GET.get("order_by")
 
             if ordering == "like":
-                return queryset.order_by("-sponsored", "-like_count")
+                return queryset.order_by("-is_featured", "-like_count")
             else:
-                return queryset.order_by("-sponsored", "-updated_date")
+                return queryset.order_by("-is_featured", "-updated_date")
 
-        return queryset.order_by("-sponsored", "-updated_date")
+        return queryset.order_by("-is_featured", "-updated_date")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
