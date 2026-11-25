@@ -4,6 +4,18 @@
          data-ph-capture-attribute-project-id="{{ site.id }}"
          data-ph-capture-attribute-project-title="{{ site.title }}"
          data-ph-capture-attribute-project-sponsored="{{ site.sponsored }}">
+  {% if site.homepage_screenshot %}
+    <a href="{% url 'project' site.slug %}"
+       class="bw-project-card__media mb-3"
+       aria-label="View {{ site.title }}"
+       data-analytics-event="project card clicked"
+       data-analytics-project-id="{{ site.id }}"
+       data-analytics-project-title="{{ site.title }}"
+       data-analytics-project-sponsored="{{ site.sponsored }}"
+       data-analytics-click-target="screenshot">
+      <img src="{% get_media_prefix %}{{ site.homepage_screenshot }}" alt="" loading="lazy" decoding="async">
+    </a>
+  {% endif %}
   <div class="bw-project-card__body">
     <div class="flex items-center gap-3">
       {% if site.logo %}<img class="h-8 w-8 shrink-0 object-contain" src="{{ site.logo.url }}" width="32" height="32" alt="" loading="lazy">{% endif %}
