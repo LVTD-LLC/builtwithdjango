@@ -3,8 +3,10 @@ from types import SimpleNamespace
 from unittest.mock import patch
 
 import stripe
+from allauth.account.models import EmailAddress
 from django.contrib.auth import get_user_model
 from django.contrib.sessions.middleware import SessionMiddleware
+from django.core import mail
 from django.core.exceptions import ImproperlyConfigured
 from django.db import IntegrityError, connection, transaction
 from django.test import RequestFactory, TestCase, override_settings
@@ -21,6 +23,20 @@ PRICE_IDS = {
     "django_devs": "price_devs",
     "job": "price_job",
 }
+
+
+class ResendConfirmationTests(TestCase):
+    def test_resend_emails_confirmation_link(self):
+        user = get_user_model().objects.create_user(username="reader", email="reader@example.com")
+        EmailAddress.objects.create(user=user, email=user.email, primary=True)
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("resend_email_confirmation_email"))
+
+        self.assertRedirects(response, reverse("update-profile"), fetch_redirect_response=False)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, [user.email])
+        self.assertIn(reverse("account_confirm_email", args=["KEY"]).split("KEY")[0], mail.outbox[0].body)
 
 
 class SignupTests(TestCase):
