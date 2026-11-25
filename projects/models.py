@@ -152,7 +152,7 @@ class Like(TimeStampedModel):
 
 
 class FeaturePurchase(models.Model):
-    project = models.ForeignKey(Project, on_delete=models.PROTECT)
+    project = models.ForeignKey(Project, on_delete=models.PROTECT, null=True, blank=True)
     session_id = models.CharField(max_length=255, unique=True)
     purchased_at = models.DateTimeField(auto_now_add=True)
     newsletter_feature_sent = models.BooleanField(default=False)
