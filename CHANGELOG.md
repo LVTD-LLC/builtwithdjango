@@ -3,6 +3,7 @@
 ## 2026-11-27
 
 - Publish a tested Django ORM guide to fixing inflated sums across related tables.
+
 ## 2026-11-25
 
 ### Fixed
