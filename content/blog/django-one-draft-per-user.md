@@ -145,6 +145,8 @@ for row in duplicates:
     print(row["owner_id"], row["drafts"])
 ```
 
+This audit counts stories without joining their comments or tags. If you extend it to report on both, check [how related-table joins can inflate Django annotations](/blog/django-annotate-inflated-sums) before using the numbers to select records.
+
 Each result is an editorial decision. If Alice already has three drafts, which one should open when she clicks **My draft**? Preserve the others through an agreed archive or merge process. Don't publish someone's unfinished writing or discard rows just to make the migration pass.
 
 Read the audit output as *owners*, not stories. For example, a hypothetical line saying owner 42 has three drafts means two stories need a disposition; it does not tell you which two. Open those records with their titles, most recent edits, and references from the editorial workflow. An older draft that already has review comments may be more important to preserve as the working copy than the newest empty draft. Keep a record of the selected story and the disposition of each extra one, so a writer can still find work that moved.
